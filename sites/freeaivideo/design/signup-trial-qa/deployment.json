@@ -1,0 +1,16 @@
+{
+  "id": "4d59683b-5683-4414-a6e3-3530ffab9e5f",
+  "source": "wrangler",
+  "strategy": "percentage",
+  "annotations": {
+    "workers/message": "Verified registration voucher: one 4s 480p trial, 30-day expiry; shared daily device trial; paid 10s 720p at 100 credits",
+    "workers/triggered_by": "deployment"
+  },
+  "versions": [
+    {
+      "version_id": "4e963caf-91c6-4fd1-b3c8-36eecaa8dc12",
+      "percentage": 100
+    }
+  ],
+  "created_on": "2026-11-01T11:36:02.888289Z"
+}

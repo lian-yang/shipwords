@@ -1,0 +1,10 @@
+.                                        |  WARN  Unsupported engine: wanted: {"node":">=24"} (current: {"node":"v22.23.2","pnpm":"10.30.1"})
+
+ RUN  v4.1.12 /private/var/folders/8t/xpqbqr_n4c30hb73__255v1m0000gn/T/freeaivideo-paid15-release-6nyknbqt/packages/jobs
+
+
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+   Start at  18:01:39
+   Duration  4.40s (transform 1.86s, setup 86ms, import 4.59s, tests 268ms, environment 0ms)
+

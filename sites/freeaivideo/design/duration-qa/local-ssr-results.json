@@ -1,0 +1,38 @@
+[
+  {
+    "path": "/",
+    "language": "en",
+    "status": 200,
+    "guestOnlySpec": true
+  },
+  {
+    "path": "/seedance-2-5-free",
+    "language": "en",
+    "status": 200,
+    "guestOnlySpec": true
+  },
+  {
+    "path": "/no-watermark",
+    "language": "en",
+    "status": 200,
+    "guestOnlySpec": true
+  },
+  {
+    "path": "/",
+    "language": "zh",
+    "status": 200,
+    "guestOnlySpec": true
+  },
+  {
+    "path": "/seedance-2-5-free",
+    "language": "zh",
+    "status": 200,
+    "guestOnlySpec": true
+  },
+  {
+    "path": "/no-watermark",
+    "language": "zh",
+    "status": 200,
+    "guestOnlySpec": true
+  }
+]

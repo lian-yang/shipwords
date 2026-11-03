@@ -1,0 +1,9 @@
+
+ RUN  v4.1.12 /private/var/folders/8t/xpqbqr_n4c30hb73__255v1m0000gn/T/freeaivideo-signup-trial-release-ojtovb7q/sites/freeaivideo/test
+
+
+ Test Files  2 passed (2)
+      Tests  42 passed (42)
+   Start at  19:34:41
+   Duration  7.35s (transform 3.10s, setup 290ms, import 7.14s, tests 616ms, environment 0ms)
+

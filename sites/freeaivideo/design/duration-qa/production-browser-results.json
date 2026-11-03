@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-11-01T09:13:21.990Z",
+  "home": {
+    "lang": "en",
+    "note": "Your first 10-second, 480p video each day is free — no credits, no account. More videos use credits.",
+    "answers": [
+      "Yes. You can try 1 video per device per day without an account. Shared network limits and daily availability also apply. Additional videos use credits.",
+      "Free AI Video does not add a watermark to free or paid downloads.",
+      "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo.",
+      "Yes. Add one reference image with your prompt, choose an aspect ratio, and generate a short video. You can use a reference photo on your free try too.",
+      "The daily free guest trial is set to create a 10-second clip at 480p, and its length cannot be increased in the request. This limit applies only to the guest trial. Videos made with account credits keep the model's standard settings.",
+      "Choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4 formats.",
+      "Failed jobs automatically return the credits used for that job. Returning job credits is separate from refunding a credit-pack purchase; the refund policy explains purchase refunds."
+    ],
+    "schemaAnswers": [
+      "Yes. You can try 1 video per device per day without an account. Shared network limits and daily availability also apply. Additional videos use credits.",
+      "Free AI Video does not add a watermark to free or paid downloads.",
+      "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo.",
+      "Yes. Add one reference image with your prompt, choose an aspect ratio, and generate a short video. You can use a reference photo on your free try too.",
+      "The daily free guest trial is set to create a 10-second clip at 480p, and its length cannot be increased in the request. This limit applies only to the guest trial. Videos made with account credits keep the model's standard settings.",
+      "Choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4 formats.",
+      "Failed jobs automatically return the credits used for that job. Returning job credits is separate from refunding a credit-pack purchase; the refund policy explains purchase refunds."
+    ],
+    "overflow": false,
+    "gaLoaders": 1
+  },
+  "urls": [
+    {
+      "path": "/seedance-2-5-free",
+      "status": 200,
+      "hasSpec": true
+    },
+    {
+      "path": "/no-watermark",
+      "status": 200,
+      "hasSpec": true
+    },
+    {
+      "path": "/llms.txt",
+      "status": 200,
+      "hasSpec": true
+    }
+  ],
+  "mobile": {
+    "width": 390,
+    "overflow": false,
+    "note": "Your first 10-second, 480p video each day is free — no credits, no account. More videos use credits."
+  }
+}

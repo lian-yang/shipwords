@@ -1,0 +1,22 @@
+[
+  {
+    "block": "common",
+    "messages_per_locale": 99,
+    "keys_and_placeholders": "matched"
+  },
+  {
+    "block": "home",
+    "messages_per_locale": 102,
+    "keys_and_placeholders": "matched"
+  },
+  {
+    "block": "legal",
+    "messages_per_locale": 86,
+    "keys_and_placeholders": "matched"
+  },
+  {
+    "block": "pages",
+    "messages_per_locale": 38,
+    "keys_and_placeholders": "matched"
+  }
+]

@@ -1,0 +1,147 @@
+{
+  "checkedAt": "2026-11-01T09:11:13.354Z",
+  "tests": 20,
+  "results": [
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 0,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 1,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 2,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 3,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 4,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 5,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 6,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 7,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 8,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "guest",
+      "model": "seedance-2-5",
+      "inputCase": 9,
+      "duration": 10,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 0,
+      "duration": null,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 1,
+      "duration": null,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 2,
+      "duration": null,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 3,
+      "duration": null,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 4,
+      "duration": null,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 5,
+      "duration": null,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 6,
+      "duration": null,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 7,
+      "duration": null,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 8,
+      "duration": null,
+      "passed": true
+    },
+    {
+      "mode": "account",
+      "model": "seedance-2-5",
+      "inputCase": 9,
+      "duration": null,
+      "passed": true
+    }
+  ],
+  "submittedRealJobs": 0
+}

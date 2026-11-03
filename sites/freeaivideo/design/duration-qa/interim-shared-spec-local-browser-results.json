@@ -1,0 +1,74 @@
+[
+  {
+    "path": "/",
+    "lang": "en",
+    "note": "Your first 10-second, 480p video each day is free — no credits, no account. More videos use credits.",
+    "answers": [
+      "Yes. You can try 1 video per device per day without an account. Shared network limits and daily availability also apply. Additional videos use credits.",
+      "Free AI Video does not add a watermark to free or paid downloads.",
+      "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo.",
+      "Yes. Add one reference image with your prompt, choose an aspect ratio, and generate a short video. You can use a reference photo on your free try too.",
+      "This generator is set to create 10-second clips at 480p. The same settings apply to the daily free try and videos made with account credits. Clip length cannot be increased in the request.",
+      "Choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4 formats.",
+      "Failed jobs automatically return the credits used for that job. Returning job credits is separate from refunding a credit-pack purchase; the refund policy explains purchase refunds."
+    ],
+    "schemaAnswers": [
+      "Yes. You can try 1 video per device per day without an account. Shared network limits and daily availability also apply. Additional videos use credits.",
+      "Free AI Video does not add a watermark to free or paid downloads.",
+      "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo.",
+      "Yes. Add one reference image with your prompt, choose an aspect ratio, and generate a short video. You can use a reference photo on your free try too.",
+      "This generator is set to create 10-second clips at 480p. The same settings apply to the daily free try and videos made with account credits. Clip length cannot be increased in the request.",
+      "Choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4 formats.",
+      "Failed jobs automatically return the credits used for that job. Returning job credits is separate from refunding a credit-pack purchase; the refund policy explains purchase refunds."
+    ],
+    "overflow": false
+  },
+  {
+    "path": "/seedance-2-5-free",
+    "lang": "en",
+    "hasSpec": true,
+    "overflow": false
+  },
+  {
+    "path": "/no-watermark",
+    "lang": "en",
+    "hasSpec": true,
+    "overflow": false
+  },
+  {
+    "path": "/",
+    "lang": "zh",
+    "note": "每天首个 10 秒、480p 视频免费，无需积分或账户。生成更多视频需要积分。",
+    "answers": [
+      "可以。每台设备每天可免费试用 1 个视频，无需账户。同时受共享网络限制和当天可用额度影响。生成更多视频需要积分。",
+      "Free AI Video 不会为免费或付费下载的视频添加水印。",
+      "目前使用 Seedance 2.5，将文字提示或参考照片生成短视频。",
+      "可以。在提示词旁添加一张参考图片，选择画幅比例后即可生成短视频。免费试用也支持参考照片。",
+      "本站固定按 10 秒、480p 生成短片，每日免费试用和账户积分生成使用相同规格，不能通过请求参数延长时长。",
+      "支持横屏 16:9、竖屏 9:16、正方形 1:1，以及 4:3 和 3:4 画幅。",
+      "失败的任务会自动退回本次所用积分。任务退积分与积分包购买退款是两回事；购买退款的条件请查看退款政策。"
+    ],
+    "schemaAnswers": [
+      "可以。每台设备每天可免费试用 1 个视频，无需账户。同时受共享网络限制和当天可用额度影响。生成更多视频需要积分。",
+      "Free AI Video 不会为免费或付费下载的视频添加水印。",
+      "目前使用 Seedance 2.5，将文字提示或参考照片生成短视频。",
+      "可以。在提示词旁添加一张参考图片，选择画幅比例后即可生成短视频。免费试用也支持参考照片。",
+      "本站固定按 10 秒、480p 生成短片，每日免费试用和账户积分生成使用相同规格，不能通过请求参数延长时长。",
+      "支持横屏 16:9、竖屏 9:16、正方形 1:1，以及 4:3 和 3:4 画幅。",
+      "失败的任务会自动退回本次所用积分。任务退积分与积分包购买退款是两回事；购买退款的条件请查看退款政策。"
+    ],
+    "overflow": false
+  },
+  {
+    "path": "/seedance-2-5-free",
+    "lang": "zh",
+    "hasSpec": true,
+    "overflow": false
+  },
+  {
+    "path": "/no-watermark",
+    "lang": "zh",
+    "hasSpec": true,
+    "overflow": false
+  }
+]

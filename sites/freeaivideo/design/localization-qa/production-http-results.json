@@ -1,0 +1,75 @@
+{
+  "version": "a0f7e29f-0c6f-4232-9f66-71a99b217e31",
+  "checks": [
+    {
+      "path": "/",
+      "status": 200,
+      "type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/terms",
+      "status": 200,
+      "type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/refunds",
+      "status": 200,
+      "type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/dmca",
+      "status": 200,
+      "type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/no-watermark",
+      "status": 200,
+      "type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/seedance-2-5-free",
+      "status": 200,
+      "type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/robots.txt",
+      "status": 200,
+      "type": "text/plain; charset=utf-8"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "type": "application/xml; charset=utf-8"
+    },
+    {
+      "path": "/llms.txt",
+      "status": 200,
+      "type": "text/plain; charset=utf-8"
+    }
+  ],
+  "browserState": {
+    "ga4Initialized": true,
+    "images": [
+      {
+        "src": "https://www.freeaivideo.app/images/planet-walk.webp",
+        "loaded": true
+      }
+    ],
+    "analyticsResources": [
+      {
+        "url": "https://www.googletagmanager.com/gtag/js",
+        "type": "script"
+      },
+      {
+        "url": "https://analytics.google.com/g/collect",
+        "type": "fetch"
+      }
+    ],
+    "configQueued": true
+  }
+}

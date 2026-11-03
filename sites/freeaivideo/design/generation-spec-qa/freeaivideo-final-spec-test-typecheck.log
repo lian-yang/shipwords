@@ -1,0 +1,5 @@
+.                                        |  WARN  Unsupported engine: wanted: {"node":">=24"} (current: {"node":"v22.23.2","pnpm":"10.30.1"})
+
+> @shipwords/jobs@0.0.0 typecheck /private/var/folders/8t/xpqbqr_n4c30hb73__255v1m0000gn/T/freeaivideo-paid15-release-6nyknbqt/packages/jobs
+> tsc --noEmit
+

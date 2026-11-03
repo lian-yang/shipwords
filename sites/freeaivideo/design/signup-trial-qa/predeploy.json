@@ -1,0 +1,16 @@
+{
+  "id": "6bed0ae0-e5d5-4666-836f-30cbff14607d",
+  "source": "wrangler",
+  "strategy": "percentage",
+  "annotations": {
+    "workers/message": "Guest 4s 480p once per device daily; account 10s 720p for 100 credits; signup bonus 100 with bounded daily grants",
+    "workers/triggered_by": "deployment"
+  },
+  "versions": [
+    {
+      "version_id": "173f5616-385d-42bc-a86c-5ca7a9ce1f7c",
+      "percentage": 100
+    }
+  ],
+  "created_on": "2026-11-01T10:08:24.331371Z"
+}

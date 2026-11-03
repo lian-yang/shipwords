@@ -1,0 +1,16 @@
+{
+  "id": "bd056540-c769-4d50-87f2-35f7c03da59b",
+  "source": "wrangler",
+  "strategy": "percentage",
+  "annotations": {
+    "workers/message": "Show no-added-watermark benefits at generation, registration voucher and pricing; bilingual copy and FAQ aligned",
+    "workers/triggered_by": "deployment"
+  },
+  "versions": [
+    {
+      "version_id": "d48247f2-2670-49cc-a498-3324db95ae37",
+      "percentage": 100
+    }
+  ],
+  "created_on": "2026-11-01T11:54:01.261Z"
+}

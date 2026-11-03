@@ -28,6 +28,7 @@ playwright-report/
 # Local tool directories
 .claude/
 .impeccable/
+graphify-out/
 
 # Example media (clips and stills cut from third-party footage) stays out of the repo; see sites/tinydeskai-example/README.md
 sites/tinydeskai-example/public/media/

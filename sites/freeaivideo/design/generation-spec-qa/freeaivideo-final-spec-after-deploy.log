@@ -1,0 +1,92 @@
+
+ ⛅️ wrangler 4.153.0 (update available 4.156.0)
+───────────────────────────────────────────────
+Created:     2026-11-01T06:30:27.404Z
+Author:      mangod@126.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 4d645238-8694-4457-948c-585c8316c25c
+                 Created:  2026-11-01T06:30:25.899Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-11-01T06:50:12.212Z
+Author:      mangod@126.com
+Source:      Secret Change
+Message:     -
+Version(s):  (100%) 68bb8763-9f44-4947-a471-fb522f233a58
+                 Created:  2026-11-01T06:50:12.212Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-11-01T06:50:28.463Z
+Author:      mangod@126.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 26109080-12ed-4f97-8ce5-ec6aff182613
+                 Created:  2026-11-01T06:50:27.002Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-11-01T07:03:26.339Z
+Author:      mangod@126.com
+Source:      Secret Change
+Message:     -
+Version(s):  (100%) 2e2332dc-a711-4f7a-958d-2193cbb21c89
+                 Created:  2026-11-01T07:03:26.339Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-11-01T07:03:52.989Z
+Author:      mangod@126.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 458c7658-1ffb-4620-93f6-61f8fbdc85a5
+                 Created:  2026-11-01T07:03:51.232Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-11-01T07:56:33.901Z
+Author:      undefined
+Source:      Unknown (deployment)
+Message:     UI redesign, complete Chinese preview, bilingual policies and GA4 G-YJ3Q2BRW3C
+Version(s):  (100%) a0f7e29f-0c6f-4232-9f66-71a99b217e31
+                 Created:  2026-11-01T07:56:31.383Z
+                     Tag:  ui-policy-ga4-20261101
+                 Message:  UI redesign, complete Chinese preview, bilingual policies and GA4 G-YJ3Q2BRW3C
+
+Created:     2026-11-01T09:07:33.300Z
+Author:      undefined
+Source:      Unknown (deployment)
+Message:     Pin new video generation to 10 seconds at 480p; sync bilingual FAQ and free-tier copy
+Version(s):  (100%) f7d4c08d-edbd-4347-ab1d-209a4f4e996e
+                 Created:  2026-11-01T09:07:31.900Z
+                     Tag:  clip-10s-480p-20261101
+                 Message:  Pin new video generation to 10 seconds at 480p; sync bilingual FAQ and free-tier copy
+
+Created:     2026-11-01T09:12:41.434Z
+Author:      undefined
+Source:      Unknown (deployment)
+Message:     Limit guest trials to 10 seconds at 480p; preserve original account-credit settings
+Version(s):  (100%) cf7a78dd-c4e0-4d4b-902e-e016eb43ee11
+                 Created:  2026-11-01T09:12:38.602Z
+                     Tag:  guest-clip-10s-20261101
+                 Message:  Limit guest trials to 10 seconds at 480p; preserve original account-credit settings
+
+Created:     2026-11-01T09:25:05.957Z
+Author:      mangod@126.com
+Source:      Unknown (deployment)
+Message:     -
+Version(s):  (100%) 6556225a-aaad-41b7-8ec8-7edef03e3ece
+                 Created:  2026-11-01T09:25:04.127Z
+                     Tag:  -
+                 Message:  -
+
+Created:     2026-11-01T10:08:24.331Z
+Author:      undefined
+Source:      Unknown (deployment)
+Message:     Guest 4s 480p once per device daily; account 10s 720p for 100 credits; signup bonus 100 with bounded daily grants
+Version(s):  (100%) 173f5616-385d-42bc-a86c-5ca7a9ce1f7c
+                 Created:  2026-11-01T10:08:22.840Z
+                     Tag:  trial4s-account10s-20261101
+                 Message:  Guest 4s 480p once per device daily; account 10s 720p for 100 credits; signup bonus 100 with bounded daily grants

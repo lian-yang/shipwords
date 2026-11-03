@@ -1,0 +1,80 @@
+[
+  {
+    "file": "daylight-studio.png",
+    "target": "/Users/yanglian/Code/shipwords/sites/freeaivideo/design/ui-redesign/explore/daylight-studio.html",
+    "name": "Daylight studio",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "cinema-journal.png",
+    "target": "/Users/yanglian/Code/shipwords/sites/freeaivideo/design/ui-redesign/explore/cinema-journal.html",
+    "name": "Cinema journal",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "frame-lab.png",
+    "target": "/Users/yanglian/Code/shipwords/sites/freeaivideo/design/ui-redesign/explore/frame-lab.html",
+    "name": "Frame lab",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "thumb": true,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "sheet.png",
+    "width": 2000,
+    "height": 480,
+    "columns": 3,
+    "items": [
+      {
+        "naturalWidth": 720,
+        "naturalHeight": 450,
+        "width": 640,
+        "height": 400,
+        "labelHeight": 32,
+        "x": 24,
+        "y": 24,
+        "label": "Daylight studio",
+        "labelY": 432
+      },
+      {
+        "naturalWidth": 720,
+        "naturalHeight": 450,
+        "width": 640,
+        "height": 400,
+        "labelHeight": 32,
+        "x": 680,
+        "y": 24,
+        "label": "Cinema journal",
+        "labelY": 432
+      },
+      {
+        "naturalWidth": 720,
+        "naturalHeight": 450,
+        "width": 640,
+        "height": 400,
+        "labelHeight": 32,
+        "x": 1336,
+        "y": 24,
+        "label": "Frame lab",
+        "labelY": 432
+      }
+    ],
+    "issues": []
+  }
+]

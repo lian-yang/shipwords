@@ -1,0 +1,105 @@
+{
+  "checkedAt": "2026-11-01T11:50:34.235Z",
+  "taskSpaceId": 56,
+  "scope": "Local browser rendering and real local authentication only. No generation, payment, mail or mocked output.",
+  "passed": true,
+  "zh": {
+    "locale": "zh",
+    "watermark": "无本站水印",
+    "fontWeight": "700",
+    "beforeButton": true,
+    "plans": [
+      {
+        "title": "入门积分包",
+        "watermark": [
+          "无本站水印"
+        ]
+      },
+      {
+        "title": "创作积分包",
+        "watermark": [
+          "无本站水印"
+        ]
+      }
+    ],
+    "faqCount": 8,
+    "faqEqual": true,
+    "watermarkAnswer": "每日免费试用、注册试用券和积分生成的视频，本站均不额外添加水印，也不另收导出费用。",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": false
+  },
+  "en": {
+    "locale": "en",
+    "watermark": "No watermark added",
+    "fontWeight": "700",
+    "beforeButton": true,
+    "plans": [
+      {
+        "title": "Starter",
+        "watermark": [
+          "No watermark added"
+        ]
+      },
+      {
+        "title": "Creator",
+        "watermark": [
+          "No watermark added"
+        ]
+      }
+    ],
+    "faqCount": 8,
+    "faqEqual": true,
+    "watermarkAnswer": "Free AI Video adds no watermark to daily free trials, registration-voucher videos or credit-paid videos. There is no separate export fee.",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": false
+  },
+  "account": {
+    "watermark": "No watermark added",
+    "hasRealLocalBalance": true,
+    "clientWidth": 350,
+    "scrollWidth": 350,
+    "overflow": false
+  },
+  "screenshots": [
+    "local-generator-zh.png",
+    "local-plans-zh.png",
+    "local-generator-en.png",
+    "local-plans-en.png",
+    "local-account-en.png"
+  ],
+  "pendingProduction": false,
+  "screenshotGeometry": {
+    "enGenerator": {
+      "scrollY": 487,
+      "watermarkRect": {
+        "x": 40,
+        "y": 421.984375,
+        "width": 127.875,
+        "height": 15,
+        "top": 421.984375,
+        "right": 167.875,
+        "bottom": 436.984375,
+        "left": 40
+      }
+    },
+    "zhGenerator": {
+      "scrollY": 439.5,
+      "watermarkRect": {
+        "x": 40,
+        "y": 421.7890625,
+        "width": 65,
+        "height": 15,
+        "top": 421.7890625,
+        "right": 105,
+        "bottom": 436.7890625,
+        "left": 40
+      }
+    }
+  },
+  "localCookieRestored": true,
+  "originalLocaleRestored": "zh",
+  "productionResult": "production-results.json",
+  "taskSpaceFinished": true
+}

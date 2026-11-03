@@ -1,0 +1,65 @@
+{
+  "checked_at": "2026-11-01T11:38:35.527732+00:00",
+  "deployed_version": "4e963caf-91c6-4fd1-b3c8-36eecaa8dc12",
+  "client": "curl default",
+  "python_urllib_probe": {
+    "status": 403,
+    "edge_code": 1010
+  },
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/api/trials",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "trial_status": {
+        "verificationAvailable": true,
+        "daily": {
+          "available": true,
+          "remaining": 1,
+          "reason": null
+        },
+        "signup": {
+          "status": "signed_out",
+          "expiresAt": null
+        }
+      },
+      "cache_control": "private, no-store",
+      "device_cookie_set": true
+    },
+    {
+      "path": "/llms.txt",
+      "status": 200,
+      "content_type": "text/plain; charset=utf-8"
+    },
+    {
+      "path": "/terms",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/refunds",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/seedance-2-5-free",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/no-watermark",
+      "status": 200,
+      "content_type": "text/html; charset=utf-8"
+    }
+  ]
+}

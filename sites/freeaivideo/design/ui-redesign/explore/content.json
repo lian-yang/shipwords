@@ -1,0 +1,9 @@
+{
+  "title": "Free AI video generator",
+  "lead": "A few words. A short film. Start with one free video a day.",
+  "primary": "Generate free video",
+  "model": "Seedance 2.5",
+  "aspect": "16:9",
+  "reference": "Reference image",
+  "prompt": "A golden koi glides through clouds above a mountain temple at sunrise."
+}

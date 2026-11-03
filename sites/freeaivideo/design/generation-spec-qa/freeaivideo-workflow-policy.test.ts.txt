@@ -1,0 +1,248 @@
+import { env } from 'cloudflare:test';
+import type { WorkflowEvent, WorkflowStep } from 'cloudflare:workers';
+import { getBalance, grantCredits, spendCredits } from '@shipwords/core/credits/ledger';
+import { createDb } from '@shipwords/core/db/client';
+import type { Core } from '@shipwords/core/server';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createSiteJob } from '../../../sites/freeaivideo/src/create-job.server';
+import { GenerationWorkflow } from '../../../sites/freeaivideo/src/generation-workflow.server';
+import { claimGuestJobs, loadJob, spendKey } from '../src/lifecycle';
+import { jobs } from '../src/schema';
+import type { JobsEnv } from '../src/workflow';
+import { YirAdapter } from '../src/yir';
+
+const db = createDb(env.DB);
+const BASE = 'https://www.freeaivideo.app';
+
+async function accountWith(credits = 200) {
+  const id = `u_${crypto.randomUUID().slice(0, 12)}`;
+  await grantCredits(db, { userId: id, amount: credits, idemKey: `g:${id}`, source: 'test' });
+  return { id, email: `${id}@example.test`, name: 'Test user' };
+}
+
+async function queued(signedIn: boolean, image = false) {
+  const user = await accountWith();
+  const guestId = `g_${crypto.randomUUID().slice(0, 12)}`;
+  const core = {
+    db,
+    site: { id: 'freeaivideo', url: BASE },
+    env: {
+      APP_URL: BASE,
+      GUEST_COOKIE_SECRET: 'test-secret',
+      GENERATION_WORKFLOW: { create: async () => {} },
+    },
+    getUser: async () => (signedIn ? user : null),
+    guest: { authorize: async () => ({ ok: true, guestId, setCookie: null, rules: [] }) },
+    log: () => {},
+  } as unknown as Core;
+  const response = await createSiteJob(
+    core,
+    new Request(`${BASE}/api/jobs/`, {
+      method: 'POST',
+      body: JSON.stringify({
+        modelId: 'seedance-2-5',
+        prompt: 'A lighthouse above a quiet sea',
+        parameters: { duration: 30, resolution: '1080p', aspect_ratio: '9:16' },
+        ...(image ? { references: ['/files/uploads/reference.jpg'] } : {}),
+      }),
+    }),
+  );
+  expect(response.status).toBe(201);
+  const { job } = (await response.json()) as { job: { id: string } };
+  return { user, guestId, job: (await loadJob(db, job.id))! };
+}
+
+function testStep(options: { failPolicy?: boolean } = {}) {
+  const cache = new Map<string, unknown>();
+  const executed: string[] = [];
+  const step = {
+    do: async (name: string, ...args: unknown[]) => {
+      if (cache.has(name)) return cache.get(name);
+      executed.push(name);
+      // Simulates an exhausted Workflow policy-step retry; successful steps are cached for replay.
+      if (name === 'site:generation-policy:v1' && options.failPolicy) {
+        throw new Error('policy lookup retries exhausted');
+      }
+      const callback = args.at(-1) as () => Promise<unknown>;
+      const result = await callback();
+      cache.set(name, result);
+      return result;
+    },
+    sleep: async () => {},
+  } as unknown as WorkflowStep;
+  return { step, executed };
+}
+
+function workflow() {
+  const fakeEnv = {
+    DB: env.DB,
+    OUTPUTS: env.OUTPUTS,
+    APP_URL: BASE,
+    YIR_API_KEY: 'test-only-no-network',
+  } as JobsEnv;
+  // cloudflare:test's ExecutionContext is not accepted by the native WorkflowEntrypoint constructor.
+  // Execute the real site run method (and its real shared runner) with only its env receiver supplied.
+  const receiver = { env: fakeEnv } as unknown as GenerationWorkflow;
+  return {
+    run: (event: WorkflowEvent<{ jobId: string }>, step: WorkflowStep) =>
+      GenerationWorkflow.prototype.run.call(receiver, event, step),
+  };
+}
+
+const eventFor = (jobId: string) => ({ payload: { jobId } }) as WorkflowEvent<{ jobId: string }>;
+
+function fakeUpstream() {
+  const submit = vi.spyOn(YirAdapter.prototype, 'submit').mockImplementation(async (_input, key) => ({
+    upstreamJobId: `up_${key}`,
+  }));
+  vi.spyOn(YirAdapter.prototype, 'poll').mockResolvedValue({
+    state: 'failed',
+    code: 'test_finished',
+    message: 'Intentional fake upstream failure; no real render or charge.',
+  });
+  vi.spyOn(YirAdapter.prototype, 'cancel').mockResolvedValue(undefined);
+  vi.spyOn(YirAdapter.prototype, 'cost').mockResolvedValue({ usd: '0', settled: true });
+  return submit;
+}
+
+afterEach(() => vi.restoreAllMocks());
+
+describe('freeaivideo actual GenerationWorkflow policy integration', () => {
+  it.each([false, true])('passes the guest policy through real runGeneration for image=%s', async (image) => {
+    const { job } = await queued(false, image);
+    const submit = fakeUpstream();
+    const { step, executed } = testStep();
+    await workflow().run(eventFor(job.id), step);
+    expect(submit).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        parameters: { aspect_ratio: image ? 'auto' : '9:16', duration: 4, resolution: '480p' },
+        maxCost: '0.60',
+      }),
+      job.id,
+    );
+    expect(executed).toContain('site:generation-policy:v1');
+    expect(executed).toContain('submit');
+    expect(executed).toContain('poll:0');
+    expect((await loadJob(db, job.id))!.status).toBe('failed');
+  });
+
+  it.each([false, true])(
+    'passes the account policy through real runGeneration for image=%s',
+    async (image) => {
+      const { job, user } = await queued(true, image);
+      expect((await getBalance(db, user.id)).available).toBe(100);
+      const submit = fakeUpstream();
+      const { step } = testStep();
+      await workflow().run(eventFor(job.id), step);
+      expect(submit).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({
+          parameters: { aspect_ratio: image ? 'auto' : '9:16', duration: 10, resolution: '720p' },
+          maxCost: '2.60',
+        }),
+        job.id,
+      );
+      expect((await getBalance(db, user.id)).available).toBe(200);
+    },
+  );
+
+  it('keeps the new $0.60 guest ceiling after the guest job is claimed by an account', async () => {
+    const { job, user, guestId } = await queued(false);
+    await claimGuestJobs(db, guestId, user.id);
+    expect(await loadJob(db, job.id)).toMatchObject({ userId: user.id, guestId, costCredits: 0 });
+    const submit = fakeUpstream();
+    const { step } = testStep();
+    await workflow().run(eventFor(job.id), step);
+    expect(submit.mock.calls[0]![0]).toMatchObject({
+      parameters: { duration: 4, resolution: '480p' },
+      maxCost: '0.60',
+    });
+    expect((await getBalance(db, user.id)).available).toBe(200);
+  });
+
+  it.each([false, true])('keeps old 10-second guest jobs at $1.20 when claimed=%s', async (claimed) => {
+    const user = await accountWith();
+    const guestId = `g_old_${crypto.randomUUID().slice(0, 12)}`;
+    const jobId = `job_${crypto.randomUUID().replaceAll('-', '')}`;
+    await db.insert(jobs).values({
+      id: jobId,
+      guestId,
+      modelId: 'seedance-2-5',
+      kind: 'video',
+      prompt: 'A legacy 10-second guest video',
+      inputJson: JSON.stringify({
+        references: [],
+        parameters: { aspect_ratio: '16:9', duration: 10, resolution: '480p' },
+      }),
+      costCredits: 0,
+      quotaJson: '[]',
+      upstream: 'yir',
+    });
+    if (claimed) await claimGuestJobs(db, guestId, user.id);
+    expect(await loadJob(db, jobId)).toMatchObject({
+      userId: claimed ? user.id : null,
+      guestId,
+      costCredits: 0,
+    });
+    const submit = fakeUpstream();
+    const { step } = testStep();
+    await workflow().run(eventFor(jobId), step);
+    expect(submit).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        parameters: { aspect_ratio: '16:9', duration: 10, resolution: '480p' },
+        maxCost: '1.20',
+      }),
+      jobId,
+    );
+    expect((await getBalance(db, user.id)).available).toBe(200);
+  });
+
+  it('keeps legacy account parameters and their original $1.20 ceiling', async () => {
+    const user = await accountWith();
+    const jobId = `job_${crypto.randomUUID().replaceAll('-', '')}`;
+    await spendCredits(db, { userId: user.id, amount: 60, idemKey: spendKey(jobId), ref: jobId }, [
+      db.insert(jobs).values({
+        id: jobId,
+        userId: user.id,
+        modelId: 'seedance-2-5',
+        kind: 'video',
+        prompt: 'A legacy queued video',
+        inputJson: JSON.stringify({ references: [], parameters: { aspect_ratio: '16:9' } }),
+        costCredits: 60,
+        upstream: 'yir',
+      }),
+    ]);
+    const submit = fakeUpstream();
+    const { step } = testStep();
+    await workflow().run(eventFor(jobId), step);
+    expect(submit.mock.calls[0]![0]).toMatchObject({
+      parameters: { aspect_ratio: '16:9' },
+      maxCost: '1.20',
+    });
+    expect(submit.mock.calls[0]![0].parameters).not.toHaveProperty('duration');
+    expect((await getBalance(db, user.id)).available).toBe(200);
+  });
+
+  it('replays cached Workflow steps without repeating the upstream submit or refund', async () => {
+    const { job, user } = await queued(true);
+    const submit = fakeUpstream();
+    const { step } = testStep();
+    const instance = workflow();
+    await instance.run(eventFor(job.id), step);
+    await instance.run(eventFor(job.id), step);
+    expect(submit).toHaveBeenCalledTimes(1);
+    expect((await getBalance(db, user.id)).available).toBe(200);
+  });
+
+  it('settles through abort:outer when the site policy step exhausts its retries', async () => {
+    const { job, user } = await queued(true);
+    const submit = fakeUpstream();
+    const { step, executed } = testStep({ failPolicy: true });
+    const instance = workflow();
+    await instance.run(eventFor(job.id), step);
+    await instance.run(eventFor(job.id), step);
+    expect(executed).toContain('abort:outer');
+    expect(submit).not.toHaveBeenCalled();
+    expect(await loadJob(db, job.id)).toMatchObject({ status: 'failed', errorCode: 'internal_error' });
+    expect((await getBalance(db, user.id)).available).toBe(200);
+  });
+});

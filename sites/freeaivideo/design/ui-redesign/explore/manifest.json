@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "project": "Free AI Video",
+  "brief": "Keep the free video composer immediately available, preserve the keyword heading and existing information architecture. Shared copy: content.json.",
+  "round": "01",
+  "nativeViewport": "1440x900",
+  "candidates": [
+    {
+      "id": "baseline",
+      "name": "Current interface",
+      "concept": "Existing dark screening-room UI.",
+      "typography": "System sans.",
+      "palette": [
+        "#0e0e13",
+        "#ececf1",
+        "#fbbf24"
+      ],
+      "traits": [
+        "基线"
+      ],
+      "kind": "image",
+      "source": "../baseline-desktop.png",
+      "baseline": true
+    },
+    {
+      "id": "daylight-studio",
+      "name": "Daylight studio",
+      "concept": "A calm, bright workspace where the idea and the next action are always clear.",
+      "typography": "Arial/system sans; 52px heading, 20px workspace title, 14–16px controls.",
+      "palette": [
+        "#f7f8f2",
+        "#21281e",
+        "#c8ee70"
+      ],
+      "traits": [
+        "通栏标题 + 双栏工作台",
+        "明亮底色，画面承担情绪",
+        "首屏可直接输入"
+      ],
+      "source": "daylight-studio.html"
+    },
+    {
+      "id": "cinema-journal",
+      "name": "Cinema journal",
+      "concept": "An intimate private cinema, with the prompt written directly into the screening room.",
+      "typography": "Georgia display 92px with Arial 14–17px controls.",
+      "palette": [
+        "#201522",
+        "#fcf6ea",
+        "#39223d"
+      ],
+      "traits": [
+        "满版夜景压字",
+        "衬线标题与底部通栏输入",
+        "电影画面优先"
+      ],
+      "source": "cinema-journal.html"
+    },
+    {
+      "id": "frame-lab",
+      "name": "Frame lab",
+      "concept": "An assertive experimental frame lab that treats every prompt as a new composition.",
+      "typography": "Impact 84px condensed display; Courier New 12–15px controls.",
+      "palette": [
+        "#e6efff",
+        "#143bd9",
+        "#ffed7b"
+      ],
+      "traits": [
+        "非对称拼贴网格",
+        "压缩字体与钴蓝描边",
+        "图像和控件并列"
+      ],
+      "source": "frame-lab.html"
+    }
+  ]
+}

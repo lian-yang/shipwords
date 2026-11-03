@@ -1,0 +1,14 @@
+{
+  "url": "https://www.freeaivideo.app/",
+  "lang": "en",
+  "title": "Free AI Video — Free AI Video Generator, No Sign-Up (Seedance 2.5)",
+  "ga4LoaderCount": 1,
+  "ga4Initialized": true,
+  "resources": [
+    {
+      "name": "https://www.googletagmanager.com/gtag/js",
+      "initiator": "script"
+    }
+  ],
+  "overflow": false
+}

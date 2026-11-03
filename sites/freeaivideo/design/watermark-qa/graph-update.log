@@ -1,0 +1,10 @@
+Re-extracting code files in . (no LLM needed)...
+[graphify watch] 16 file(s) not classified (no supported extension or shebang), skipped: .dev.vars.example, biome.log, deploy.log, dry-run.log, freeaivideo-final-spec-after-deploy.log, freeaivideo-final-spec-production-deploy.log (+10 more)
+  AST extraction: 72/72 uncached files (100%) [8 workers]
+  warning: 8 code file(s) yielded no symbols (0.00 MB) — a data file, or source this extractor models no symbols for: design/localization-qa/check-translations.py, drizzle.config.ts, site.config.ts, site.models.ts, src/site/schema.ts (+3 more)
+[graphify watch] community set changed since labeling (46 saved labels, 46 communities now; renamed 13 community(ies) by their hub). Run `graphify label` to refresh names with the LLM.
+[graphify] backed up curated graph (4 files) -> 2026-11-01/
+[graphify watch] Rebuilt: 1299 nodes, 1725 edges, 46 communities
+[graphify watch] graph.json, graph.html and GRAPH_REPORT.md updated in graphify-out
+Code graph updated. For doc/paper/image changes run /graphify --update in your AI assistant.
+Tip: set GEMINI_API_KEY or GOOGLE_API_KEY to use Gemini for semantic extraction.

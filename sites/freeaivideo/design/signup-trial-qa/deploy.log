@@ -1,0 +1,123 @@
+
+ ⛅️ wrangler 4.153.0 (update available 4.156.0)
+───────────────────────────────────────────────
+Using redirected Wrangler configuration.
+ - Configuration being used: "dist/server/wrangler.json"
+ - Original user's configuration: "wrangler.jsonc"
+ - Deploy configuration file: ".wrangler/deploy/config.json"
+Attaching additional modules:
+┌──────────────────────────────────────────────────────────┬──────┬─────────────┐
+│ Name                                                     │ Type │ Size        │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/__23tanstack-start-server-fn-resolver-3xb1J60G.js │ esm  │ 17.48 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/_tanstack-start-manifest_v-CncqcS_Z.js            │ esm  │ 3.38 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/account-DK_UByKM.js                               │ esm  │ 0.48 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/bun-sqlite-dialect-DN2jcl8c-DWb5uvk4.js           │ esm  │ 3.25 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/core.server-B2zZp-Z7.js                           │ esm  │ 3036.98 KiB │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/createServerFn-Ciga1b9j.js                        │ esm  │ 15.48 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/d1-sqlite-dialect-BgJMzZQp-DuYkGzk5.js            │ esm  │ 5.31 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/dist-DH2wgldn.js                                  │ esm  │ 14.66 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/dmca-BNHdXsJX.js                                  │ esm  │ 16.03 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/empty-plugin-adapters-zxmsl_NW.js                 │ esm  │ 0.36 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/env-impl-D60Tdp4H.js                              │ esm  │ 7.45 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/kysely-adapter-CPHyMY_C.js                        │ esm  │ 0.09 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/lazyRouteComponent-C9A2bmZQ.js                    │ esm  │ 2.54 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/login-BhulX3xR.js                                 │ esm  │ 0.75 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/models.server-D0Vvxq_D.js                         │ esm  │ 288.13 KiB  │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/no-watermark-DW0CxkJX.js                          │ esm  │ 12.59 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/node-sqlite-dialect-q70MTHNu.js                   │ esm  │ 3.25 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/privacy-CIsDc5h-.js                               │ esm  │ 30.76 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/public-config-1JqfYjYo.js                         │ esm  │ 1.23 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/redirect-pQ2L-GBl.js                              │ esm  │ 1.79 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/refunds-DUEWLm4v.js                               │ esm  │ 11.69 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/return-CB-8S4jD.js                                │ esm  │ 10.10 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/rolldown-runtime-SbdDWaPq.js                      │ esm  │ 1.40 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/router-zanKxaA0.js                                │ esm  │ 166.10 KiB  │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/routes-CFX5PfAF.js                                │ esm  │ 99.53 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/runtime-Bu9xvkZ4.js                               │ esm  │ 17.82 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/seedance-2-5-free-B4FvFZbY.js                     │ esm  │ 14.50 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/sign-in-CVn7dUo9.js                               │ esm  │ 60.96 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/site.config-CnM8noxE.js                           │ esm  │ 1.65 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/site.models-1gBN0LeL.js                           │ esm  │ 14.03 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/sqlite-introspector-_wy6Ac6e-BgSLV_b6.js          │ esm  │ 284.32 KiB  │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/start-BueysDXt.js                                 │ esm  │ 0.35 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/terms-Bb-I8mSo.js                                 │ esm  │ 19.41 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/track-Blzmi_oR.js                                 │ esm  │ 20.27 KiB   │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/useSelector-Dnloh87v.js                           │ esm  │ 144.38 KiB  │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ assets/utils-DPTWTKKP.js                                 │ esm  │ 0.68 KiB    │
+├──────────────────────────────────────────────────────────┼──────┼─────────────┤
+│ Total (36 modules)                                       │      │ 4329.16 KiB │
+└──────────────────────────────────────────────────────────┴──────┴─────────────┘
+🌀 Building list of assets...
+✨ Read 27 files from the assets directory /private/var/folders/8t/xpqbqr_n4c30hb73__255v1m0000gn/T/freeaivideo-signup-trial-release-ojtovb7q/sites/freeaivideo/dist/client
+🌀 Starting asset upload...
+🌀 Found 12 new or modified static assets to upload. Proceeding with upload...
++ /assets/account-4OrRJLJQ.js
++ /assets/no-watermark-CUjotALy.js
++ /assets/dmca-SMrqNmoX.js
++ /assets/routes-51VpjLnF.js
++ /assets/login-BAWbqnSy.js
++ /assets/seedance-2-5-free-CiBaNacl.js
++ /assets/terms-CWZS5vrO.js
++ /assets/styles-DBYJpv-c.css
++ /assets/return-Bxs1SGh8.js
++ /assets/refunds-BF2DpoPL.js
++ /assets/privacy-CsgsHUnt.js
++ /assets/index-DnoEHElM.js
+Uploaded 4 of 12 assets
+Uploaded 8 of 12 assets
+Uploaded 12 of 12 assets
+✨ Success! Uploaded 12 files (12 already uploaded) (3.04 sec)
+
+Total Upload: 5054.98 KiB / gzip: 1190.67 KiB
+Worker Startup Time: 24 ms
+Your Worker has access to the following bindings:
+Binding                                                  Resource                  
+env.GENERATION_WORKFLOW (GenerationWorkflow)             Workflow                  
+env.EMAIL (unrestricted)                                 Send Email                
+env.DB (freeaivideo)                                     D1 Database               
+env.OUTPUTS (freeaivideo-outputs)                        R2 Bucket                 
+env.EMAIL_FROM ("noreply@freeaivideo.app")               Environment Variable      
+env.RYBBIT_UPSTREAM ("")                                 Environment Variable      
+
+Uploaded freeaivideo (12.38 sec)
+Deployed freeaivideo triggers (3.51 sec)
+  freeaivideo.app (custom domain)
+  www.freeaivideo.app (custom domain)
+  workflow: freeaivideo-generation
+Current Version ID: 4e963caf-91c6-4fd1-b3c8-36eecaa8dc12

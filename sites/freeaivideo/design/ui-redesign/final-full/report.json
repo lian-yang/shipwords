@@ -1,0 +1,23 @@
+[
+  {
+    "file": "page-1440x900.png",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "animationWaitMs": 424,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "page-390x844.png",
+    "state": null,
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [
+      "加载错误：Failed to load resource: the server responded with a status of 403 () https://accounts.google.com/gsi/status?client_id=83770286472-6nd0lg7ipligrqof7f4bv0iljmk6qhg2.apps.googleusercontent.com&cas=4dCQZAwIk4%2BkeKYTgJ%2B%2BP6MiJkIL%2BaAjsvsmqmHp2Ns&bs=xRgOwEOgNd8Vbq2MoTCLcan7aU4vNW%2BhB5%2FePIlEIoc",
+      "加载错误：Not signed in with the identity provider. http://localhost:5040/"
+    ],
+    "lint": []
+  }
+]

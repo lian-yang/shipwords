@@ -1,0 +1,34 @@
+{
+  "runs": [
+    {
+      "run": 1,
+      "policyNavigation": true,
+      "localeSurvivesReload": true,
+      "faqMatchesSchema": 7,
+      "localizedError": true,
+      "pricingAndSignIn": true,
+      "languageSwitchKeepsPrompt": true
+    },
+    {
+      "run": 2,
+      "policyNavigation": true,
+      "localeSurvivesReload": true,
+      "faqMatchesSchema": 7,
+      "localizedError": true,
+      "pricingAndSignIn": true,
+      "languageSwitchKeepsPrompt": true
+    },
+    {
+      "run": 3,
+      "policyNavigation": true,
+      "localeSurvivesReload": true,
+      "faqMatchesSchema": 7,
+      "localizedError": true,
+      "pricingAndSignIn": true,
+      "languageSwitchKeepsPrompt": true
+    }
+  ],
+  "mobileLocaleToggleVisible": true,
+  "mobileAndDesktopNoOverflow": true,
+  "scope": "UI only; no generation, payment or authentication submission."
+}

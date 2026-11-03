@@ -1,0 +1,9 @@
+// Test only: isolated in-memory D1 and R2, never deployed.
+{
+  "name": "freeaivideo-signup-trial-test",
+  "main": "worker.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [{ "binding": "DB", "database_name": "test", "database_id": "local" }],
+  "r2_buckets": [{ "binding": "OUTPUTS", "bucket_name": "test-outputs" }]
+}

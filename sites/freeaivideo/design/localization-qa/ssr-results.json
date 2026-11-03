@@ -1,0 +1,91 @@
+{
+  "runs": 3,
+  "requests": 42,
+  "pages": [
+    {
+      "route": "/",
+      "locale": "zh",
+      "http": 200,
+      "heading": "免费 AI 视频生成器（无需注册）"
+    },
+    {
+      "route": "/privacy",
+      "locale": "zh",
+      "http": 200,
+      "heading": "隐私政策"
+    },
+    {
+      "route": "/terms",
+      "locale": "zh",
+      "http": 200,
+      "heading": "服务条款"
+    },
+    {
+      "route": "/refunds",
+      "locale": "zh",
+      "http": 200,
+      "heading": "退款政策"
+    },
+    {
+      "route": "/dmca",
+      "locale": "zh",
+      "http": 200,
+      "heading": "版权投诉、DMCA 与内容下架"
+    },
+    {
+      "route": "/no-watermark",
+      "locale": "zh",
+      "http": 200,
+      "heading": "免费 AI 视频生成器：下载无本站水印"
+    },
+    {
+      "route": "/seedance-2-5-free",
+      "locale": "zh",
+      "http": 200,
+      "heading": "在线免费试用 Seedance 2.5"
+    },
+    {
+      "route": "/",
+      "locale": "en",
+      "http": 200,
+      "heading": "Free AI Video Generator (No Sign-Up)"
+    },
+    {
+      "route": "/privacy",
+      "locale": "en",
+      "http": 200,
+      "heading": "Privacy policy"
+    },
+    {
+      "route": "/terms",
+      "locale": "en",
+      "http": 200,
+      "heading": "Terms of service"
+    },
+    {
+      "route": "/refunds",
+      "locale": "en",
+      "http": 200,
+      "heading": "Refund policy"
+    },
+    {
+      "route": "/dmca",
+      "locale": "en",
+      "http": 200,
+      "heading": "Copyright, DMCA and takedowns"
+    },
+    {
+      "route": "/no-watermark",
+      "locale": "en",
+      "http": 200,
+      "heading": "AI video generator free — no watermark"
+    },
+    {
+      "route": "/seedance-2-5-free",
+      "locale": "en",
+      "http": 200,
+      "heading": "Seedance 2.5 free online"
+    }
+  ],
+  "faq_language_and_placeholder_checks": "passed"
+}

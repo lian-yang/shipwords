@@ -1,0 +1,59 @@
+{
+  "checks": [
+    {
+      "run": 1,
+      "passed": [
+        "prompt idea",
+        "all 5 aspect ratios",
+        "reload persistence",
+        "invalid image feedback preserves input",
+        "pricing dialog",
+        "sign-in dialog",
+        "FAQ toggle",
+        "inspiration focus",
+        "H1 and canonical",
+        "FAQ schema",
+        "desktop overflow"
+      ]
+    },
+    {
+      "run": 2,
+      "passed": [
+        "prompt idea",
+        "all 5 aspect ratios",
+        "reload persistence",
+        "invalid image feedback preserves input",
+        "pricing dialog",
+        "sign-in dialog",
+        "FAQ toggle",
+        "inspiration focus",
+        "H1 and canonical",
+        "FAQ schema",
+        "desktop overflow"
+      ]
+    },
+    {
+      "run": 3,
+      "passed": [
+        "prompt idea",
+        "all 5 aspect ratios",
+        "reload persistence",
+        "invalid image feedback preserves input",
+        "pricing dialog",
+        "sign-in dialog",
+        "FAQ toggle",
+        "inspiration focus",
+        "H1 and canonical",
+        "FAQ schema",
+        "desktop overflow"
+      ]
+    }
+  ],
+  "mobileNoOverflow": true,
+  "desktop200PercentNoOverflow": true,
+  "reducedMotion": {
+    "animation": "none",
+    "autoplay": false
+  },
+  "scope": "Local UI only. No generation, email, checkout, payment or production writes."
+}

@@ -1,0 +1,70 @@
+[
+  {
+    "path": "/",
+    "lang": "en",
+    "note": "Free daily allowance per device: 1. Each trial makes a 4-second, 480p video. No account needed; subject to daily availability. More videos use account credits.",
+    "answers": [
+      "Yes. Free videos are available without an account. Daily limit per device: 1. Shared network limits and daily availability also apply. Additional videos use credits.",
+      "Free AI Video does not add a watermark to free or paid downloads.",
+      "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo.",
+      "Yes. Add one reference photo and describe the motion you want. The video aspect ratio follows the image automatically. Reference photos also work on the free guest trial.",
+      "The daily free guest trial is set to create a 4-second clip at 480p. Videos made with account credits are set to 10 seconds at 720p and cost 100 credits each. Both use fixed settings that cannot be extended in the request. With a reference photo, the aspect ratio follows the image automatically.",
+      "For text-to-video, choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4. With a reference photo, the video follows the image aspect ratio automatically.",
+      "Failed jobs automatically return the credits used for that job. Returning job credits is separate from refunding a credit-pack purchase; the refund policy explains purchase refunds."
+    ],
+    "schema": [
+      "Yes. Free videos are available without an account. Daily limit per device: 1. Shared network limits and daily availability also apply. Additional videos use credits.",
+      "Free AI Video does not add a watermark to free or paid downloads.",
+      "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo.",
+      "Yes. Add one reference photo and describe the motion you want. The video aspect ratio follows the image automatically. Reference photos also work on the free guest trial.",
+      "The daily free guest trial is set to create a 4-second clip at 480p. Videos made with account credits are set to 10 seconds at 720p and cost 100 credits each. Both use fixed settings that cannot be extended in the request. With a reference photo, the aspect ratio follows the image automatically.",
+      "For text-to-video, choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4. With a reference photo, the video follows the image aspect ratio automatically.",
+      "Failed jobs automatically return the credits used for that job. Returning job credits is separate from refunding a credit-pack purchase; the refund policy explains purchase refunds."
+    ],
+    "overflow": false
+  },
+  {
+    "path": "/seedance-2-5-free",
+    "lang": "en",
+    "passed": true
+  },
+  {
+    "path": "/no-watermark",
+    "lang": "en",
+    "passed": true
+  },
+  {
+    "path": "/",
+    "lang": "zh",
+    "note": "每台设备每天可免费试用 1 次，每条 4 秒、480p，无需注册，受当日可用额度限制。更多视频使用账户积分。",
+    "answers": [
+      "可以。每台设备每天可免费试用 1 个视频，无需账户。同时受共享网络限制和当天可用额度影响。生成更多视频需要积分。",
+      "Free AI Video 不会为免费或付费下载的视频添加水印。",
+      "目前使用 Seedance 2.5，将文字提示或参考照片生成短视频。",
+      "可以。添加一张参考图并描述想要的运动，视频画幅会自动跟随图片。免费游客试用也支持参考照片。",
+      "每日免注册的免费试用固定按 4 秒、480p 生成；账户积分生成固定为 10 秒、720p，每次 100 积分。两档都不能通过请求参数延长时长。添加参考图后，画幅会自动跟随图片。",
+      "文字生成视频可选择横屏 16:9、竖屏 9:16、正方形 1:1，以及 4:3 和 3:4。添加参考图后，视频画幅会自动跟随图片。",
+      "失败的任务会自动退回本次所用积分。任务退积分与积分包购买退款是两回事；购买退款的条件请查看退款政策。"
+    ],
+    "schema": [
+      "可以。每台设备每天可免费试用 1 个视频，无需账户。同时受共享网络限制和当天可用额度影响。生成更多视频需要积分。",
+      "Free AI Video 不会为免费或付费下载的视频添加水印。",
+      "目前使用 Seedance 2.5，将文字提示或参考照片生成短视频。",
+      "可以。添加一张参考图并描述想要的运动，视频画幅会自动跟随图片。免费游客试用也支持参考照片。",
+      "每日免注册的免费试用固定按 4 秒、480p 生成；账户积分生成固定为 10 秒、720p，每次 100 积分。两档都不能通过请求参数延长时长。添加参考图后，画幅会自动跟随图片。",
+      "文字生成视频可选择横屏 16:9、竖屏 9:16、正方形 1:1，以及 4:3 和 3:4。添加参考图后，视频画幅会自动跟随图片。",
+      "失败的任务会自动退回本次所用积分。任务退积分与积分包购买退款是两回事；购买退款的条件请查看退款政策。"
+    ],
+    "overflow": false
+  },
+  {
+    "path": "/seedance-2-5-free",
+    "lang": "zh",
+    "passed": true
+  },
+  {
+    "path": "/no-watermark",
+    "lang": "zh",
+    "passed": true
+  }
+]

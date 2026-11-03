@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-11-01T10:09:42.117Z",
+  "home": {
+    "lang": "en",
+    "note": "Free daily allowance per device: 1. Each trial makes a 4-second, 480p video. No account needed; subject to daily availability. More videos use account credits.",
+    "answers": [
+      "Yes. Free videos are available without an account. Daily limit per device: 1. Shared network limits and daily availability also apply. Additional videos use credits.",
+      "Free AI Video does not add a watermark to free or paid downloads.",
+      "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo.",
+      "Yes. Add one reference photo and describe the motion you want. The video aspect ratio follows the image automatically. Reference photos also work on the free guest trial.",
+      "The daily free guest trial is set to create a 4-second clip at 480p. Videos made with account credits are set to 10 seconds at 720p and cost 100 credits each. Both use fixed settings that cannot be extended in the request. With a reference photo, the aspect ratio follows the image automatically.",
+      "For text-to-video, choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4. With a reference photo, the video follows the image aspect ratio automatically.",
+      "Failed jobs automatically return the credits used for that job. Returning job credits is separate from refunding a credit-pack purchase; the refund policy explains purchase refunds."
+    ],
+    "schema": [
+      "Yes. Free videos are available without an account. Daily limit per device: 1. Shared network limits and daily availability also apply. Additional videos use credits.",
+      "Free AI Video does not add a watermark to free or paid downloads.",
+      "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo.",
+      "Yes. Add one reference photo and describe the motion you want. The video aspect ratio follows the image automatically. Reference photos also work on the free guest trial.",
+      "The daily free guest trial is set to create a 4-second clip at 480p. Videos made with account credits are set to 10 seconds at 720p and cost 100 credits each. Both use fixed settings that cannot be extended in the request. With a reference photo, the aspect ratio follows the image automatically.",
+      "For text-to-video, choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4. With a reference photo, the video follows the image aspect ratio automatically.",
+      "Failed jobs automatically return the credits used for that job. Returning job credits is separate from refunding a credit-pack purchase; the refund policy explains purchase refunds."
+    ],
+    "overflow": false,
+    "localeSwitch": 0,
+    "gaLoaders": 1
+  },
+  "urls": [
+    {
+      "path": "/seedance-2-5-free",
+      "status": 200
+    },
+    {
+      "path": "/no-watermark",
+      "status": 200
+    },
+    {
+      "path": "/llms.txt",
+      "status": 200
+    },
+    {
+      "path": "/privacy",
+      "status": 200
+    }
+  ],
+  "mobile": {
+    "width": 390,
+    "overflow": false
+  }
+}

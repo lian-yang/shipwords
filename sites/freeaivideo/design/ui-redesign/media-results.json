@@ -1,0 +1,26 @@
+[
+  {
+    "index": 0,
+    "src": "https://www.freeaivideo.app/files/jobs/job_33c7460f8eae44bf9824b1ecabe02d4b/0.mp4",
+    "started": true,
+    "time": 0.2794,
+    "readyState": 4,
+    "error": null
+  },
+  {
+    "index": 1,
+    "src": "https://www.freeaivideo.app/files/jobs/job_96c8d405ee0647fe9f3115f278584d71/0.mp4",
+    "started": true,
+    "time": 0.2278,
+    "readyState": 4,
+    "error": null
+  },
+  {
+    "index": 2,
+    "src": "https://www.freeaivideo.app/files/jobs/job_a1bbafbdd2f647cc9921c62503bf63bc/0.mp4",
+    "started": true,
+    "time": 0.252,
+    "readyState": 4,
+    "error": null
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "ssr": "passed",
+  "one_h1": true,
+  "anchors_preserved": true,
+  "faq_schema_matches_visible": 7,
+  "llms_txt": "video and credit packs",
+  "existing_routes_http_200": 8,
+  "canonical_follows_current_site_config": true
+}

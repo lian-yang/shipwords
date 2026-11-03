@@ -1,0 +1,563 @@
+--- a/packages/core/src/auth/server.ts
++++ b/packages/core/src/auth/server.ts
+@@ -7,6 +7,7 @@
+ import type { Db } from '../db/client';
+ import * as schema from '../db/schema';
+ import { emailCopy } from '../email/copy';
++import { createMailer } from '../email/send';
+ import type { CoreEnv } from '../env';
+ import { clientIp, ipBucket } from '../http';
+ import { consumeQuota, dayWindow, type QuotaRule, releaseQuota } from '../quota/counters';
+@@ -133,7 +134,8 @@
+         otpLength: 6,
+         expiresIn: 600,
+         async sendVerificationOTP({ email, otp }) {
+-          await env.EMAIL.send({
++          const mailer = createMailer(env, site.name);
++          await mailer.send({
+             to: email,
+             from: { email: env.EMAIL_FROM, name: site.name },
+             ...emailCopy(site.defaultLocale).signInCode({ siteName: site.name, otp }),
+--- a/packages/core/src/env.ts
++++ b/packages/core/src/env.ts
+@@ -27,6 +27,13 @@
+   RECAPTCHA_PROJECT_ID: string;
+   RECAPTCHA_API_KEY: string;
+ 
++  /** Cloudflare Turnstile (alternative guest check): set both to enable; takes precedence over reCAPTCHA when present. */
++  TURNSTILE_SITE_KEY?: string;
++  TURNSTILE_SECRET_KEY?: string;
++
++  /** Resend (transactional email): reaches arbitrary visitors' inboxes; takes precedence over the EMAIL binding when present. */
++  RESEND_API_KEY?: string;
++
+   /** Rybbit collector endpoint (e.g. https://events.example.com/api); the site's /stats/* is proxied here. */
+   RYBBIT_UPSTREAM?: string;
+ 
+--- a/packages/core/src/quota/guest.ts
++++ b/packages/core/src/quota/guest.ts
+@@ -3,6 +3,7 @@
+ import type { GuestQuota } from '../site';
+ import { consumeQuota, dayWindow, type QuotaRule } from './counters';
+ import { type RecaptchaConfig, verifyRecaptcha } from './recaptcha';
++import { verifyTurnstile } from './turnstile';
+ 
+ // Guest free trial: three counters (signed device cookie, IP, site-wide daily budget) plus a reCAPTCHA score.
+ // The captcha only raises the bar; the counters are the real backstop.
+@@ -68,6 +69,8 @@
+   siteId: string;
+   quota: GuestQuota;
+   recaptcha: RecaptchaConfig;
++  /** Turnstile alternative: set (secret only) to verify the same token via Turnstile siteverify instead of reCAPTCHA. */
++  turnstile?: { secretKey: string } | null;
+   recaptchaToken: string | null | undefined;
+   action: string;
+   cookieSecret: string;
+@@ -80,13 +83,16 @@
+  */
+ export async function authorizeGuest(input: GuestCheckInput): Promise<GuestDecision> {
+   const { guestId, setCookie } = await ensureGuestId(input.request.headers, input.siteId, input.cookieSecret);
+-  const check = await verifyRecaptcha(
+-    input.recaptcha,
+-    input.recaptchaToken,
+-    input.action,
+-    input.quota.minRecaptchaScore,
+-    input.fetcher,
+-  );
++  // Turnstile takes precedence when configured; otherwise preserve the existing fail-closed reCAPTCHA verification.
++  const check = input.turnstile
++    ? await verifyTurnstile(input.turnstile.secretKey, input.recaptchaToken, input.fetcher)
++    : await verifyRecaptcha(
++          input.recaptcha,
++          input.recaptchaToken,
++          input.action,
++          input.quota.minRecaptchaScore,
++          input.fetcher,
++        );
+   if (!check.ok) return { ok: false, reason: 'recaptcha', setCookie };
+ 
+   const window = dayWindow();
+--- a/packages/core/src/server.ts
++++ b/packages/core/src/server.ts
+@@ -130,6 +130,7 @@
+             projectId: env.RECAPTCHA_PROJECT_ID,
+             apiKey: env.RECAPTCHA_API_KEY,
+           },
++          turnstile: env.TURNSTILE_SECRET_KEY ? { secretKey: env.TURNSTILE_SECRET_KEY } : null,
+           recaptchaToken,
+           action,
+           cookieSecret: env.GUEST_COOKIE_SECRET,
+--- /dev/null
++++ b/packages/core/src/email/send.ts
+@@ -0,0 +1,52 @@
++import type { EmailMessage } from './copy';
++
++/** Structural mirror of Cloudflare's SendEmail binding, so both core and jobs can use the same mailer. */
++export interface MailerMessage extends EmailMessage {
++  to: string;
++  from?: { email: string; name?: string };
++}
++
++interface CfSendEmail {
++  // The real binding has overloads (EmailMessage | EmailMessageBuilder); we only need "callable with a plain message".
++  send(message: any): Promise<unknown>;
++}
++
++export interface MailerEnv {
++  RESEND_API_KEY?: string;
++  EMAIL?: CfSendEmail;
++  EMAIL_FROM?: string;
++}
++
++export interface Mailer {
++  send(message: MailerMessage): Promise<void>;
++}
++
++/**
++ * Resend first: it reaches arbitrary visitors' inboxes (sign-in OTP codes must).
++ * Falls back to the CF send_email binding, which only delivers to verified destination
++ * addresses — fine for the operator's own notifications, not for sign-ups.
++ */
++export function createMailer(env: MailerEnv, siteName: string): Mailer {
++  const from = { email: env.EMAIL_FROM ?? '', name: siteName };
++  return {
++    async send(message: MailerMessage) {
++      if (env.RESEND_API_KEY) {
++        const res = await fetch('https://api.resend.com/emails', {
++          method: 'POST',
++          headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
++          body: JSON.stringify({
++            from: `${message.from?.name ?? from.name} <${message.from?.email || from.email}>`,
++            to: [message.to],
++            subject: message.subject,
++            text: message.text,
++            html: message.html,
++          }),
++        });
++        if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 200)}`);
++        return;
++      }
++      if (!env.EMAIL) throw new Error('No email channel configured (set RESEND_API_KEY or bind EMAIL)');
++      await env.EMAIL.send({ ...message, from: message.from ?? from });
++    },
++  };
++}
+--- /dev/null
++++ b/packages/core/src/quota/turnstile.ts
+@@ -0,0 +1,30 @@
++// Cloudflare Turnstile server-side verification (siteverify). An alternative to reCAPTCHA Enterprise
++// for the guest free try; sites enable it by setting TURNSTILE_SECRET_KEY (+ TURNSTILE_SITE_KEY for the widget).
++
++export interface TurnstileResult {
++  ok: boolean;
++  reason?: string;
++}
++
++export async function verifyTurnstile(
++  secretKey: string,
++  token: string | null | undefined,
++  fetcher: typeof fetch = fetch,
++): Promise<TurnstileResult> {
++  if (!token) return { ok: false, reason: 'missing_token' };
++  const body = new FormData();
++  body.set('secret', secretKey);
++  body.set('response', token);
++  try {
++    const response = await fetcher('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
++      method: 'POST',
++      body,
++    });
++    const assessment = (await response.json()) as { success?: boolean; 'error-codes'?: string[] };
++    if (assessment.success) return { ok: true };
++    return { ok: false, reason: assessment['error-codes']?.join(',') ?? 'verify_failed' };
++  } catch {
++    // Network errors fail closed: a guest that can't be verified doesn't get a free try.
++    return { ok: false, reason: 'verify_unreachable' };
++  }
++}
+--- a/packages/jobs/src/notify.ts
++++ b/packages/jobs/src/notify.ts
+@@ -1,6 +1,7 @@
+ import type { Db } from '@shipwords/core/db/client';
+ import { user } from '@shipwords/core/db/schema';
+ import { emailCopy } from '@shipwords/core/email/copy';
++import type { Mailer } from '@shipwords/core/email/send';
+ import type { SiteConfig } from '@shipwords/core/site';
+ import { eq } from 'drizzle-orm';
+ import type { StoredOutput } from './lifecycle';
+@@ -13,7 +14,7 @@
+  */
+ export function emailOnFinish(options: {
+   db: Db;
+-  email: SendEmail;
++  email: Mailer;
+   from: string;
+   site: Pick<SiteConfig, 'name' | 'defaultLocale'>;
+   baseURL: string;
+--- a/packages/jobs/src/react.ts
++++ b/packages/jobs/src/react.ts
+@@ -1,6 +1,7 @@
+ import { ApiError, postJson } from '@shipwords/core/react/account';
+ import { getRecaptchaToken } from '@shipwords/core/react/recaptcha';
+ import { useCallback, useEffect, useRef, useState } from 'react';
++import { getTurnstileToken } from './turnstile';
+ 
+ // Headless hooks for generation jobs: submit, poll to completion, resume in-flight jobs after a refresh. Styling and layout are up to the site.
+ 
+@@ -92,7 +93,11 @@
+  * jobs: recent jobs (newest first); generate: submit a job.
+  * When error.code is login_required, prompt sign-in; when insufficient_credits, prompt a purchase.
+  */
+-export function useGeneration(options: { recaptchaSiteKey: string | null }) {
++export function useGeneration(options: {
++  recaptchaSiteKey: string | null;
++  /** Cloudflare Turnstile site key: takes precedence over reCAPTCHA when set. The page must render a `#turnstile-slot` container. */
++  turnstileSiteKey?: string | null;
++}) {
+   const [jobs, setJobs] = useState<PublicJob[]>([]);
+   const [submitting, setSubmitting] = useState(false);
+   const [error, setError] = useState<ApiError | null>(null);
+@@ -152,10 +157,15 @@
+       setSubmitting(true);
+       setError(null);
+       try {
+-        const recaptchaToken = options.recaptchaSiteKey
+-          ? await getRecaptchaToken(options.recaptchaSiteKey, 'generate')
+-          : null;
+-        const { job } = await postJson<{ job: PublicJob }>('/api/jobs', { ...input, recaptchaToken });
++        const captchaToken = options.turnstileSiteKey
++          ? await getTurnstileToken(options.turnstileSiteKey)
++          : options.recaptchaSiteKey
++            ? await getRecaptchaToken(options.recaptchaSiteKey, 'generate')
++            : null;
++        const { job } = await postJson<{ job: PublicJob }>('/api/jobs', {
++          ...input,
++          recaptchaToken: captchaToken,
++        });
+         upsert(job);
+         watch(job.id);
+         return job;
+@@ -166,7 +176,7 @@
+         setSubmitting(false);
+       }
+     },
+-    [options.recaptchaSiteKey, upsert, watch],
++    [options.recaptchaSiteKey, options.turnstileSiteKey, upsert, watch],
+   );
+ 
+   const cancel = useCallback(
+--- a/packages/jobs/src/workflow.ts
++++ b/packages/jobs/src/workflow.ts
+@@ -1,5 +1,6 @@
+ import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from 'cloudflare:workers';
+ import { createDb } from '@shipwords/core/db/client';
++import { createMailer } from '@shipwords/core/email/send';
+ import type { SiteConfig } from '@shipwords/core/site';
+ import { containerComposer } from './compose';
+ import { markFailed } from './lifecycle';
+@@ -20,9 +21,10 @@
+   YIR_REFERRAL_CODE?: string;
+   /** Effect compose container (Durable Object binding of the Container class); sites without effect compose don't need it. */
+   COMPOSE?: DurableObjectNamespace;
+-  /** For job-finished emails; shares the send_email binding and sender address with sign-in codes. */
++  /** For job-finished emails; shares the sender address with sign-in codes. Resend first, CF binding fallback. */
+   EMAIL?: SendEmail;
+   EMAIL_FROM?: string;
++  RESEND_API_KEY?: string;
+   APP_URL?: string;
+   /** For testing flows locally or on a test-mode demo, see mock.ts. */
+   UPSTREAM_MOCK?: string;
+@@ -83,12 +85,12 @@
+                 : {}),
+             // Served by the site's /files route (handlers.ts file), the same origin the upload URLs use.
+             ...(baseURL ? { fileUrl: (key: string) => `${baseURL}/files/${key}` } : {}),
+-            ...(site && env.EMAIL && env.EMAIL_FROM
++            ...(site && (env.RESEND_API_KEY || (env.EMAIL && env.EMAIL_FROM))
+               ? {
+                   notify: emailOnFinish({
+                     db,
+-                    email: env.EMAIL,
+-                    from: env.EMAIL_FROM,
++                    email: createMailer(env, site.name),
++                    from: env.EMAIL_FROM ?? `noreply@${site.id}`,
+                     site,
+                     baseURL: (env.APP_URL ?? site.url).replace(/\/$/, ''),
+                   }),
+--- /dev/null
++++ b/packages/jobs/src/turnstile.ts
+@@ -0,0 +1,77 @@
++// Cloudflare Turnstile client side: load the widget script once, render a fresh widget per submit,
++// and resolve with the token. `appearance: 'interaction-only'` keeps the widget invisible unless a
++// challenge actually needs input.
++
++const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
++export const TURNSTILE_CONTAINER_ID = 'turnstile-slot';
++
++let loading: Promise<void> | null = null;
++
++function loadScript(): Promise<void> {
++  loading ??= new Promise((resolve, reject) => {
++    const script = document.createElement('script');
++    script.src = SCRIPT_SRC;
++    script.async = true;
++    script.onload = () => resolve();
++    script.onerror = () => {
++      loading = null;
++      reject(new Error('turnstile_script_failed'));
++    };
++    document.head.appendChild(script);
++  });
++  return loading;
++}
++
++interface TurnstileApi {
++  render: (el: HTMLElement, options: Record<string, unknown>) => string;
++  remove: (widgetId: string) => void;
++}
++
++function api(): TurnstileApi {
++  return (window as unknown as { turnstile: TurnstileApi }).turnstile;
++}
++
++export async function getTurnstileToken(siteKey: string): Promise<string> {
++  await loadScript();
++  const container = document.getElementById(TURNSTILE_CONTAINER_ID);
++  if (!container) throw new Error('turnstile_container_missing');
++  container.innerHTML = '';
++  return new Promise((resolve, reject) => {
++    const turnstile = api();
++    let widgetId: string | undefined;
++    let settled = false;
++    let removed = false;
++    const cleanup = () => {
++      clearTimeout(timer);
++      if (widgetId === undefined || removed) return;
++      removed = true;
++      try {
++        turnstile.remove(widgetId);
++      } catch {
++        // Navigation or the SDK may have already removed it; cleanup must not hide the result.
++      }
++    };
++    const settle = (result: { token: string } | { error: Error }) => {
++      if (settled) return;
++      settled = true;
++      cleanup();
++      if ('error' in result) reject(result.error);
++      else resolve(result.token);
++    };
++    const timer = setTimeout(() => settle({ error: new Error('turnstile_timeout') }), 45000);
++    try {
++      widgetId = turnstile.render(container, {
++        sitekey: siteKey,
++        appearance: 'interaction-only',
++        theme: 'dark',
++        callback: (token: string) => settle({ token }),
++        'error-callback': () => settle({ error: new Error('turnstile_failed') }),
++        'expired-callback': () => settle({ error: new Error('turnstile_expired') }),
++      });
++      // A synchronous SDK callback can settle before render returns its ID.
++      if (settled) cleanup();
++    } catch (e) {
++      settle({ error: e instanceof Error ? e : new Error('turnstile_render_failed') });
++    }
++  });
++}
+--- /dev/null
++++ b/packages/jobs/test/turnstile.test.ts
+@@ -0,0 +1,124 @@
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
++import { getTurnstileToken } from '../src/turnstile';
++
++type WidgetOptions = {
++  callback: (token: string) => void;
++  'error-callback': () => void;
++  'expired-callback': () => void;
++};
++type Script = { onload?: () => void; onerror?: () => void };
++
++let widgets: WidgetOptions[];
++let render: ReturnType<typeof vi.fn<(element: HTMLElement, options: WidgetOptions) => string>>;
++let remove: ReturnType<typeof vi.fn<(id: string) => void>>;
++
++beforeEach(() => {
++  vi.useFakeTimers();
++  widgets = [];
++  render = vi.fn((_element: HTMLElement, options: WidgetOptions) => {
++    widgets.push(options);
++    return `widget-${widgets.length}`;
++  });
++  remove = vi.fn<(id: string) => void>();
++  const container = { innerHTML: '' };
++  vi.stubGlobal('document', {
++    getElementById: () => container,
++    createElement: () => ({}),
++    head: { appendChild: (script: Script) => script.onload?.() },
++  });
++  vi.stubGlobal('window', { turnstile: { render, remove } });
++});
++
++afterEach(() => {
++  vi.useRealTimers();
++  vi.unstubAllGlobals();
++});
++
++describe('Turnstile widget lifetime', () => {
++  it('removes each successful widget and obtains a fresh token on another submission', async () => {
++    const first = getTurnstileToken('site-key');
++    await Promise.resolve();
++    widgets[0]!.callback('first-token');
++    await expect(first).resolves.toBe('first-token');
++    expect(remove).toHaveBeenCalledWith('widget-1');
++
++    const second = getTurnstileToken('site-key');
++    await Promise.resolve();
++    widgets[1]!.callback('second-token');
++    await expect(second).resolves.toBe('second-token');
++    expect(remove.mock.calls).toEqual([['widget-1'], ['widget-2']]);
++    expect(vi.getTimerCount()).toBe(0);
++  });
++
++  it.each([
++    ['error-callback', 'turnstile_failed'],
++    ['expired-callback', 'turnstile_expired'],
++  ] as const)('cleans up after %s and permits a later submission', async (callback, message) => {
++    const failed = getTurnstileToken('site-key');
++    await Promise.resolve();
++    widgets[0]![callback]();
++    await expect(failed).rejects.toThrow(message);
++    expect(remove).toHaveBeenCalledWith('widget-1');
++    expect(vi.getTimerCount()).toBe(0);
++
++    const retry = getTurnstileToken('site-key');
++    await Promise.resolve();
++    widgets[1]!.callback('retry-token');
++    await expect(retry).resolves.toBe('retry-token');
++    expect(remove.mock.calls).toEqual([['widget-1'], ['widget-2']]);
++  });
++
++  it('removes a timed-out widget and ignores any late callbacks', async () => {
++    const pending = getTurnstileToken('site-key');
++    await Promise.resolve();
++    const rejected = expect(pending).rejects.toThrow('turnstile_timeout');
++    await vi.advanceTimersByTimeAsync(45000);
++    await rejected;
++    expect(remove).toHaveBeenCalledExactlyOnceWith('widget-1');
++    widgets[0]!.callback('too-late');
++    widgets[0]!['expired-callback']();
++    expect(remove).toHaveBeenCalledTimes(1);
++    expect(vi.getTimerCount()).toBe(0);
++  });
++
++  it('removes the returned ID when success fires synchronously inside render', async () => {
++    render.mockImplementation((_element, options) => {
++      options.callback('sync-token');
++      return 'sync-widget';
++    });
++    await expect(getTurnstileToken('site-key')).resolves.toBe('sync-token');
++    expect(remove).toHaveBeenCalledExactlyOnceWith('sync-widget');
++    expect(vi.getTimerCount()).toBe(0);
++  });
++
++  it('removes the returned ID when an error fires synchronously inside render', async () => {
++    render.mockImplementation((_element, options) => {
++      options['error-callback']();
++      return 'sync-widget';
++    });
++    await expect(getTurnstileToken('site-key')).rejects.toThrow('turnstile_failed');
++    expect(remove).toHaveBeenCalledExactlyOnceWith('sync-widget');
++    expect(vi.getTimerCount()).toBe(0);
++  });
++
++  it('clears its timer when render throws before a widget ID is returned', async () => {
++    render.mockImplementation(() => {
++      throw new Error('render failed');
++    });
++    await expect(getTurnstileToken('site-key')).rejects.toThrow('render failed');
++    expect(remove).not.toHaveBeenCalled();
++    expect(vi.getTimerCount()).toBe(0);
++  });
++
++  it('does not lose a token if the SDK already removed the widget', async () => {
++    remove.mockImplementation(() => {
++      throw new Error('already removed');
++    });
++    const pending = getTurnstileToken('site-key');
++    await Promise.resolve();
++    widgets[0]!.callback('valid-token');
++    await expect(pending).resolves.toBe('valid-token');
++    expect(remove).toHaveBeenCalledTimes(1);
++    expect(vi.getTimerCount()).toBe(0);
++  });
++});
+--- a/packages/jobs/test/music.test.ts
++++ b/packages/jobs/test/music.test.ts
+@@ -2,6 +2,7 @@
+ import { getBalance, grantCredits } from '@shipwords/core/credits/ledger';
+ import { createDb } from '@shipwords/core/db/client';
+ import { user } from '@shipwords/core/db/schema';
++import type { Mailer } from '@shipwords/core/email/send';
+ import type { Core } from '@shipwords/core/server';
+ import { describe, expect, it } from 'vitest';
+ import { createJobs } from '../src/handlers';
+@@ -260,7 +261,7 @@
+       db,
+       email: {
+         send: async (message: { subject: string }) => void sent.push(message),
+-      } as unknown as SendEmail,
++      } satisfies Mailer,
+       from: 'no-reply@music.test',
+       site: { name: 'Music', defaultLocale: 'en' },
+       baseURL: BASE,
+@@ -275,7 +276,7 @@
+       db,
+       email: {
+         send: async (message: { subject: string; text: string }) => void sent.push(message),
+-      } as unknown as SendEmail,
++      } satisfies Mailer,
+       from: 'no-reply@music.test',
+       site: { name: 'AI作曲', defaultLocale: 'ja' },
+       baseURL: BASE,
+--- a/packages/jobs/test/runner.test.ts
++++ b/packages/jobs/test/runner.test.ts
+@@ -2,6 +2,7 @@
+ import { getBalance, grantCredits, spendCredits } from '@shipwords/core/credits/ledger';
+ import { createDb } from '@shipwords/core/db/client';
+ import { user } from '@shipwords/core/db/schema';
++import type { Mailer } from '@shipwords/core/email/send';
+ import { consumeQuota } from '@shipwords/core/quota/counters';
+ import { eq } from 'drizzle-orm';
+ import { describe, expect, it } from 'vitest';
+@@ -127,12 +128,11 @@
+     const { userId, jobId } = await paidJob();
+     await db.insert(user).values({ id: userId, name: 'U', email: `${userId}@example.com` });
+     const sent: { to: string; subject: string; text: string }[] = [];
+-    const email = {
++    const email: Mailer = {
+       send: async (message: { to: string; subject: string; text: string }) => {
+         sent.push(message);
+-        return { messageId: 'm1' };
+-      },
+-    } as unknown as SendEmail;
++      },
++    };
+     const notify = emailOnFinish({
+       db,
+       email,
+@@ -191,13 +191,12 @@
+     await db.insert(user).values({ id: userId, name: 'U', email: `${userId}@example.com` });
+     const sent: { to: string; subject: string; text: string }[] = [];
+     let balanceAtSend = -1;
+-    const email = {
++    const email: Mailer = {
+       send: async (message: { to: string; subject: string; text: string }) => {
+         balanceAtSend = (await getBalance(db, userId)).available;
+         sent.push(message);
+-        return { messageId: 'm1' };
+-      },
+-    } as unknown as SendEmail;
++      },
++    };
+     const notify = emailOnFinish({
+       db,
+       email,

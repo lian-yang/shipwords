@@ -1,0 +1,163 @@
+{
+  "checkedAt": "2026-11-01T11:37:52.027Z",
+  "version": "4e963caf-91c6-4fd1-b3c8-36eecaa8dc12",
+  "taskSpaceId": 55,
+  "scope": "Read-only production browser UI verification. All same-origin non-GET/HEAD fetch requests blocked before page scripts execute. No sign-in, generation, checkout or email actions.",
+  "passed": true,
+  "desktop": {
+    "url": "https://www.freeaivideo.app/",
+    "lang": "en",
+    "title": "Free AI Video — Free AI Video Generator, No Sign-Up (Seedance 2.5)",
+    "h1": [
+      "Free AI Video Generator (No Sign-Up)"
+    ],
+    "canonical": "https://www.freeaivideo.app/",
+    "defaultMode": "daily-trial",
+    "modes": [
+      {
+        "value": "daily-trial",
+        "label": "Daily free trial · 4s · 480p"
+      },
+      {
+        "value": "signup-trial",
+        "label": "Registration voucher · 4s · 480p"
+      },
+      {
+        "value": "paid",
+        "label": "Credit video · 10s · 720p"
+      }
+    ],
+    "localeSwitch": 0,
+    "faq": {
+      "visible": [
+        {
+          "question": "Can I generate an AI video for free without signing up?",
+          "answer": "Yes. The daily free trial makes a 4-second, 480p video without an account. Daily limit per device: 1, shared before and after sign-in. Daily allowances reset at 00:00 UTC; network limits and daily availability also apply. Eligible new verified accounts can receive one additional registration trial voucher."
+        },
+        {
+          "question": "What do new accounts receive?",
+          "answer": "Eligible new verified accounts can receive one 4-second, 480p registration trial voucher, valid for 30 days from registration and subject to daily allocation. The voucher is separate from paid credits and the daily device trial. It is used when a generation request is accepted, including if the request later fails or is cancelled. Previously issued credits remain in the account under their existing terms."
+        },
+        {
+          "question": "Do free video downloads have a watermark?",
+          "answer": "Free AI Video does not add a watermark to free or paid downloads."
+        },
+        {
+          "question": "Which AI video model does this use?",
+          "answer": "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo."
+        },
+        {
+          "question": "Can I turn a photo into a video?",
+          "answer": "Yes. Add one reference photo and describe the motion you want. The video aspect ratio follows the image automatically. Reference photos also work on the free guest trial."
+        },
+        {
+          "question": "How long are the generated videos?",
+          "answer": "Daily trials and registration vouchers create 4-second, 480p clips. Credit videos are 10 seconds at 720p and cost 100 credits each. Settings are fixed; with a reference photo, the aspect ratio follows the image automatically."
+        },
+        {
+          "question": "Which aspect ratios can I use?",
+          "answer": "For text-to-video, choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4. With a reference photo, the video follows the image aspect ratio automatically."
+        },
+        {
+          "question": "What happens if a video render fails?",
+          "answer": "Credit-paid failed jobs automatically return the credits used for that job. Free daily trials and registration vouchers are counted when a request is accepted; failure or cancellation does not automatically restore the allowance. Contact support about a clearly broken result. Purchase refunds follow the separate refund policy."
+        }
+      ],
+      "schema": [
+        {
+          "question": "Can I generate an AI video for free without signing up?",
+          "answer": "Yes. The daily free trial makes a 4-second, 480p video without an account. Daily limit per device: 1, shared before and after sign-in. Daily allowances reset at 00:00 UTC; network limits and daily availability also apply. Eligible new verified accounts can receive one additional registration trial voucher."
+        },
+        {
+          "question": "What do new accounts receive?",
+          "answer": "Eligible new verified accounts can receive one 4-second, 480p registration trial voucher, valid for 30 days from registration and subject to daily allocation. The voucher is separate from paid credits and the daily device trial. It is used when a generation request is accepted, including if the request later fails or is cancelled. Previously issued credits remain in the account under their existing terms."
+        },
+        {
+          "question": "Do free video downloads have a watermark?",
+          "answer": "Free AI Video does not add a watermark to free or paid downloads."
+        },
+        {
+          "question": "Which AI video model does this use?",
+          "answer": "The generator currently uses Seedance 2.5 to create short videos from a text prompt or a reference photo."
+        },
+        {
+          "question": "Can I turn a photo into a video?",
+          "answer": "Yes. Add one reference photo and describe the motion you want. The video aspect ratio follows the image automatically. Reference photos also work on the free guest trial."
+        },
+        {
+          "question": "How long are the generated videos?",
+          "answer": "Daily trials and registration vouchers create 4-second, 480p clips. Credit videos are 10 seconds at 720p and cost 100 credits each. Settings are fixed; with a reference photo, the aspect ratio follows the image automatically."
+        },
+        {
+          "question": "Which aspect ratios can I use?",
+          "answer": "For text-to-video, choose landscape 16:9, portrait 9:16, square 1:1, or 4:3 and 3:4. With a reference photo, the video follows the image aspect ratio automatically."
+        },
+        {
+          "question": "What happens if a video render fails?",
+          "answer": "Credit-paid failed jobs automatically return the credits used for that job. Free daily trials and registration vouchers are counted when a request is accepted; failure or cancellation does not automatically restore the allowance. Contact support about a clearly broken result. Purchase refunds follow the separate refund policy."
+        }
+      ],
+      "count": 8,
+      "equal": true
+    },
+    "plans": [
+      "Starter$4.991 video · 10 seconds · 720p100 credits, never expireBuy",
+      "RecommendedCreator$19.995 videos · 10 seconds · 720p500 credits, never expireSave about 20% versus single videosBuy"
+    ],
+    "overflow": false,
+    "readOnlyGuardInstalled": true
+  },
+  "paid": {
+    "mode": "paid",
+    "button": "Generate video · 100 credits→",
+    "note": "Account videos: 10 seconds at 720p. 100 credits per video.",
+    "hasCaptchaSlot": false
+  },
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": false,
+    "mode": "daily-trial",
+    "lang": "en"
+  },
+  "blockedWrites": [],
+  "screenshots": [
+    "production-desktop.png",
+    "production-mobile.png"
+  ],
+  "localhostTestCookieAlreadyRestored": true,
+  "http": {
+    "homepage": {
+      "status": 200,
+      "containsExpectedTitle": true
+    },
+    "trials": {
+      "status": 200,
+      "payload": {
+        "verificationAvailable": true,
+        "daily": {
+          "available": true,
+          "remaining": 1,
+          "reason": null
+        },
+        "signup": {
+          "status": "signed_out",
+          "expiresAt": null
+        }
+      },
+      "cacheControl": "private, no-store"
+    },
+    "method": "Normal same-origin browser GET via page.fetch; no challenge bypass or WAF changes"
+  },
+  "readyState": {
+    "button": "Generate video · daily free trial→",
+    "note": "Daily free allowance per device: 1. Each trial is 4 seconds at 480p. The allowance is shared before and after sign-in and resets at 00:00 UTC; network and daily availability limits apply. Accepted requests use the allowance even if they later fail or are cancelled.",
+    "mode": "daily-trial",
+    "notices": []
+  },
+  "taskSpaceFinished": {
+    "completed": true,
+    "keep": [],
+    "at": "2026-11-01T11:39:43.586Z"
+  }
+}

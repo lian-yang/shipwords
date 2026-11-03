@@ -1,0 +1,12 @@
+{
+  "image": {
+    "ratio": "auto",
+    "disabled": true
+  },
+  "removed": {
+    "ratio": "9:16",
+    "disabled": false,
+    "prompt": ""
+  },
+  "realGenerationSubmitted": false
+}

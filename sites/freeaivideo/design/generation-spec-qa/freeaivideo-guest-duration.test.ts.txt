@@ -1,0 +1,349 @@
+import { env } from 'cloudflare:test';
+import { grantSignupBonus } from '@shipwords/core/auth/server';
+import { getBalance, grantCredits } from '@shipwords/core/credits/ledger';
+import { createDb } from '@shipwords/core/db/client';
+import { quotaCounters } from '@shipwords/core/db/schema';
+import { authorizeGuest } from '@shipwords/core/quota/guest';
+import type { Core } from '@shipwords/core/server';
+import { and, count, eq } from 'drizzle-orm';
+import { describe, expect, it, vi } from 'vitest';
+import site from '../../../sites/freeaivideo/site.config';
+import { createSiteJob } from '../../../sites/freeaivideo/src/create-job.server';
+import { loadJob } from '../src/lifecycle';
+import { jobs } from '../src/schema';
+
+const db = createDb(env.DB);
+const BASE = 'https://www.freeaivideo.app';
+const account = (id: string) => ({ id, email: `${id}@example.test`, name: 'Test user' });
+
+function fakeCore() {
+  const dispatched: string[] = [];
+  const getUser = vi.fn<Core['getUser']>().mockResolvedValue(null);
+  const authorize = vi.fn().mockResolvedValue({
+    ok: true,
+    guestId: `g_${crypto.randomUUID().slice(0, 12)}`,
+    setCookie: null,
+    rules: [],
+  });
+  const core = {
+    db,
+    site: { id: 'freeaivideo', url: BASE },
+    env: {
+      APP_URL: BASE,
+      GUEST_COOKIE_SECRET: 'test-secret',
+      GENERATION_WORKFLOW: {
+        create: async ({ id }: { id: string }) => {
+          dispatched.push(id);
+        },
+      },
+    },
+    getUser,
+    guest: { authorize },
+    log: () => {},
+  } as unknown as Core;
+  return { core, getUser, authorize, dispatched };
+}
+
+async function userWith(credits = 200) {
+  const id = `u_${crypto.randomUUID().slice(0, 12)}`;
+  await grantCredits(db, { userId: id, amount: credits, idemKey: `g:${id}`, source: 'test' });
+  return account(id);
+}
+
+const post = (parameters: Record<string, unknown>, references?: string[]) =>
+  new Request(`${BASE}/api/jobs/`, {
+    method: 'POST',
+    body: JSON.stringify({
+      modelId: 'seedance-2-5',
+      prompt: 'A boat crossing a quiet lake',
+      parameters,
+      references,
+    }),
+  });
+
+async function created(response: Response) {
+  expect(response.status).toBe(201);
+  const { job } = (await response.json()) as { job: { id: string } };
+  return (await loadJob(db, job.id))!;
+}
+
+async function jobCount() {
+  return (await db.select({ value: count() }).from(jobs))[0]!.value;
+}
+
+describe('freeaivideo guest-only duration policy', () => {
+  it.each([30, 'auto', -1, 0, 10.5])('pins guest duration %s to 4 seconds at 480p', async (duration) => {
+    const { core, getUser, authorize, dispatched } = fakeCore();
+    const job = await created(
+      await createSiteJob(core, post({ duration, resolution: '1080p', aspect_ratio: '9:16' })),
+    );
+    expect(job).toMatchObject({ costCredits: 0, userId: null, status: 'queued' });
+    expect(job.guestId).toMatch(/^g_/);
+    expect(JSON.parse(job.inputJson)).toEqual({
+      references: [],
+      parameters: { aspect_ratio: '9:16', duration: 4, resolution: '480p' },
+    });
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(authorize).toHaveBeenCalledTimes(1);
+    expect(dispatched).toEqual([job.id]);
+  });
+
+  it('keeps account model defaults, charges 100 credits once and never calls guest quota', async () => {
+    const user = await userWith();
+    const { core, getUser, authorize, dispatched } = fakeCore();
+    getUser.mockResolvedValue(user);
+    const job = await created(
+      await createSiteJob(core, post({ duration: 30, resolution: '1080p', aspect_ratio: '1:1' })),
+    );
+    expect(job).toMatchObject({ userId: user.id, guestId: null, costCredits: 100, status: 'queued' });
+    expect(JSON.parse(job.inputJson)).toEqual({
+      references: [],
+      parameters: { aspect_ratio: '1:1', duration: 10, resolution: '720p' },
+    });
+    expect((await getBalance(db, user.id)).available).toBe(100);
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(authorize).not.toHaveBeenCalled();
+    expect(dispatched).toEqual([job.id]);
+  });
+
+  it('keeps a guest identity snapshot even if a second authentication lookup would return an account', async () => {
+    const user = await userWith();
+    const { core, getUser, dispatched } = fakeCore();
+    getUser.mockResolvedValueOnce(null).mockResolvedValue(user);
+    const job = await created(await createSiteJob(core, post({ duration: 30 })));
+    expect(job).toMatchObject({ userId: null, costCredits: 0 });
+    expect(JSON.parse(job.inputJson).parameters).toMatchObject({ duration: 4, resolution: '480p' });
+    expect((await getBalance(db, user.id)).available).toBe(200);
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(dispatched).toEqual([job.id]);
+  });
+
+  it('keeps an account identity snapshot even if a second lookup would expire the session', async () => {
+    const user = await userWith();
+    const { core, getUser, authorize, dispatched } = fakeCore();
+    getUser.mockResolvedValueOnce(user).mockResolvedValue(null);
+    const job = await created(await createSiteJob(core, post({ duration: 30 })));
+    expect(job).toMatchObject({ userId: user.id, costCredits: 100, guestId: null });
+    expect(JSON.parse(job.inputJson).parameters).toEqual({
+      aspect_ratio: '16:9',
+      duration: 10,
+      resolution: '720p',
+    });
+    expect((await getBalance(db, user.id)).available).toBe(100);
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(authorize).not.toHaveBeenCalled();
+    expect(dispatched).toEqual([job.id]);
+  });
+
+  it('resolves identity afresh for every request rather than caching a previous guest', async () => {
+    const user = await userWith();
+    const { core, getUser, authorize, dispatched } = fakeCore();
+    getUser.mockResolvedValueOnce(null).mockResolvedValueOnce(user);
+    const guest = await created(await createSiteJob(core, post({ duration: 30 })));
+    const signedIn = await created(await createSiteJob(core, post({ duration: 30 })));
+    expect(guest).toMatchObject({ userId: null, costCredits: 0 });
+    expect(JSON.parse(guest.inputJson).parameters).toMatchObject({ duration: 4, resolution: '480p' });
+    expect(signedIn).toMatchObject({ userId: user.id, costCredits: 100, guestId: null });
+    expect(JSON.parse(signedIn.inputJson).parameters).toEqual({
+      aspect_ratio: '16:9',
+      duration: 10,
+      resolution: '720p',
+    });
+    expect((await getBalance(db, user.id)).available).toBe(100);
+    expect(getUser).toHaveBeenCalledTimes(2);
+    expect(authorize).toHaveBeenCalledTimes(1);
+    expect(dispatched).toEqual([guest.id, signedIn.id]);
+  });
+
+  it.each([false, true])('forces image-to-video aspect ratio to auto for signed-in=%s', async (signedIn) => {
+    const user = await userWith();
+    const { core, getUser, authorize, dispatched } = fakeCore();
+    getUser.mockResolvedValue(signedIn ? user : null);
+    const job = await created(
+      await createSiteJob(
+        core,
+        post({ duration: 30, resolution: '1080p', aspect_ratio: '9:16' }, ['/files/uploads/reference.jpg']),
+      ),
+    );
+    expect(JSON.parse(job.inputJson)).toEqual({
+      references: [{ role: 'first_frame', url: `${BASE}/files/uploads/reference.jpg` }],
+      parameters: {
+        aspect_ratio: 'auto',
+        duration: signedIn ? 10 : 4,
+        resolution: signedIn ? '720p' : '480p',
+      },
+    });
+    expect(job.costCredits).toBe(signedIn ? 100 : 0);
+    expect((await getBalance(db, user.id)).available).toBe(signedIn ? 100 : 200);
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(authorize).toHaveBeenCalledTimes(signedIn ? 0 : 1);
+    expect(dispatched).toEqual([job.id]);
+  });
+
+  it('rejects an account below 100 credits without a job or Workflow dispatch', async () => {
+    const user = await userWith(99);
+    const { core, getUser, authorize, dispatched } = fakeCore();
+    getUser.mockResolvedValue(user);
+    const before = await jobCount();
+    const response = await createSiteJob(core, post({ duration: 4, resolution: '480p' }));
+    expect(response.status).toBe(402);
+    expect(await jobCount()).toBe(before);
+    expect((await getBalance(db, user.id)).available).toBe(99);
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(authorize).not.toHaveBeenCalled();
+    expect(dispatched).toEqual([]);
+  });
+
+  it('propagates authentication errors before creating, charging, authorizing or dispatching', async () => {
+    const user = await userWith();
+    const { core, getUser, authorize, dispatched } = fakeCore();
+    const before = await jobCount();
+    getUser.mockRejectedValue(new Error('Session service unavailable'));
+    await expect(createSiteJob(core, post({ duration: 30 }))).rejects.toThrow('Session service unavailable');
+    expect(await jobCount()).toBe(before);
+    expect((await getBalance(db, user.id)).available).toBe(200);
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(authorize).not.toHaveBeenCalled();
+    expect(dispatched).toEqual([]);
+  });
+
+  it('grants the current 100-credit signup bonus only once and funds exactly one account video', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.UTC(2035, 0, 15, 12));
+    try {
+      expect(site.signup.bonusCredits).toBe(100);
+      const user = account(`u_bonus_${crypto.randomUUID().slice(0, 12)}`);
+      const deps = { db, site, log: () => {} };
+      const headers = new Headers({ 'cf-connecting-ip': '203.0.113.41' });
+      await grantSignupBonus(deps, user.id, headers);
+      await grantSignupBonus(deps, user.id, headers);
+      expect((await getBalance(db, user.id)).available).toBe(100);
+      const window = new Date().toISOString().slice(0, 10);
+      const quota = await db.query.quotaCounters.findFirst({
+        where: and(eq(quotaCounters.key, 'signup-bonus:site'), eq(quotaCounters.window, window)),
+      });
+      expect(quota?.count).toBe(1);
+
+      const { core, getUser, dispatched, authorize } = fakeCore();
+      getUser.mockResolvedValue(user);
+      const job = await created(await createSiteJob(core, post({ duration: 30, resolution: '1080p' })));
+      expect(job).toMatchObject({ userId: user.id, guestId: null, costCredits: 100 });
+      expect(JSON.parse(job.inputJson).parameters).toEqual({
+        aspect_ratio: '16:9',
+        duration: 10,
+        resolution: '720p',
+      });
+      expect((await getBalance(db, user.id)).available).toBe(0);
+      // Repeating the signup hook after spending the grant cannot refill the balance.
+      await grantSignupBonus(deps, user.id, headers);
+      expect((await getBalance(db, user.id)).available).toBe(0);
+      expect((await createSiteJob(core, post({}))).status).toBe(402);
+      expect(dispatched).toEqual([job.id]);
+      expect(authorize).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('allows four distinct guest attempts per day rather than counting model credits', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.UTC(2035, 0, 17, 12));
+    try {
+      const decisions = [];
+      for (let attempt = 0; attempt < 5; attempt++) {
+        decisions.push(
+          await authorizeGuest({
+            db,
+            request: new Request(BASE, { headers: { 'cf-connecting-ip': `192.0.2.${attempt + 41}` } }),
+            siteId: site.id,
+            quota: site.guest,
+            recaptcha: { siteKey: '', projectId: '', apiKey: '' },
+            turnstile: { secretKey: 'test-only-captcha-secret' },
+            recaptchaToken: 'test-only-token',
+            action: 'generate',
+            cookieSecret: 'test-only-cookie-secret',
+            fetcher: async () => Response.json({ success: true }),
+          }),
+        );
+      }
+      expect(decisions.map((decision) => decision.ok)).toEqual([true, true, true, true, false]);
+      expect(decisions[4]).toMatchObject({ ok: false, reason: 'quota' });
+      const window = new Date().toISOString().slice(0, 10);
+      const quota = await db.query.quotaCounters.findFirst({
+        where: and(eq(quotaCounters.key, 'guest:site'), eq(quotaCounters.window, window)),
+      });
+      expect(quota?.count).toBe(4);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('allows one trial per device per day and rejects further attempts without consuming site or IP counts', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.UTC(2035, 0, 18, 12));
+    try {
+      const decisions = [];
+      let cookie: string | undefined;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const headers = new Headers({ 'cf-connecting-ip': '198.18.0.41' });
+        if (cookie) headers.set('cookie', cookie);
+        const decision = await authorizeGuest({
+          db,
+          request: new Request(BASE, { headers }),
+          siteId: site.id,
+          quota: site.guest,
+          recaptcha: { siteKey: '', projectId: '', apiKey: '' },
+          turnstile: { secretKey: 'test-only-captcha-secret' },
+          recaptchaToken: 'test-only-token',
+          action: 'generate',
+          cookieSecret: 'test-only-cookie-secret',
+          fetcher: async () => Response.json({ success: true }),
+        });
+        decisions.push(decision);
+        if (decision.setCookie) cookie = decision.setCookie.split(';')[0];
+      }
+      expect(decisions.map((decision) => decision.ok)).toEqual([true, false, false]);
+      expect(decisions[2]).toMatchObject({ ok: false, reason: 'quota' });
+      const first = decisions[0]!;
+      if (!first.ok) throw new Error('The first trial must succeed');
+      expect(decisions[1]).toMatchObject({ ok: false, reason: 'quota' });
+      const window = new Date().toISOString().slice(0, 10);
+      for (const key of [`guest:device:${first.guestId}`, 'guest:ip:198.18.0.41', 'guest:site']) {
+        const quota = await db.query.quotaCounters.findFirst({
+          where: and(eq(quotaCounters.key, key), eq(quotaCounters.window, window)),
+        });
+        expect(quota?.count).toBe(1);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('counts a local signup site limit of two as recipients, not the 200 credits granted', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.UTC(2035, 0, 16, 12));
+    try {
+      const fixture = { ...site, signup: { ...site.signup, bonusSiteDaily: 2 } };
+      const deps = { db, site: fixture, log: () => {} };
+      const users = Array.from({ length: 3 }, () => `u_cap_${crypto.randomUUID().slice(0, 12)}`);
+      const ips = ['198.51.100.41', '198.51.100.42', '198.51.100.43'];
+      for (const [index, userId] of users.entries()) {
+        await grantSignupBonus(deps, userId, new Headers({ 'cf-connecting-ip': ips[index]! }));
+      }
+      const balances = await Promise.all(users.map(async (id) => (await getBalance(db, id)).available));
+      expect(balances).toEqual([100, 100, 0]);
+      expect(balances.reduce((sum, balance) => sum + balance, 0)).toBe(200);
+      const window = new Date().toISOString().slice(0, 10);
+      const quota = await db.query.quotaCounters.findFirst({
+        where: and(eq(quotaCounters.key, 'signup-bonus:site'), eq(quotaCounters.window, window)),
+      });
+      expect(quota?.count).toBe(2);
+      const rejectedIp = await db.query.quotaCounters.findFirst({
+        where: and(eq(quotaCounters.key, `signup-bonus:ip:${ips[2]}`), eq(quotaCounters.window, window)),
+      });
+      expect(rejectedIp?.count ?? 0).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

@@ -1,0 +1,14 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "types": [
+      "@cloudflare/workers-types",
+      "@cloudflare/vitest-plugin/types",
+      "../worker-configuration.d.ts",
+      "vite/client"
+    ],
+    "paths": { "~/*": ["../src/*"] }
+  },
+  "include": ["./*.test.ts", "./env.d.ts"]
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "freeaivideo",
+  "main": "src/server.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "upload_source_maps": true,
+  "routes": [
+    { "pattern": "freeaivideo.app", "custom_domain": true },
+    { "pattern": "www.freeaivideo.app", "custom_domain": true }
+  ],
+  "vars": {
+    "EMAIL_FROM": "noreply@freeaivideo.app",
+    // To enable Rybbit, set this to your Rybbit API URL (e.g. https://rybbit.example.com/api) and add analytics.rybbit to site.config.ts.
+    "RYBBIT_UPSTREAM": ""
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "freeaivideo",
+      "database_id": "7f28c98a-8c8a-4dd3-bdd8-bcdd1125956d",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [{ "binding": "OUTPUTS", "bucket_name": "freeaivideo-outputs" }],
+  "send_email": [{ "name": "EMAIL" }],
+  "workflows": [
+    {
+      "name": "freeaivideo-generation",
+      "binding": "GENERATION_WORKFLOW",
+      "class_name": "GenerationWorkflow"
+    }
+  ]
+}

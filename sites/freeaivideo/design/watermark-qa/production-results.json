@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-11-01T11:56:12.865Z",
+  "deployedVersion": "d48247f2-2670-49cc-a498-3324db95ae37",
+  "taskSpaceId": 56,
+  "scope": "Read-only production UI. Same-origin non-GET/HEAD fetch requests blocked before scripts execute. No login, generation, payment, or email.",
+  "passed": true,
+  "seoComparison": {
+    "title": true,
+    "h1": true,
+    "canonical": true,
+    "description": true
+  },
+  "after": {
+    "url": "https://www.freeaivideo.app/",
+    "title": "Free AI Video — Free AI Video Generator, No Sign-Up (Seedance 2.5)",
+    "h1": [
+      "Free AI Video Generator (No Sign-Up)"
+    ],
+    "canonical": "https://www.freeaivideo.app/",
+    "description": "Generate a short AI video from a text prompt or a photo, free, without creating an account. Seedance 2.5 free to try every day, limits stated up front, no watermark on your downloads.",
+    "locale": "en",
+    "generator": {
+      "watermark": "No watermark added",
+      "fontWeight": "700",
+      "beforeButton": true
+    },
+    "plans": [
+      {
+        "title": "Starter",
+        "watermark": [
+          "No watermark added"
+        ]
+      },
+      {
+        "title": "Creator",
+        "watermark": [
+          "No watermark added"
+        ]
+      }
+    ],
+    "faq": {
+      "count": 8,
+      "equal": true,
+      "watermarkAnswer": "Free AI Video adds no watermark to daily free trials, registration-voucher videos or credit-paid videos. There is no separate export fee."
+    },
+    "mobile": {
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false
+    },
+    "blockedWrites": []
+  },
+  "localTestCookieRestored": true,
+  "screenshots": [
+    "production-generator-mobile.png",
+    "production-plans-mobile.png"
+  ],
+  "taskSpaceFinished": {
+    "completed": true,
+    "keep": [],
+    "at": "2026-11-01T11:56:12.875Z"
+  }
+}

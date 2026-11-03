@@ -1,0 +1,274 @@
+{
+  "scope": "Local browser UI checks. No real generation, mail, or payment. Backend uses local fixtures/mocks.",
+  "taskSpaceId": 55,
+  "localOrigin": "http://localhost:5077",
+  "checks": {
+    "zhDesktop": {
+      "lang": "zh",
+      "mode": "daily-trial",
+      "button": "正在查看试用额度…→",
+      "buttonDisabled": true,
+      "overflow": false,
+      "h1": [
+        "免费 AI 视频生成器（无需注册）"
+      ],
+      "faq": {
+        "visible": [
+          {
+            "question": "不注册也能免费生成 AI 视频吗？",
+            "answer": "可以。当日免费试用无需注册，每次生成 4 秒、480p 视频。每台设备每天 1 次，登录前后共用额度，每日 UTC 00:00（北京时间 08:00）重置，也受网络与全站当日剩余额度限制。符合条件的新注册验证账户可领取一次额外注册试用券。"
+          },
+          {
+            "question": "新注册账户会获得什么？",
+            "answer": "符合条件的新注册验证账户可领取一次 4 秒、480p 注册试用券，注册起 30 天有效，受每日领取名额限制。试用券与购买积分、设备每日试用额度分开计算。生成请求被接受后即使用试用券，后续失败或取消不自动返还。此前已发放的积分继续按原规则保留。"
+          },
+          {
+            "question": "免费下载的视频有水印吗？",
+            "answer": "Free AI Video 不会为免费或付费下载的视频添加水印。"
+          },
+          {
+            "question": "使用的是哪个 AI 视频模型？",
+            "answer": "目前使用 Seedance 2.5，将文字提示或参考照片生成短视频。"
+          },
+          {
+            "question": "可以把照片变成视频吗？",
+            "answer": "可以。添加一张参考图并描述想要的运动，视频画幅会自动跟随图片。免费游客试用也支持参考照片。"
+          },
+          {
+            "question": "生成的视频有多长？",
+            "answer": "每日免费试用和注册试用券均生成 4 秒、480p 视频。积分生成固定为 10 秒、720p，每次 100 积分。添加参考图后，画幅自动跟随图片。"
+          },
+          {
+            "question": "支持哪些画幅比例？",
+            "answer": "文字生成视频可选择横屏 16:9、竖屏 9:16、正方形 1:1，以及 4:3 和 3:4。添加参考图后，视频画幅会自动跟随图片。"
+          },
+          {
+            "question": "视频生成失败后怎么办？",
+            "answer": "使用积分的任务生成失败后，会自动退回该任务扣除的积分。每日免费试用和注册试用券在请求被接受后即计次，失败或取消不自动恢复额度。如结果明显损坏，请联系客服。购买退款另按退款政策处理。"
+          }
+        ],
+        "schema": [
+          {
+            "question": "不注册也能免费生成 AI 视频吗？",
+            "answer": "可以。当日免费试用无需注册，每次生成 4 秒、480p 视频。每台设备每天 1 次，登录前后共用额度，每日 UTC 00:00（北京时间 08:00）重置，也受网络与全站当日剩余额度限制。符合条件的新注册验证账户可领取一次额外注册试用券。"
+          },
+          {
+            "question": "新注册账户会获得什么？",
+            "answer": "符合条件的新注册验证账户可领取一次 4 秒、480p 注册试用券，注册起 30 天有效，受每日领取名额限制。试用券与购买积分、设备每日试用额度分开计算。生成请求被接受后即使用试用券，后续失败或取消不自动返还。此前已发放的积分继续按原规则保留。"
+          },
+          {
+            "question": "免费下载的视频有水印吗？",
+            "answer": "Free AI Video 不会为免费或付费下载的视频添加水印。"
+          },
+          {
+            "question": "使用的是哪个 AI 视频模型？",
+            "answer": "目前使用 Seedance 2.5，将文字提示或参考照片生成短视频。"
+          },
+          {
+            "question": "可以把照片变成视频吗？",
+            "answer": "可以。添加一张参考图并描述想要的运动，视频画幅会自动跟随图片。免费游客试用也支持参考照片。"
+          },
+          {
+            "question": "生成的视频有多长？",
+            "answer": "每日免费试用和注册试用券均生成 4 秒、480p 视频。积分生成固定为 10 秒、720p，每次 100 积分。添加参考图后，画幅自动跟随图片。"
+          },
+          {
+            "question": "支持哪些画幅比例？",
+            "answer": "文字生成视频可选择横屏 16:9、竖屏 9:16、正方形 1:1，以及 4:3 和 3:4。添加参考图后，视频画幅会自动跟随图片。"
+          },
+          {
+            "question": "视频生成失败后怎么办？",
+            "answer": "使用积分的任务生成失败后，会自动退回该任务扣除的积分。每日免费试用和注册试用券在请求被接受后即计次，失败或取消不自动恢复额度。如结果明显损坏，请联系客服。购买退款另按退款政策处理。"
+          }
+        ],
+        "equal": true
+      }
+    },
+    "enDesktop": {
+      "lang": "en",
+      "h1": [
+        "Free AI Video Generator (No Sign-Up)"
+      ],
+      "mode": "paid",
+      "button": "Generate video · 100 credits→",
+      "prompt": "A small paper boat crosses a quiet lake at sunrise",
+      "overflow": false,
+      "faqEqual": true,
+      "faqCount": 8,
+      "plans": [
+        "Starter$4.991 video · 10 seconds · 720p100 credits, never expireBuy",
+        "RecommendedCreator$19.995 videos · 10 seconds · 720p500 credits, never expireSave about 20% versus single videosBuy"
+      ]
+    },
+    "enMobile": {
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "modes": [
+        "Daily free trial · 4s · 480p",
+        "Registration voucher · 4s · 480p",
+        "Credit video · 10s · 720p"
+      ],
+      "button": {
+        "x": 40,
+        "y": 892.484375,
+        "width": 310,
+        "height": 49,
+        "top": 892.484375,
+        "right": 350,
+        "bottom": 941.484375,
+        "left": 40
+      }
+    },
+    "accountVoucherEntry": {
+      "mode": "signup-trial",
+      "savedMode": "signup-trial",
+      "button": "Generate video · use trial voucher→",
+      "note": "This uses one registration voucher for a 4-second, 480p video and deducts no credits. An accepted request uses the voucher, including if it later fails or is cancelled.",
+      "hasCaptchaSlot": true,
+      "disabled": false,
+      "url": "http://localhost:5077/#tool"
+    },
+    "frontendGenerationProbes": {
+      "method": "Browser-only Turnstile SDK and /api/jobs responses stubbed. Real local authentication and voucher allocation were verified before these probes. No generation POST reached server or upstream.",
+      "signup": {
+        "request": {
+          "modelId": "seedance-2-5",
+          "mode": "signup-trial",
+          "prompt": "A small paper boat crosses a quiet lake at sunrise",
+          "references": [],
+          "parameters": {
+            "aspect_ratio": "16:9"
+          },
+          "recaptchaToken": "local-ui-test-token"
+        },
+        "modeAfter": "signup-trial",
+        "failedCopy": "This free request failed. Its trial allowance has been used. Contact support with the task details if you need help.",
+        "captchaLoads": 1
+      },
+      "exhausted": {
+        "mode": "daily-trial",
+        "disabled": true,
+        "notice": [
+          "The daily free allowance for this device, network or shared pool is used up. It resets at 00:00 UTC. You can also choose an available registration voucher or credit video."
+        ]
+      },
+      "paid": {
+        "request": {
+          "modelId": "seedance-2-5",
+          "mode": "paid",
+          "prompt": "A small paper boat crosses a quiet lake at sunrise",
+          "references": [],
+          "parameters": {
+            "aspect_ratio": "16:9"
+          },
+          "recaptchaToken": null
+        },
+        "mode": "paid",
+        "hasCaptchaSlot": false,
+        "captchaLoads": 1
+      }
+    },
+    "zhMobile": {
+      "lang": "zh",
+      "width": 390,
+      "scrollWidth": 390,
+      "overflow": false,
+      "mode": "daily-trial",
+      "button": "生成视频 · 每日免费试用→",
+      "note": "每台设备每天免费 1 次，每次 4 秒、480p。登录前后共享额度，每日 UTC 00:00（北京时间 08:00）重置，同时受网络与全站当日剩余额度约束。请求被接受后即计次，后续失败或取消不自动返还。",
+      "prompt": "A small paper boat crosses a quiet lake at sunrise"
+    },
+    "zhPolicies": [
+      {
+        "path": "/terms",
+        "lang": "zh",
+        "h1": [
+          "服务条款"
+        ],
+        "mentionsVoucher": true,
+        "hasSupport": true,
+        "oldEmail": false
+      },
+      {
+        "path": "/privacy",
+        "lang": "zh",
+        "h1": [
+          "隐私政策"
+        ],
+        "mentionsVoucher": true,
+        "hasSupport": true,
+        "oldEmail": false
+      },
+      {
+        "path": "/refunds",
+        "lang": "zh",
+        "h1": [
+          "退款政策"
+        ],
+        "mentionsVoucher": true,
+        "hasSupport": true,
+        "oldEmail": false
+      }
+    ],
+    "mobileAccount": {
+      "viewport": 390,
+      "pageWidth": 390,
+      "dialogClientWidth": 350,
+      "dialogScrollWidth": 434,
+      "dialogOverflow": true,
+      "paragraphs": [
+        {
+          "text": "当前登录：qa_cd992e0846484f548257b6074f03501b@example.test",
+          "clientWidth": 300,
+          "scrollWidth": 409
+        }
+      ]
+    },
+    "mobileAccountFix": {
+      "change": "overflow-wrap:anywhere on dialog paragraphs",
+      "account": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "dialogClientWidth": 350,
+        "dialogScrollWidth": 350,
+        "dialogOverflow": false,
+        "overflowingParagraphCount": 0,
+        "overflowWrap": "anywhere"
+      },
+      "home": {
+        "width": 390,
+        "scrollWidth": 390,
+        "overflow": false,
+        "mode": "signup-trial"
+      },
+      "passed": true
+    }
+  },
+  "paidSelection": {
+    "mode": "paid",
+    "button": "生成视频 · 100 积分→",
+    "note": "账户积分生成：10 秒、720p，每次 100 积分。",
+    "hasCaptchaSlot": false,
+    "buttonDisabled": false
+  },
+  "screenshots": [
+    "desktop-zh.png",
+    "desktop-en.png",
+    "mobile-en.png",
+    "account-voucher-en.png",
+    "mobile-zh.png",
+    "mobile-zh-full.png",
+    "desktop-voucher-zh.png",
+    "mobile-account-zh.png",
+    "mobile-account-zh-fixed.png",
+    "mobile-home-zh-fixed.png"
+  ],
+  "localAuthentication": {
+    "method": "Real local BetterAuth session cookie from parent-created verified fixture; no email sent",
+    "setCookieSuccess": true,
+    "originalNamedCookieRestored": true,
+    "originalLocaleRestored": "zh"
+  },
+  "localCompleteAt": "2026-11-01T11:32:36.343Z"
+}

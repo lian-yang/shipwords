@@ -1,0 +1,31 @@
+[
+  {
+    "file": "page-1440x900.png",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": [
+      {
+        "rule": "longMeasure",
+        "label": "正文行太长",
+        "count": 5,
+        "examples": [
+          "p.lead「Type a prompt or drop in」（每行约 96 个字符）",
+          "p「Yes. You can try 1 video」（每行约 99 个字符）",
+          "p「Yes. Add one reference i」（每行约 99 个字符）"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "page-390x844.png",
+    "state": null,
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  }
+]

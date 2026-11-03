@@ -1,0 +1,22 @@
+/Users/yanglian/Code/shipwords/biome.json:25:13 deserialize  DEPRECATED  ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i The use of the recommended field has been deprecated, and will removed in the next major version of Biome. Use preset instead.
+  
+    23 │     }
+    24 │   },
+  > 25 │   "linter": {
+       │             ^
+  > 26 │     "rules": {
+        ...
+  > 34 │     }
+  > 35 │   },
+       │   ^
+    36 │   "overrides": [
+    37 │     {
+  
+  i Migrate the configuration with the proper command
+  
+  $ biome migrate
+  
+
+Checked 67 files in 103ms. No fixes applied.

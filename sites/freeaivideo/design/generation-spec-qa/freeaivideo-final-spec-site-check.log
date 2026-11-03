@@ -1,0 +1,147 @@
+
+> @shipwords/site-freeaivideo@ check /private/var/folders/8t/xpqbqr_n4c30hb73__255v1m0000gn/T/freeaivideo-paid15-release-6nyknbqt/sites/freeaivideo
+> pnpm typecheck && pnpm build && node ../../tools/check-site.mjs .
+
+../..                                    |  WARN  Unsupported engine: wanted: {"node":">=24"} (current: {"node":"v22.23.2","pnpm":"10.30.1"})
+
+> @shipwords/site-freeaivideo@ typecheck /private/var/folders/8t/xpqbqr_n4c30hb73__255v1m0000gn/T/freeaivideo-paid15-release-6nyknbqt/sites/freeaivideo
+> paraglide-js compile --project ./project.inlang --outdir ./src/paraglide --output-structure locale-modules --strategy cookie baseLocale && tsr generate && wrangler types && tsc --noEmit
+
+ℹ [paraglide-js] Compiling inlang project ...
+✔ [paraglide-js] Successfully compiled inlang project.
+(node:48459) Warning: Accessing non-existent property 'replaceRouteChunk' of module exports inside circular dependency
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ ⛅️ wrangler 4.153.0 (update available 4.156.0)
+───────────────────────────────────────────────
+Generating project types...
+
+interface __BaseEnv_Env {
+	OUTPUTS: R2Bucket;
+	DB: D1Database;
+	EMAIL: SendEmail;
+	EMAIL_FROM: "noreply@freeaivideo.app";
+	RYBBIT_UPSTREAM: "";
+	YIR_API_KEY: string;
+	APP_URL: string;
+	BETTER_AUTH_SECRET: string;
+	GOOGLE_CLIENT_ID: string;
+	GOOGLE_CLIENT_SECRET: string;
+	STRIPE_SECRET_KEY: string;
+	GUEST_COOKIE_SECRET: string;
+	STRIPE_WEBHOOK_SECRET: string;
+	TURNSTILE_SITE_KEY: string;
+	TURNSTILE_SECRET_KEY: string;
+	RESEND_API_KEY: string;
+	GENERATION_WORKFLOW: Workflow<Parameters<import("./src/server").GenerationWorkflow['run']>[0]['payload']>;
+}
+declare namespace Cloudflare {
+	interface GlobalProps {
+		mainModule: typeof import("./src/server");
+	}
+	interface Env extends __BaseEnv_Env {}
+}
+interface Env extends __BaseEnv_Env {}
+type StringifyValues<EnvType extends Record<string, unknown>> = {
+	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
+};
+declare namespace NodeJS {
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "EMAIL_FROM" | "RYBBIT_UPSTREAM" | "YIR_API_KEY" | "APP_URL" | "BETTER_AUTH_SECRET" | "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET" | "STRIPE_SECRET_KEY" | "GUEST_COOKIE_SECRET" | "STRIPE_WEBHOOK_SECRET" | "TURNSTILE_SITE_KEY" | "TURNSTILE_SECRET_KEY" | "RESEND_API_KEY">> {}
+}
+
+Generating runtime types...
+
+Runtime types generated.
+
+
+✨ Types written to worker-configuration.d.ts
+
+Action required Install @types/node
+Since your Worker has Node.js compatibility enabled, you should install Node.js types by running "npm i --save-dev @types/node".
+
+📖 Read about runtime types
+https://developers.cloudflare.com/workers/languages/typescript/#generate-types
+📣 Remember to rerun 'wrangler types' after you change your wrangler.jsonc file.
+
+../..                                    |  WARN  Unsupported engine: wanted: {"node":">=24"} (current: {"node":"v22.23.2","pnpm":"10.30.1"})
+
+> @shipwords/site-freeaivideo@ build /private/var/folders/8t/xpqbqr_n4c30hb73__255v1m0000gn/T/freeaivideo-paid15-release-6nyknbqt/sites/freeaivideo
+> vite build
+
+vite v8.3.5 building client environment for production...
+✔ [paraglide-js] Compilation complete (message-modules)
+transforming...
+✓ 603 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                           0.02 kB
+dist/client/assets/styles-CdpXBEsC.css             23.85 kB │ gzip:   6.32 kB
+dist/client/assets/account-DsETmXhd.js              0.18 kB │ gzip:   0.17 kB
+dist/client/assets/login-2jB9NY1L.js                0.30 kB │ gzip:   0.24 kB
+dist/client/assets/return-a2J4kHrH.js               2.18 kB │ gzip:   0.90 kB
+dist/client/assets/http-BDMdGtvM.js                 2.30 kB │ gzip:   1.16 kB
+dist/client/assets/no-watermark-DzRTw7U2.js         2.69 kB │ gzip:   1.16 kB
+dist/client/assets/seedance-2-5-free-DC0vrDqO.js    2.91 kB │ gzip:   1.13 kB
+dist/client/assets/refunds-CCuZcJpv.js              3.15 kB │ gzip:   1.37 kB
+dist/client/assets/runtime-CSE3OhUi.js              3.40 kB │ gzip:   1.64 kB
+dist/client/assets/dmca-02KDA0Z0.js                 4.08 kB │ gzip:   1.64 kB
+dist/client/assets/terms-B7Imz6Mb.js                5.53 kB │ gzip:   2.26 kB
+dist/client/assets/privacy-Dc23klD9.js              9.25 kB │ gzip:   3.35 kB
+dist/client/assets/routes-7iMMT-Mj.js              20.57 kB │ gzip:   7.00 kB
+dist/client/assets/track-RQG-qXTx.js               77.59 kB │ gzip:  27.39 kB
+dist/client/assets/index-o96_HPIQ.js              338.24 kB │ gzip: 108.60 kB
+
+✓ built in 2.25s
+vite v8.3.5 building ssr environment for production...
+ℹ [paraglide-js] Compilation skipped — inputs unchanged (message-modules)
+transforming...
+✓ 1713 modules transformed.
+rendering chunks...
+Using secrets defined in .dev.vars
+computing gzip size...
+dist/server/.dev.vars                                                     0.77 kB
+dist/server/wrangler.json                                                 1.97 kB │ gzip:   0.94 kB
+dist/server/.vite/manifest.json                                          14.99 kB │ gzip:   1.98 kB
+dist/server/assets/styles-CdpXBEsC.css                                   23.85 kB │ gzip:   6.32 kB
+dist/server/assets/kysely-adapter-CMmwx3WV.js                             0.09 kB │ gzip:   0.09 kB
+dist/server/assets/start-87i8WZ_M.js                                      0.31 kB │ gzip:   0.23 kB │ map:     0.40 kB
+dist/server/assets/empty-plugin-adapters-BsRz-CQL.js                      0.32 kB │ gzip:   0.21 kB │ map:     0.55 kB
+dist/server/assets/account-hXlqInrX.js                                    0.48 kB │ gzip:   0.29 kB │ map:     1.02 kB
+dist/server/assets/utils-Bic72D6H.js                                      0.65 kB │ gzip:   0.41 kB │ map:     0.83 kB
+dist/server/assets/login-C9N4hypZ.js                                      0.76 kB │ gzip:   0.43 kB │ map:     1.66 kB
+dist/server/assets/public-config-CgTFeXU0.js                              1.22 kB │ gzip:   0.66 kB │ map:     2.08 kB
+dist/server/assets/rolldown-runtime-SbdDWaPq.js                           1.43 kB │ gzip:   0.66 kB
+dist/server/assets/site.config-BZFNrNWW.js                                1.65 kB │ gzip:   0.82 kB │ map:     5.80 kB
+dist/server/assets/redirect-3Vy3u2Da.js                                   1.78 kB │ gzip:   0.87 kB │ map:     2.62 kB
+dist/server/assets/lazyRouteComponent-D8dzL7aY.js                         2.51 kB │ gzip:   1.09 kB │ map:     8.08 kB
+dist/server/assets/node-sqlite-dialect-bskCIypR.js                        3.28 kB │ gzip:   1.17 kB │ map:     5.63 kB
+dist/server/assets/bun-sqlite-dialect-DN2jcl8c-B-czEENe.js                3.29 kB │ gzip:   1.18 kB │ map:     5.63 kB
+dist/server/assets/_tanstack-start-manifest_v-Xb9XPLaw.js                 3.37 kB │ gzip:   0.77 kB
+dist/server/assets/d1-sqlite-dialect-BgJMzZQp-GPGIcU0a.js                 5.39 kB │ gzip:   1.84 kB │ map:     9.27 kB
+dist/server/assets/env-impl-BrbprP9X.js                                   7.50 kB │ gzip:   2.78 kB │ map:    12.68 kB
+dist/server/assets/return-B3toSc1T.js                                     9.71 kB │ gzip:   1.84 kB │ map:    18.90 kB
+dist/server/assets/refunds-CHg9TFhk.js                                   10.96 kB │ gzip:   2.10 kB │ map:    19.39 kB
+dist/server/assets/no-watermark-CHPbkxSg.js                              11.87 kB │ gzip:   2.01 kB │ map:    22.40 kB
+dist/server/assets/seedance-2-5-free-Dx3OEYEb.js                         13.70 kB │ gzip:   2.06 kB │ map:    25.99 kB
+dist/server/assets/site.models-C8YIjie_.js                               14.32 kB │ gzip:   4.44 kB │ map:    37.76 kB
+dist/server/assets/dist-i4Io5yxk.js                                      14.97 kB │ gzip:   4.19 kB │ map:    25.10 kB
+dist/server/assets/dmca--27G-1fN.js                                      15.41 kB │ gzip:   2.55 kB │ map:    27.36 kB
+dist/server/assets/createServerFn-CBqVa129.js                            15.54 kB │ gzip:   4.74 kB │ map:    35.36 kB
+dist/server/assets/__23tanstack-start-server-fn-resolver-DoVv0CWD.js     17.50 kB │ gzip:   5.12 kB │ map:    32.74 kB
+dist/server/assets/terms-D7Mk5Whm.js                                     18.08 kB │ gzip:   3.27 kB │ map:    31.57 kB
+dist/server/assets/runtime-DRfI5ZlN.js                                   18.10 kB │ gzip:   6.01 kB │ map:    89.65 kB
+dist/server/assets/track-DnjvRmEn.js                                     20.36 kB │ gzip:   5.30 kB │ map:    45.47 kB
+dist/server/assets/privacy-QPJUjRtA.js                                   29.68 kB │ gzip:   4.74 kB │ map:    50.96 kB
+dist/server/assets/sign-in-ZncyJJkv.js                                   60.29 kB │ gzip:  14.65 kB │ map:   114.05 kB
+dist/server/assets/routes-hm1fFBdR.js                                    76.05 kB │ gzip:  11.02 kB │ map:   149.53 kB
+dist/server/assets/router-CTG06G6O.js                                   139.65 kB │ gzip:  24.27 kB │ map:   337.82 kB
+dist/server/assets/useSelector-Ba0QpRlZ.js                              146.83 kB │ gzip:  37.25 kB │ map:   315.72 kB
+dist/server/assets/sqlite-introspector-_wy6Ac6e-BSwN7ceV.js             285.87 kB │ gzip:  47.71 kB │ map:   541.53 kB
+dist/server/assets/models.server-td3-2xGk.js                            292.11 kB │ gzip:  67.58 kB │ map:   587.35 kB
+dist/server/index.js                                                    741.27 kB │ gzip: 156.54 kB │ map: 1,359.58 kB
+dist/server/assets/core.server-QTtAf_Wp.js                            3,076.48 kB │ gzip: 812.22 kB │ map: 5,243.75 kB
+
+[plugin vite:css-post] [33m[SOURCEMAP_BROKEN] [0mSourcemap is likely to be incorrect: a plugin (vite:css-post) was used to transform files, but didn't generate a sourcemap for the transformation. Consult the plugin documentation for help: https://rolldown.rs/guide/troubleshooting#warning-sourcemap-is-likely-to-be-incorrect
+
+✓ built in 739ms
+Site check passed

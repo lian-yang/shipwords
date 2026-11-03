@@ -1,0 +1,33 @@
+{
+  "release_root": "/var/folders/8t/xpqbqr_n4c30hb73__255v1m0000gn/T/freeaivideo-watermark-release-5fv79dzj",
+  "previous_source_root": "/var/folders/8t/xpqbqr_n4c30hb73__255v1m0000gn/T/freeaivideo-signup-trial-release-ojtovb7q",
+  "previous_version": "4e963caf-91c6-4fd1-b3c8-36eecaa8dc12",
+  "base_main_sha": "856646a516b8b2cbb2fa8216ad6a704c1c4e7881",
+  "changed_file_sha256": {
+    "messages/common/en.json": "abb09ea482afd189100049de82f9122c2cbb8b46cccba1d643b9d4a8c091dba6",
+    "messages/common/zh.json": "d38eb016bb3f7cd6681d39ab18542dea93f14371ae2c580f30c59cc068a8efaa",
+    "messages/home/en.json": "b02de11df57049c31bf0243b8bbb4decc49525e46a92639b9b22afaa970d2f9e",
+    "messages/home/zh.json": "0a1444a31f8735f4e896d647f71815155f86c82b11553ada164b2a2ff760e51d",
+    "src/routes/index.tsx": "c4045cdf8939836399504e9c5fda40173fe4ced30d83a7ce0ec27b60d324e937",
+    "src/site/account.tsx": "bfa551d536d641acf2e97a6c5b5b9c5a89def72f559f25c202027b706e8e3ac5",
+    "src/site/pricing.tsx": "682132071e5729e4dc4a3181e706feb6449469d7b16a6d4b5850a611cbb19b28"
+  },
+  "site_check": "passed",
+  "biome_files": 7,
+  "changes": "UI copy and shared no-watermark labels only",
+  "business_source_unchanged": true,
+  "bundle_entry_sha256": "34bfc201db1ff1d274c00efb6c86e888be4258dfe19c161728cc8759ce7714c1",
+  "deployed_version": "d48247f2-2670-49cc-a498-3324db95ae37",
+  "verified_at": "2026-11-01T11:55:19.027760+00:00",
+  "verification_completed_at": "2026-11-01T11:57:53.171498+00:00",
+  "local_browser": "passed",
+  "production_browser": "passed",
+  "seo_fields_unchanged": [
+    "title",
+    "h1",
+    "canonical",
+    "description"
+  ],
+  "real_generation_submitted": false,
+  "real_payment_made": false
+}

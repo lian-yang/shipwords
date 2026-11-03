@@ -1,0 +1,225 @@
+[
+  {
+    "file": "page-1440x900.png",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": [
+      {
+        "rule": "longMeasure",
+        "label": "正文行太长",
+        "count": 5,
+        "examples": [
+          "p.lead「Type a prompt or drop in」（每行约 96 个字符）",
+          "p「Yes. You can try 1 video」（每行约 99 个字符）",
+          "p「Yes. Add one reference i」（每行约 99 个字符）"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "page-390x844.png",
+    "state": null,
+    "size": "390x844",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "page-1440x900-@2x.png",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 2,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": [
+      {
+        "rule": "longMeasure",
+        "label": "正文行太长",
+        "count": 5,
+        "examples": [
+          "p.lead「Type a prompt or drop in」（每行约 96 个字符）",
+          "p「Yes. You can try 1 video」（每行约 99 个字符）",
+          "p「Yes. Add one reference i」（每行约 99 个字符）"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "page-390x844-@2x.png",
+    "state": null,
+    "size": "390x844",
+    "zoom": 2,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": []
+  },
+  {
+    "file": "motion-probe-prompt",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "group": "prompt",
+    "motion": {
+      "load": {
+        "elements": 1,
+        "loops": 0,
+        "maxMove": 5,
+        "maxSize": 0,
+        "maxOpacity": 0.4,
+        "top": [
+          {
+            "el": "div.workspace",
+            "move": 5,
+            "size": 0,
+            "opacity": 0.4,
+            "loop": false,
+            "sources": [
+              "css:scene-in"
+            ]
+          }
+        ]
+      },
+      "steps": {
+        "elements": 0,
+        "loops": 0,
+        "maxMove": 0,
+        "maxSize": 0,
+        "maxOpacity": 0,
+        "top": []
+      },
+      "hero": {
+        "elements": 2,
+        "loops": 0,
+        "maxMove": 1271,
+        "maxSize": 0,
+        "maxOpacity": 0,
+        "top": [
+          {
+            "el": "button",
+            "move": 1271,
+            "size": 0,
+            "opacity": 0,
+            "loop": false,
+            "sources": [
+              "transition:background-color"
+            ]
+          },
+          {
+            "el": "button.primary.generate-button",
+            "move": 1135,
+            "size": 0,
+            "opacity": 0,
+            "loop": false,
+            "sources": [
+              "transition:background-color"
+            ]
+          }
+        ],
+        "layers": 2
+      },
+      "scroll": {
+        "elements": 0,
+        "loops": 0,
+        "maxMove": 0,
+        "maxSize": 0,
+        "maxOpacity": 0,
+        "top": [],
+        "scrollable": true
+      }
+    },
+    "issues": [
+      "加载错误：Failed to load resource: the server responded with a status of 403 () https://accounts.google.com/gsi/status?client_id=83770286472-6nd0lg7ipligrqof7f4bv0iljmk6qhg2.apps.googleusercontent.com&cas=1QnYPMMN%2FESZT2Opyhbb3GS8byylQggwk8%2FTE%2FLMtPE&bs=2MID8uIphNSC12mZ9hn6tHFzyGJycRbEur2US8FRiXk",
+      "加载错误：Not signed in with the identity provider. http://localhost:5040/",
+      "--steps 动作：没有检测到动画",
+      "滚动：没有检测到随滚动出现的变化；落地页、品牌页、发布页和展览页需要一段滚动叙事"
+    ]
+  },
+  {
+    "file": "motion-entry-end.jpg",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "group": "entry",
+    "issues": [
+      "加载错误：Failed to load resource: the server responded with a status of 403 () https://accounts.google.com/gsi/status?client_id=83770286472-6nd0lg7ipligrqof7f4bv0iljmk6qhg2.apps.googleusercontent.com&cas=0s1Y%2F5NW9aR04pSpJgl94%2FyuXVRJlZLT7TZ4Kpx9ePY&bs=2MID8uIphNSC12mZ9hn6tHFzyGJycRbEur2US8FRiXk",
+      "加载错误：Not signed in with the identity provider. http://localhost:5040/"
+    ],
+    "frames": {
+      "start": {
+        "file": "motion-entry-start.jpg",
+        "source": "Page.screencastFrame",
+        "timeMs": 1509
+      },
+      "mid": {
+        "file": "motion-entry-mid.jpg",
+        "source": "Page.screencastFrame",
+        "timeMs": 1509
+      },
+      "end": {
+        "file": "motion-entry-end.jpg",
+        "source": "Page.captureScreenshot",
+        "timeMs": 1838
+      }
+    },
+    "sampling": {
+      "mode": "entry"
+    },
+    "durationMs": 1838,
+    "consistency": {
+      "status": "matched",
+      "reference": "motion-entry-end.jpg",
+      "different": false,
+      "changedPixels": 0,
+      "maxTilePixels": 0,
+      "pixelRatio": 0
+    }
+  },
+  {
+    "file": "motion-prompt-end.jpg",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "group": "prompt",
+    "issues": [
+      "加载错误：Failed to load resource: the server responded with a status of 403 () https://accounts.google.com/gsi/status?client_id=83770286472-6nd0lg7ipligrqof7f4bv0iljmk6qhg2.apps.googleusercontent.com&cas=vQNTRvPN5q9Iye9%2BJoN8EjW7yNB3mTU58I3cjUe3bc4&bs=2MID8uIphNSC12mZ9hn6tHFzyGJycRbEur2US8FRiXk",
+      "加载错误：Not signed in with the identity provider. http://localhost:5040/",
+      "控制台错误：[GSI_LOGGER]: FedCM get() rejects with AbortError: signal is aborted without reason"
+    ],
+    "frames": {
+      "start": {
+        "file": "motion-prompt-start.jpg",
+        "source": "Page.captureScreenshot",
+        "timeMs": 580
+      },
+      "mid": {
+        "file": "motion-prompt-mid.jpg",
+        "source": "Page.screencastFrame",
+        "timeMs": 682
+      },
+      "end": {
+        "file": "motion-prompt-end.jpg",
+        "source": "Page.captureScreenshot",
+        "timeMs": 1918
+      }
+    },
+    "sampling": {
+      "mode": "action",
+      "step": 1,
+      "action": "click",
+      "raw": "click .prompt-ideas button:first-of-type"
+    },
+    "durationMs": 1918,
+    "consistency": {
+      "status": "matched",
+      "reference": "motion-prompt-end.jpg",
+      "different": false,
+      "changedPixels": 0,
+      "maxTilePixels": 0,
+      "pixelRatio": 0
+    }
+  }
+]
