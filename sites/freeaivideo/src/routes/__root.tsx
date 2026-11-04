@@ -134,6 +134,11 @@ function Layout() {
         <span>{m.common_footer_notice({ year: new Date().getFullYear(), name: site.name })}</span>
         <nav aria-label={m.common_footer_label()}>
           <a href="/#faq">{m.common_footer_faq()}</a>
+          {/* Trend guide pages: site-wide internal links keep fresh meme pages crawlable beyond sitemap-only discovery. */}
+          <Link to="/w-chews-l-nibbles">{m.common_footer_wchews()}</Link>
+          <Link to="/frutiger-aero-yams">{m.common_footer_frutigerayams()}</Link>
+          <Link to="/fancy-cafe-ai">{m.common_footer_fancycafe()}</Link>
+          <Link to="/red-carpet-ai">{m.common_footer_redcarpet()}</Link>
           <Link to="/privacy">{m.common_footer_privacy()}</Link>
           <Link to="/terms">{m.common_footer_terms()}</Link>
           <Link to="/refunds">{m.common_footer_refunds()}</Link>
