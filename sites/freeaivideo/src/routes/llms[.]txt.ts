@@ -42,6 +42,18 @@ export const Route = createFileRoute('/llms.txt')({
               description:
                 'What the October 2026 food slang pair means and how to make your own version with the free generator.',
             },
+            {
+              title: 'Frutiger Aero Yams',
+              path: '/frutiger-aero-yams',
+              description:
+                'What the late-2026 Frutiger Aero aesthetic catchphrase means and how to render the look as a free AI video.',
+            },
+            {
+              title: 'First Time in a Fancy Cafe',
+              path: '/fancy-cafe-ai',
+              description:
+                'The viral chair-versus-table cafe sketch format and how to make your own version with the free generator.',
+            },
           ],
         ),
     },
