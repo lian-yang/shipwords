@@ -54,6 +54,12 @@ export const Route = createFileRoute('/llms.txt')({
               description:
                 'The viral chair-versus-table cafe sketch format and how to make your own version with the free generator.',
             },
+            {
+              title: 'Red Carpet AI Video',
+              path: '/red-carpet-ai',
+              description:
+                'Turn a photo into a cinematic premiere arrival with paparazzi flashbulbs, free with the daily try.',
+            },
           ],
         ),
     },
