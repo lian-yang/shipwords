@@ -60,6 +60,18 @@ export const Route = createFileRoute('/llms.txt')({
               description:
                 'Turn a photo into a cinematic premiere arrival with paparazzi flashbulbs, free with the daily try.',
             },
+            {
+              title: 'Mulmannan Gwangeo AI Floor Dance',
+              path: '/mulmannan-gwangeo-ai',
+              description:
+                'Understand the floor-dance format and start an original short video with an editable example prompt.',
+            },
+            {
+              title: 'When Two Legends Try to Make Coffee',
+              path: '/when-two-legends-try-to-make-coffee',
+              description:
+                'A guide to the two-person coffee-fail format, with original prompts and an optional single reference photo.',
+            },
           ],
         ),
     },

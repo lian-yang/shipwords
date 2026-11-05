@@ -7,6 +7,7 @@ import { grantCredits } from '../credits/ledger';
 import type { Db } from '../db/client';
 import * as schema from '../db/schema';
 import { emailCopy } from '../email/copy';
+import { createMailer } from '../email/send';
 import type { CoreEnv } from '../env';
 import { clientIp, ipBucket } from '../http';
 import { consumeQuota, dayWindow, type QuotaRule, releaseQuota } from '../quota/counters';
@@ -133,7 +134,8 @@ export function createAuth(deps: AuthDeps) {
         otpLength: 6,
         expiresIn: 600,
         async sendVerificationOTP({ email, otp }) {
-          await env.EMAIL.send({
+          const mailer = createMailer(env, site.name);
+          await mailer.send({
             to: email,
             from: { email: env.EMAIL_FROM, name: site.name },
             ...emailCopy(site.defaultLocale).signInCode({ siteName: site.name, otp }),

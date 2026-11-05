@@ -3,6 +3,7 @@ import { clientIp, ipBucket, readCookie } from '../http';
 import type { GuestQuota } from '../site';
 import { consumeQuota, dayWindow, type QuotaRule } from './counters';
 import { type RecaptchaConfig, verifyRecaptcha } from './recaptcha';
+import { verifyTurnstile } from './turnstile';
 
 // Guest free trial: three counters (signed device cookie, IP, site-wide daily budget) plus a reCAPTCHA score.
 // The captcha only raises the bar; the counters are the real backstop.
@@ -68,6 +69,8 @@ export interface GuestCheckInput {
   siteId: string;
   quota: GuestQuota;
   recaptcha: RecaptchaConfig;
+  /** Turnstile alternative: set (secret only) to verify the same token via Turnstile siteverify instead of reCAPTCHA. */
+  turnstile?: { secretKey: string } | null;
   recaptchaToken: string | null | undefined;
   action: string;
   cookieSecret: string;
@@ -80,13 +83,19 @@ export interface GuestCheckInput {
  */
 export async function authorizeGuest(input: GuestCheckInput): Promise<GuestDecision> {
   const { guestId, setCookie } = await ensureGuestId(input.request.headers, input.siteId, input.cookieSecret);
-  const check = await verifyRecaptcha(
-    input.recaptcha,
-    input.recaptchaToken,
-    input.action,
-    input.quota.minRecaptchaScore,
-    input.fetcher,
-  );
+  // Turnstile takes precedence when configured; reCAPTCHA next; neither configured runs guests on
+  // quota caps alone (device/IP/day and site budget still bound free spend).
+  const check = input.turnstile
+    ? await verifyTurnstile(input.turnstile.secretKey, input.recaptchaToken, input.fetcher)
+    : input.recaptcha.projectId && input.recaptcha.apiKey
+      ? await verifyRecaptcha(
+          input.recaptcha,
+          input.recaptchaToken,
+          input.action,
+          input.quota.minRecaptchaScore,
+          input.fetcher,
+        )
+      : { ok: true, score: 1 };
   if (!check.ok) return { ok: false, reason: 'recaptcha', setCookie };
 
   const window = dayWindow();

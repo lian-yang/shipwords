@@ -130,6 +130,7 @@ export function createCore(site: SiteConfig, options: { log?: Logger } = {}) {
             projectId: env.RECAPTCHA_PROJECT_ID,
             apiKey: env.RECAPTCHA_API_KEY,
           },
+          turnstile: env.TURNSTILE_SECRET_KEY ? { secretKey: env.TURNSTILE_SECRET_KEY } : null,
           recaptchaToken,
           action,
           cookieSecret: env.GUEST_COOKIE_SECRET,

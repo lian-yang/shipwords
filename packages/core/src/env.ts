@@ -27,6 +27,13 @@ export interface CoreEnv {
   RECAPTCHA_PROJECT_ID: string;
   RECAPTCHA_API_KEY: string;
 
+  /** Cloudflare Turnstile (alternative guest check): set both to enable; takes precedence over reCAPTCHA when present. */
+  TURNSTILE_SITE_KEY?: string;
+  TURNSTILE_SECRET_KEY?: string;
+
+  /** Resend (transactional email): reaches arbitrary visitors' inboxes; takes precedence over the EMAIL binding when present. */
+  RESEND_API_KEY?: string;
+
   /** Rybbit collector endpoint (e.g. https://events.example.com/api); the site's /stats/* is proxied here. */
   RYBBIT_UPSTREAM?: string;
 

@@ -1,6 +1,7 @@
 import type { Db } from '@shipwords/core/db/client';
 import { user } from '@shipwords/core/db/schema';
 import { emailCopy } from '@shipwords/core/email/copy';
+import type { Mailer } from '@shipwords/core/email/send';
 import type { SiteConfig } from '@shipwords/core/site';
 import { eq } from 'drizzle-orm';
 import type { StoredOutput } from './lifecycle';
@@ -13,7 +14,7 @@ import type { JobRow } from './schema';
  */
 export function emailOnFinish(options: {
   db: Db;
-  email: SendEmail;
+  email: Mailer;
   from: string;
   site: Pick<SiteConfig, 'name' | 'defaultLocale'>;
   baseURL: string;

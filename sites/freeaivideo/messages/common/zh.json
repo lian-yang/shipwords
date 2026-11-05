@@ -123,5 +123,7 @@
   "common_trial_load_failed": "暂时无法查看试用额度，请刷新重试。",
   "common_trial_note": "符合条件的新注册验证账户限领一次，受每日领取名额限制。试用券与积分、设备每日免费次数分开计算。生成请求被接受后即使用试用券，后续失败或取消不自动返还次数。",
   "common_plan_video_one": "1 次视频生成 · 10 秒 · 720p",
-  "common_no_watermark": "无本站水印"
+  "common_no_watermark": "无本站水印",
+  "common_footer_mulmannan": "Mulmannan Gwangeo 地板舞",
+  "common_footer_coffeelegends": "双人咖啡 AI"
 }

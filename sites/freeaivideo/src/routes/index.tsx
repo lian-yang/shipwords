@@ -128,6 +128,7 @@ function ToolPage() {
   const [confirmAnother, setConfirmAnother] = useState(false);
   const [restored, setRestored] = useState(false);
   const requestedTrial = useRef<GenerationMode | null>(null);
+  const requestedPrompt = useRef<string | null>(null);
   const model = models.find((item) => item.id === modelId) ?? models[0];
   const cost = creditsFor(model, sanitizeParameters(model, { aspect_ratio: aspectRatio }));
   const rendering = jobs.some(isActive);
@@ -152,6 +153,21 @@ function ToolPage() {
     setRestored(true);
     // Checkout return (RESUME_PATH in pricing.tsx): show a notice, then drop resume from the URL so a reload does not repeat it.
     const url = new URL(window.location.href);
+    // An explicit guide CTA replaces only the prompt. Keep the reference photo,
+    // model and generation mode from the saved draft; checkout resume takes priority.
+    const promptPresets: Record<string, () => string> = {
+      'mulmannan-floor': m.pages_mulmannan_prompt_solo,
+      'coffee-duo': m.pages_coffeelegends_prompt_duo,
+    };
+    const preset = url.searchParams.get('preset');
+    const presetPrompt = preset && Object.hasOwn(promptPresets, preset) ? promptPresets[preset] : undefined;
+    if (presetPrompt) {
+      if (!url.searchParams.has('resume')) requestedPrompt.current = presetPrompt();
+      url.searchParams.delete('preset');
+      window.history.replaceState(window.history.state, '', url);
+    }
+    // Keep the explicit selection when development effects repeat after URL cleanup.
+    if (requestedPrompt.current !== null) setPrompt(requestedPrompt.current);
     if (url.searchParams.get('trial') === 'signup') {
       requestedTrial.current = 'signup-trial';
       url.searchParams.delete('trial');

@@ -1,5 +1,6 @@
 import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from 'cloudflare:workers';
 import { createDb } from '@shipwords/core/db/client';
+import { createMailer } from '@shipwords/core/email/send';
 import type { SiteConfig } from '@shipwords/core/site';
 import { containerComposer } from './compose';
 import { markFailed } from './lifecycle';
@@ -20,9 +21,10 @@ export interface JobsEnv {
   YIR_REFERRAL_CODE?: string;
   /** Effect compose container (Durable Object binding of the Container class); sites without effect compose don't need it. */
   COMPOSE?: DurableObjectNamespace;
-  /** For job-finished emails; shares the send_email binding and sender address with sign-in codes. */
+  /** For job-finished emails; shares the sender address with sign-in codes. Resend first, CF binding fallback. */
   EMAIL?: SendEmail;
   EMAIL_FROM?: string;
+  RESEND_API_KEY?: string;
   APP_URL?: string;
   /** For testing flows locally or on a test-mode demo, see mock.ts. */
   UPSTREAM_MOCK?: string;
@@ -83,12 +85,12 @@ export function defineGenerationWorkflow(models: readonly ModelDefinition[], sit
                 : {}),
             // Served by the site's /files route (handlers.ts file), the same origin the upload URLs use.
             ...(baseURL ? { fileUrl: (key: string) => `${baseURL}/files/${key}` } : {}),
-            ...(site && env.EMAIL && env.EMAIL_FROM
+            ...(site && (env.RESEND_API_KEY || (env.EMAIL && env.EMAIL_FROM))
               ? {
                   notify: emailOnFinish({
                     db,
-                    email: env.EMAIL,
-                    from: env.EMAIL_FROM,
+                    email: createMailer(env, site.name),
+                    from: env.EMAIL_FROM ?? `noreply@${site.id}`,
                     site,
                     baseURL: (env.APP_URL ?? site.url).replace(/\/$/, ''),
                   }),

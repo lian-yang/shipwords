@@ -123,5 +123,7 @@
   "common_trial_load_failed": "Could not check trial availability. Refresh to try again.",
   "common_trial_note": "One voucher per eligible new verified account, subject to daily allocation. It is separate from credits and the daily device trial. An accepted request uses the voucher, including if it later fails or is cancelled.",
   "common_plan_video_one": "1 video · 10 seconds · 720p",
-  "common_no_watermark": "No watermark added"
+  "common_no_watermark": "No watermark added",
+  "common_footer_mulmannan": "Mulmannan Gwangeo AI",
+  "common_footer_coffeelegends": "Coffee Duo AI"
 }

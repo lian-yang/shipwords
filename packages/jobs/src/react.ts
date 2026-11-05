@@ -1,6 +1,7 @@
 import { ApiError, postJson } from '@shipwords/core/react/account';
 import { getRecaptchaToken } from '@shipwords/core/react/recaptcha';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getTurnstileToken } from './turnstile';
 
 // Headless hooks for generation jobs: submit, poll to completion, resume in-flight jobs after a refresh. Styling and layout are up to the site.
 
@@ -92,7 +93,11 @@ export async function uploadReference(file: File): Promise<string> {
  * jobs: recent jobs (newest first); generate: submit a job.
  * When error.code is login_required, prompt sign-in; when insufficient_credits, prompt a purchase.
  */
-export function useGeneration(options: { recaptchaSiteKey: string | null }) {
+export function useGeneration(options: {
+  recaptchaSiteKey: string | null;
+  /** Cloudflare Turnstile site key: takes precedence over reCAPTCHA when set. The page must render a `#turnstile-slot` container. */
+  turnstileSiteKey?: string | null;
+}) {
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
@@ -152,10 +157,15 @@ export function useGeneration(options: { recaptchaSiteKey: string | null }) {
       setSubmitting(true);
       setError(null);
       try {
-        const recaptchaToken = options.recaptchaSiteKey
-          ? await getRecaptchaToken(options.recaptchaSiteKey, 'generate')
-          : null;
-        const { job } = await postJson<{ job: PublicJob }>('/api/jobs', { ...input, recaptchaToken });
+        const captchaToken = options.turnstileSiteKey
+          ? await getTurnstileToken(options.turnstileSiteKey)
+          : options.recaptchaSiteKey
+            ? await getRecaptchaToken(options.recaptchaSiteKey, 'generate')
+            : null;
+        const { job } = await postJson<{ job: PublicJob }>('/api/jobs', {
+          ...input,
+          recaptchaToken: captchaToken,
+        });
         upsert(job);
         watch(job.id);
         return job;
@@ -166,7 +176,7 @@ export function useGeneration(options: { recaptchaSiteKey: string | null }) {
         setSubmitting(false);
       }
     },
-    [options.recaptchaSiteKey, upsert, watch],
+    [options.recaptchaSiteKey, options.turnstileSiteKey, upsert, watch],
   );
 
   const cancel = useCallback(

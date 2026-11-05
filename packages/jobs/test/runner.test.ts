@@ -2,6 +2,7 @@ import { env } from 'cloudflare:test';
 import { getBalance, grantCredits, spendCredits } from '@shipwords/core/credits/ledger';
 import { createDb } from '@shipwords/core/db/client';
 import { user } from '@shipwords/core/db/schema';
+import type { Mailer } from '@shipwords/core/email/send';
 import { consumeQuota } from '@shipwords/core/quota/counters';
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
@@ -132,7 +133,7 @@ describe('generation jobs', () => {
         sent.push(message);
         return { messageId: 'm1' };
       },
-    } as unknown as SendEmail;
+    } as unknown as Mailer;
     const notify = emailOnFinish({
       db,
       email,
@@ -197,7 +198,7 @@ describe('generation jobs', () => {
         sent.push(message);
         return { messageId: 'm1' };
       },
-    } as unknown as SendEmail;
+    } as unknown as Mailer;
     const notify = emailOnFinish({
       db,
       email,

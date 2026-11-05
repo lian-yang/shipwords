@@ -599,13 +599,81 @@ describe('device daily trial shared across sign-in', () => {
     expect(dispatch).not.toHaveBeenCalled();
   });
 
-  it('does not reserve quota when verification fails or a token is missing', async () => {
+  it('does not reserve quota when a verification token is missing', async () => {
     const { core, dispatch } = fakeCore();
     const response = await createSiteJob(core, generationRequest('daily-trial', { token: null }));
     expect(response.status).not.toBe(201);
     expect(await responseCode(response)).toBe('trial_verification_failed');
     expect(await quotaCount('guest:site', dayWindow())).toBe(0);
     expect(dispatch).not.toHaveBeenCalled();
+  });
+});
+
+describe.each(['daily-trial', 'signup-trial'] as const)('%s verification rejection', (mode) => {
+  async function mutationState() {
+    const tables = [
+      'quota_counters',
+      'jobs',
+      'credit_accounts',
+      'credit_lots',
+      'credit_ledger',
+      'credit_allocations',
+    ];
+    return Promise.all(
+      tables.map(async (table) => ({
+        table,
+        rows: (await env.DB.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()).results,
+      })),
+    );
+  }
+
+  it.each([
+    {
+      name: 'provider rejection',
+      verify: async () => Response.json({ success: false }),
+    },
+    {
+      name: 'expired or already-used token',
+      verify: async () => Response.json({ success: false, 'error-codes': ['timeout-or-duplicate'] }),
+    },
+    {
+      name: '503 with a misleading success body',
+      verify: async () => Response.json({ success: true }, { status: 503 }),
+    },
+    {
+      name: 'network failure',
+      verify: async (): Promise<Response> => {
+        throw new Error('mock network failure');
+      },
+    },
+  ])('leaves quota, jobs, credits and dispatch unchanged after $name', async ({ verify }) => {
+    const user = mode === 'signup-trial' ? await newUser({ credits: 100 }) : null;
+    const { core, dispatch } = fakeCore(user);
+    if (user) {
+      expect((await claimSignupTrial(core, trialRequest())).status).toBe(200);
+      expect(await quotaCount(`signup-trial:grant:${user.id}`)).toBe(1);
+    }
+    // A claimed voucher and purchased credits are part of the baseline, not side effects
+    // of this rejected attempt. Compare every reservation and credit record, not only totals.
+    const before = await mutationState();
+    vi.mocked(fetch).mockImplementationOnce(verify);
+
+    const response = await createSiteJob(core, generationRequest(mode));
+
+    expect(response.status).toBe(403);
+    expect(await responseCode(response)).toBe('trial_verification_failed');
+    expect(await mutationState()).toEqual(before);
+    expect(await totalJobs()).toBe(0);
+    expect(dispatch).not.toHaveBeenCalled();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    if (user) {
+      expect(await quotaCount(`signup-trial:used:${user.id}`)).toBe(0);
+      expect((await getBalance(db, user.id)).available).toBe(100);
+    }
   });
 });
 
