@@ -144,7 +144,13 @@ export function createJobs(core: Core, models: readonly ModelDefinition[]) {
       return null;
     } catch (error) {
       core.log('workflow dispatch failed', { jobId: job.id, error: String(error) });
-      await markFailed(core.db, job.id, 'failed', 'dispatch_failed', 'could not start the job');
+      // The 503 must reach the client even if settlement marking fails; the job then stays queued with no
+      // instance, and the site's cron sweep (sweepStaleJobs) ends it and settles later.
+      try {
+        await markFailed(core.db, job.id, 'failed', 'dispatch_failed', 'could not start the job');
+      } catch (settleError) {
+        core.log('dispatch settlement failed', { jobId: job.id, error: String(settleError) });
+      }
       return errorResponse(503, 'dispatch_failed', 'Could not start the job, please try again.');
     }
   }

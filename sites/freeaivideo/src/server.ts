@@ -1,7 +1,10 @@
 import { proxyRybbit } from '@shipwords/core/analytics';
 import handler from '@tanstack/react-start/server-entry';
+import { sweepStaleJobs } from '@shipwords/jobs/sweep';
 import { paraglideMiddleware } from '~/paraglide/server.js';
+import { core } from './core.server';
 import { GenerationWorkflow } from './generation-workflow.server';
+import models from './models.server';
 
 // Worker entry: pages and API go to TanStack Start; also exports the generation Workflow class.
 export { GenerationWorkflow };
@@ -15,5 +18,9 @@ export default {
     return import.meta.env.DEV
       ? paraglideMiddleware(request, () => handler.fetch(request))
       : handler.fetch(request);
+  },
+  // Hourly cron: end stuck jobs whose client never came back (or whose Workflow instance was lost at dispatch).
+  async scheduled(_controller, _env, ctx) {
+    ctx.waitUntil(sweepStaleJobs(core.db, models));
   },
 } satisfies ExportedHandler<Env>;

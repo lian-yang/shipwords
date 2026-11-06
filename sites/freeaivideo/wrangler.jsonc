@@ -13,8 +13,11 @@
   "vars": {
     "EMAIL_FROM": "noreply@freeaivideo.app",
     // To enable Rybbit, set this to your Rybbit API URL (e.g. https://rybbit.example.com/api) and add analytics.rybbit to site.config.ts.
-    "RYBBIT_UPSTREAM": ""
+    "RYBBIT_UPSTREAM": "",
+    // Only this signed-in account may read /admin and /api/admin/*.
+    "ADMIN_EMAIL": "lianyang625@gmail.com"
   },
+  "triggers": { "crons": ["0 * * * *"] },
   "d1_databases": [
     {
       "binding": "DB",
