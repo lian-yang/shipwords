@@ -43,7 +43,8 @@ export const VIDEO_OPTIONS: Readonly<Record<string, VideoOptions>> = {
       },
     ],
     trial: { resolution: '480p', duration: 4 },
-    default: { resolution: '720p', duration: 10 },
+    // Must fit the Starter pack (100 credits): 8s at 720p costs 92.
+    default: { resolution: '720p', duration: 8 },
     aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'],
     imageAspectRatio: 'auto',
   },
