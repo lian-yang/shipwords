@@ -72,6 +72,16 @@ export const Route = createFileRoute('/llms.txt')({
               description:
                 'A guide to the two-person coffee-fail format, with original prompts and an optional single reference photo.',
             },
+            {
+              title: 'Paws at You AI',
+              path: '/paws-at-you-ai',
+              description: 'A pet paw-at-the-camera guide with original prompts and optional single-photo input.',
+            },
+            {
+              title: 'Bicep Heart AI',
+              path: '/bicep-heart-ai',
+              description: 'A bicep heart pose guide with editable video prompts and optional single-photo input.',
+            },
           ],
         ),
     },

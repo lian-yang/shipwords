@@ -13,6 +13,8 @@ export const PAGES = [
   '/red-carpet-ai',
   '/mulmannan-gwangeo-ai',
   '/when-two-legends-try-to-make-coffee',
+  '/paws-at-you-ai',
+  '/bicep-heart-ai',
   '/privacy',
   '/terms',
   '/refunds',

@@ -158,6 +158,8 @@ function ToolPage() {
     const promptPresets: Record<string, () => string> = {
       'mulmannan-floor': m.pages_mulmannan_prompt_solo,
       'coffee-duo': m.pages_coffeelegends_prompt_duo,
+      'paws-at-you': m.pages_paws_prompt_close,
+      'bicep-heart': m.pages_bicep_prompt_close,
     };
     const preset = url.searchParams.get('preset');
     const presetPrompt = preset && Object.hasOwn(promptPresets, preset) ? promptPresets[preset] : undefined;

@@ -141,6 +141,8 @@ function Layout() {
           <Link to="/red-carpet-ai">{m.common_footer_redcarpet()}</Link>
           <Link to="/mulmannan-gwangeo-ai">{m.common_footer_mulmannan()}</Link>
           <Link to="/when-two-legends-try-to-make-coffee">{m.common_footer_coffeelegends()}</Link>
+          <Link to="/paws-at-you-ai">{m.common_footer_paws()}</Link>
+          <Link to="/bicep-heart-ai">{m.common_footer_bicep()}</Link>
           <Link to="/privacy">{m.common_footer_privacy()}</Link>
           <Link to="/terms">{m.common_footer_terms()}</Link>
           <Link to="/refunds">{m.common_footer_refunds()}</Link>
