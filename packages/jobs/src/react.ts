@@ -11,6 +11,7 @@ export interface PublicJob {
   status: 'queued' | 'submitted' | 'succeeded' | 'failed' | 'canceled';
   prompt: string;
   costCredits: number;
+  settlement: 'not_applicable' | 'pending' | 'refunded' | 'charged';
   outputs: { url: string; mediaType: string }[];
   /** Failure code only; sites show their own copy for failed jobs. */
   error: { code: string } | null;
@@ -30,8 +31,14 @@ export interface GenerateInput {
   slots?: Record<string, string>;
 }
 
-const isActive = (job: PublicJob) => job.status === 'queued' || job.status === 'submitted';
 const POLL_MS = 2500;
+const SETTLEMENT_POLL_MS = 30_000;
+
+/** Keep checking terminal jobs only while billing is pending; settled jobs stop polling. */
+export function generationPollDelay(job: Pick<PublicJob, 'status' | 'settlement'>): number | null {
+  if (job.status === 'queued' || job.status === 'submitted') return POLL_MS;
+  return job.settlement === 'pending' ? SETTLEMENT_POLL_MS : null;
+}
 
 // The server takes PNG, JPEG and WebP up to 10 MB; phone screenshots and HEIC photos often aren't, so they're re-encoded here first.
 const UPLOAD_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
@@ -101,7 +108,10 @@ export function useGeneration(options: {
   const [jobs, setJobs] = useState<PublicJob[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
-  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const mounted = useRef(false);
+  const timers = useRef(
+    new Map<string, { timer?: ReturnType<typeof setTimeout>; active: boolean; delay: number }>(),
+  );
 
   const upsert = useCallback((job: PublicJob) => {
     setJobs((list) =>
@@ -110,30 +120,40 @@ export function useGeneration(options: {
   }, []);
 
   const watch = useCallback(
-    (jobId: string) => {
-      if (timers.current.has(jobId)) return;
+    (jobId: string, initialDelay = POLL_MS) => {
+      if (!mounted.current || timers.current.has(jobId)) return;
+      const watcher: { timer?: ReturnType<typeof setTimeout>; active: boolean; delay: number } = {
+        active: true,
+        delay: initialDelay,
+      };
+      timers.current.set(jobId, watcher);
       const tick = async () => {
         try {
           const response = await fetch(`/api/jobs/${jobId}`);
           if (response.ok) {
             const { job } = (await response.json()) as { job: PublicJob };
+            if (!watcher.active) return;
             upsert(job);
-            if (!isActive(job)) {
+            const next = generationPollDelay(job);
+            if (next === null) {
+              watcher.active = false;
               timers.current.delete(jobId);
               return;
             }
+            watcher.delay = next;
           }
         } catch {
           // Keep polling through network blips.
         }
-        timers.current.set(jobId, setTimeout(tick, POLL_MS));
+        if (watcher.active) watcher.timer = setTimeout(tick, watcher.delay);
       };
-      timers.current.set(jobId, setTimeout(tick, POLL_MS));
+      watcher.timer = setTimeout(tick, watcher.delay);
     },
     [upsert],
   );
 
   useEffect(() => {
+    mounted.current = true;
     let cancelled = false;
     void fetch('/api/jobs')
       .then((response) => (response.ok ? response.json() : { jobs: [] }))
@@ -141,13 +161,20 @@ export function useGeneration(options: {
         const data = value as { jobs: PublicJob[] };
         if (cancelled) return;
         setJobs(data.jobs);
-        for (const job of data.jobs) if (isActive(job)) watch(job.id);
+        for (const job of data.jobs) {
+          const delay = generationPollDelay(job);
+          if (delay !== null) watch(job.id, delay);
+        }
       })
       .catch(() => undefined);
     const pending = timers.current;
     return () => {
+      mounted.current = false;
       cancelled = true;
-      for (const timer of pending.values()) clearTimeout(timer);
+      for (const watcher of pending.values()) {
+        watcher.active = false;
+        if (watcher.timer) clearTimeout(watcher.timer);
+      }
       pending.clear();
     };
   }, [watch]);

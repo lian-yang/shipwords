@@ -2,7 +2,7 @@
 
 - Site: https://www.freeaivideo.app
 - Target: free AI video generator, no sign-up; Seedance 2.5 free online.
-- Model: Seedance 2.5, text-to-video and one optional reference photo.
+- Models: 30 for credit videos, including six trial-eligible models; text-to-video and reference-photo support depend on the selected model.
 - Contact: support@freeaivideo.app
 - Language: English in production; English and Chinese in local preview.
 - Analytics: GA4 `G-YJ3Q2BRW3C`.
@@ -12,11 +12,11 @@
 
 | Entry | Output | Allowance |
 | --- | --- | --- |
-| Daily trial | 4 seconds, 480p | One accepted request per signed device per UTC day, shared before and after sign-in; IP cap 3, site cap 4 |
-| Registration voucher | 4 seconds, 480p | One voucher per eligible verified new account, valid until 30 days after registration; issuance capped at 2 per IP and 2 site-wide per UTC day |
-| Credits | 10 seconds, 720p | 100 credits per video; Starter $4.99/100, Creator $19.99/500; purchased credits never expire |
+| Daily trial | Selected model's trial settings | One accepted request per signed device per UTC day, shared before and after sign-in; IP cap 3, site cap 4 |
+| Registration voucher | Selected model's trial settings | One voucher per eligible verified new account, valid until 30 days after registration; issuance capped at 2 per IP and 2 site-wide per UTC day |
+| Credits | Selected model, resolution and duration | Cost shown before generation; Starter $4.99/100, Creator $19.99/500, Studio $49.99/1,250; purchased credits never expire |
 
-The site adds no watermark. Photo input uses its own aspect ratio automatically. Trial settings are fixed server-side, with a separate $0.60 upstream ceiling; paid jobs use $2.60. Earlier jobs keep their established execution policy.
+The site adds no watermark. Photo support and aspect ratio behavior depend on the selected model. Trial settings and upstream cost ceilings are fixed per model on the server; paid cost ceilings depend on the selected specification. Earlier jobs keep their established execution policy. See [video pricing](design/video-pricing.md).
 
 Registration vouchers are separate from credits and daily trials. `src/trials.server.ts` defines the registration eligibility timestamp, reads verified identity from D1 and excludes accounts with an earlier signup-credit grant. Existing credit balances and expiry terms are preserved. Verification establishes eligibility; the first signed-in visit to the generator or account claims the voucher when allocation is available. Its expiry is always measured from registration.
 

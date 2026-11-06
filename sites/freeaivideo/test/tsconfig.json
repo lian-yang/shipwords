@@ -10,5 +10,5 @@
     ],
     "paths": { "~/*": ["../src/*"] }
   },
-  "include": ["./*.test.ts", "./env.d.ts"]
+  "include": ["./*.test.ts", "./env.d.ts", "../src/routeTree.gen.ts"]
 }

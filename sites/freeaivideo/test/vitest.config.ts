@@ -5,6 +5,7 @@ import { defineConfig } from 'vitest/config';
 // Test dependencies reuse packages/jobs; this test worker has no production bindings.
 export default defineConfig(async () => ({
   root: import.meta.dirname,
+  resolve: { alias: { '~': path.join(import.meta.dirname, '../src') } },
   plugins: [
     cloudflareTest({
       wrangler: { configPath: path.join(import.meta.dirname, 'wrangler.test.jsonc') },

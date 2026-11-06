@@ -94,6 +94,9 @@ export class MockAdapter implements UpstreamAdapter {
   }
 
   async cancel() {}
+
+  /** The local test adapter never bills. */
+  async cost() { return { usd: '0', settled: true }; }
 }
 
 function mediaTypeOf(url: string): string {

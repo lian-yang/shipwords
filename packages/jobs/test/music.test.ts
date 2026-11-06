@@ -37,14 +37,18 @@ class FakeAdapter implements UpstreamAdapter {
   readonly name = 'yir';
   submits: { input: SubmitInput; key: string }[] = [];
   polls: PollResult[] = [];
+  lastPoll: PollResult | null = null;
   async submit(input: SubmitInput, key: string) {
     this.submits.push({ input, key });
     return { upstreamJobId: `up_${key}` };
   }
   async poll() {
-    return this.polls.shift() ?? { state: 'running' as const };
+    const result = this.polls.shift() ?? this.lastPoll ?? { state: 'running' as const };
+    if (result.state !== 'running') this.lastPoll = result;
+    return result;
   }
   async cancel() {}
+  async cost() { return { usd: '0', settled: true }; }
 }
 
 const steps: StepRunner = { do: (_name, fn) => fn(), sleep: async () => {} };
@@ -52,7 +56,7 @@ const mp3Fetcher: typeof fetch = async () =>
   new Response(new Uint8Array([0xff, 0xfb]), { headers: { 'content-type': 'audio/mpeg' } });
 
 /** The slice of Core that createJobs touches: a signed-in user (or a guest with a granted quota) and a Workflow that only records ids. */
-function fakeCore(userId: string | null) {
+function fakeCore(userId: string | null, catalog: readonly ModelDefinition[] = models) {
   const dispatched: string[] = [];
   const core = {
     db,
@@ -72,7 +76,7 @@ function fakeCore(userId: string | null) {
     },
     log: () => {},
   } as unknown as Core;
-  return { jobs: createJobs(core, models), dispatched };
+  return { jobs: createJobs(core, catalog), dispatched };
 }
 
 async function userWith(credits: number) {
@@ -105,6 +109,15 @@ describe('music models', () => {
 });
 
 describe('creating a music job', () => {
+  it('takes the billing policy only from the server model, never client fields', async () => {
+    const userId = await userWith(3);
+    const legacy = fakeCore(userId, [{ ...song, allowedParameters: ['_verifiedBilling'] }]);
+    const old = await created(await legacy.jobs.create(post({ modelId: 'song', prompt: 'a', _verifiedBilling: true, parameters: { _verifiedBilling: true } })));
+    expect(JSON.parse(old.inputJson)._verifiedBilling).toBeUndefined();
+    const verified = fakeCore(userId, [{ ...song, verifiedBilling: true, allowedParameters: ['_verifiedBilling'] }]);
+    const fresh = await created(await verified.jobs.create(post({ modelId: 'song', prompt: 'b', _verifiedBilling: false, parameters: { _verifiedBilling: false } })));
+    expect(JSON.parse(fresh.inputJson)._verifiedBilling).toBe(true);
+  });
   it('stores the lyrics and the style prompt, charges once, dispatches once', async () => {
     const userId = await userWith(3);
     const { jobs, dispatched } = fakeCore(userId);

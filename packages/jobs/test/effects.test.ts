@@ -234,6 +234,7 @@ class FakeAdapter implements UpstreamAdapter {
   readonly name = 'yir';
   submits: { input: SubmitInput; key: string }[] = [];
   polls = new Map<string, PollResult[]>();
+  lastPolls = new Map<string, PollResult>();
   cancelled: string[] = [];
   /** Errors injected by submit order. */
   submitErrors: (Error | null)[] = [];
@@ -246,11 +247,14 @@ class FakeAdapter implements UpstreamAdapter {
     return { upstreamJobId: `up_${key}` };
   }
   async poll(id: string) {
-    return this.polls.get(id)?.shift() ?? { state: 'running' as const };
+    const result = this.polls.get(id)?.shift() ?? this.lastPolls.get(id) ?? { state: 'running' as const };
+    if (result.state !== 'running') this.lastPolls.set(id, result);
+    return result;
   }
   async cancel(id: string) {
     this.cancelled.push(id);
   }
+  async cost() { return { usd: '0', settled: true }; }
 }
 
 /** Simulated Workflow: successful step results are cached and not re-run on replay. */
@@ -306,6 +310,23 @@ const succeeded = (name: string): PollResult => ({
 });
 
 describe('multi-part effect jobs', () => {
+  it('cancels a late legacy segment when failure and refund win during submission', async () => {
+    const { userId, jobId } = await effectJob({ left: '/files/uploads/up_a.png' });
+    const adapter = new FakeAdapter();
+    adapter.onSubmit = async (key) => {
+      if (key === `${jobId}:group`) {
+        await markFailed(db, jobId, 'failed', 'concurrent_failure', 'failed while submitting');
+      }
+    };
+    await runGeneration(deps(adapter), jobId, durableSteps());
+    expect((await getBalance(db, userId)).available).toBe(50);
+    expect(await loadJob(db, jobId)).toMatchObject({
+      status: 'failed',
+      upstreamJobId: `up_${jobId}:left`,
+    });
+    expect(adapter.cancelled).toContain(`up_${jobId}:group`);
+  });
+
   it('success: each segment submits with jobId:segment ID, outputs numbered by segment, charged once', async () => {
     const { userId, jobId } = await effectJob({
       left: '/files/uploads/up_a.png',

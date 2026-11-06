@@ -10,6 +10,8 @@ export interface ModelDefinition {
   kind: 'image' | 'video' | 'music';
   upstream: 'yir';
   upstreamModel: string;
+  /** Opt new jobs into provider-billing-confirmed failure settlement. Server-side only. */
+  verifiedBilling?: boolean;
   /** Credits charged per job; pass a function for parameter-based pricing. */
   credits: number | ((parameters: Record<string, unknown>) => number);
   /** Whether guests can try this model for free (usually only the cheapest one). */

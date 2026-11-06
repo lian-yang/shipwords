@@ -3,9 +3,16 @@ import { isMp3, stripAudioTags } from './audio-tags';
 import type { Composer, ComposeSegment } from './compose';
 import {
   appendUpstreamJob,
+  BILLING_REFUNDED,
+  claimUpstreamJob,
+  hasVerifiedBilling,
   loadJob,
   markFailed,
   markSucceeded,
+  pendingSubmit,
+  PENDING_UPSTREAM,
+  readPendingSubmit,
+  reconcileFailure,
   recordUpstreamCost,
   SKIPPED_UPSTREAM as SKIPPED,
   type StoredOutput,
@@ -104,7 +111,10 @@ export async function runGeneration(deps: RunnerDeps, jobId: string, step: StepR
   // so settle here on the final state (refunds and quota returns are idempotent).
   await step.do('settle', async () => {
     const job = await loadJob(deps.db, jobId);
-    if (job) await settleFailure(deps.db, job);
+    if (job) {
+      if (hasVerifiedBilling(job)) await reconcileFailure(deps.db, jobId, deps.adapters);
+      else await settleFailure(deps.db, job);
+    }
     return true;
   });
   const notify = deps.notify;
@@ -114,7 +124,7 @@ export async function runGeneration(deps: RunnerDeps, jobId: string, step: StepR
       .do('notify', async () => {
         const job = await loadJob(deps.db, jobId);
         // Canceled jobs aren't notified: the user did it themselves.
-        if (job?.status === 'succeeded' || job?.status === 'failed') await notify(job);
+        if (job?.status === 'succeeded' || (job?.status === 'failed' && (!hasVerifiedBilling(job) || job.costCredits === 0 || job.errorCode === BILLING_REFUNDED))) await notify(job);
         return true;
       })
       .catch((error: unknown) => deps.log?.('notify failed', { jobId, error: String(error) }));
@@ -141,7 +151,7 @@ async function recordCost(deps: RunnerDeps, jobId: string, step: StepRunner): Pr
       const job = await loadJob(deps.db, jobId);
       const adapter = job ? deps.adapters[job.upstream] : undefined;
       if (!job || !TERMINAL.includes(job.status) || !adapter?.cost) return true;
-      const ids = upstreamIds(job).filter((id) => !id.startsWith(SKIPPED));
+      const ids = upstreamIds(job).filter((id) => !id.startsWith(SKIPPED) && !id.startsWith(PENDING_UPSTREAM));
       if (ids.length === 0) return true;
       const costs = await Promise.all(ids.map((id) => adapter.cost!(id)));
       await recordUpstreamCost(deps.db, jobId, sumUsd(costs.map((cost) => cost.usd)));
@@ -244,7 +254,7 @@ async function pollCopies(
 
 async function cancelAll(adapter: UpstreamAdapter, ids: readonly string[]) {
   await Promise.all(
-    ids.filter((id) => !id.startsWith(SKIPPED)).map((id) => adapter.cancel(id).catch(() => undefined)),
+    ids.filter((id) => !id.startsWith(SKIPPED) && !id.startsWith(PENDING_UPSTREAM)).map((id) => adapter.cancel(id).catch(() => undefined)),
   );
 }
 
@@ -260,6 +270,7 @@ async function runSteps(deps: RunnerDeps, jobId: string, step: StepRunner): Prom
       model: model.id,
       timeoutMinutes: model.timeoutMinutes,
       createdAt: job.createdAt,
+      verifiedBilling: hasVerifiedBilling(job),
       parts,
       prep: partsOf(job, model).filter((part) => part.kind === 'image' && model.kind === 'video').length,
       compose: Boolean(model.effect?.compose),
@@ -424,7 +435,8 @@ async function runSteps(deps: RunnerDeps, jobId: string, step: StepRunner): Prom
           state: 'polled' as const,
           results: Object.fromEntries(open.map((part, i) => [part.partId, states[i]!])),
           // Decided inside the step: replaying a cached poll must never hedge a prep that has since finished.
-          hedge: open
+          // Verified jobs cannot use untracked hedge copies. Legacy sites retain their configured behavior.
+          hedge: setup.verifiedBilling ? [] : open
             .filter((part, i) => late && states[i]!.state === 'running' && !hedged.has(part.partId))
             .map((part) => part.partId),
         };
@@ -685,8 +697,8 @@ async function runSteps(deps: RunnerDeps, jobId: string, step: StepRunner): Prom
           const row = await loadJob(deps.db, jobId);
           if (!row || TERMINAL.includes(row.status)) return { done: true as const };
           const existing = upstreamIds(row)[position];
-          if (existing) return { upstreamJobId: existing };
-          if (Date.now() > deadline) return { timeout: true as const };
+          if (existing && !existing.startsWith(PENDING_UPSTREAM)) return { upstreamJobId: existing };
+          if (!existing && Date.now() > deadline) return { timeout: true as const };
           const input: SubmitInput = {
             upstreamModel: repair.upstreamModel,
             kind: 'video',
@@ -702,15 +714,21 @@ async function runSteps(deps: RunnerDeps, jobId: string, step: StepRunner): Prom
             parameters: { ...repair.parameters, seed: round + 1 },
             maxCost: repair.maxCost,
           };
+          const request = existing ? readPendingSubmit(existing) : { input, key: `${jobId}:${partId}:repair:${round}` };
+          const pending = existing ?? pendingSubmit(request.input, request.key);
+          if (setup.verifiedBilling) adapter.prepare?.(request.input);
+          if (setup.verifiedBilling && !(await claimUpstreamJob(deps.db, jobId, position, pending))) return { done: true as const };
           try {
-            const { upstreamJobId } = await adapter.submit(input, `${jobId}:${partId}:repair:${round}`);
+            const { upstreamJobId } = await adapter.submit(request.input, request.key);
             if (!(await appendUpstreamJob(deps.db, jobId, position, upstreamJobId))) {
               await adapter.cancel(upstreamJobId).catch(() => undefined);
               return { done: true as const };
             }
             return { upstreamJobId };
           } catch (error) {
-            if (error instanceof UpstreamError && !error.retryable) return { rejected: error.code };
+            if (!setup.verifiedBilling && error instanceof UpstreamError && !error.retryable) return { rejected: error.code };
+            // A rejection can race another invocation with the same idempotency key.
+            // It is not proof that the persisted request never created a job.
             throw error;
           }
         });
@@ -805,13 +823,19 @@ async function runSteps(deps: RunnerDeps, jobId: string, step: StepRunner): Prom
         const job = await loadJob(deps.db, jobId);
         if (!job || TERMINAL.includes(job.status)) return { done: true as const };
         const existing = upstreamIds(job)[index];
-        if (existing) return { upstreamJobId: existing };
+        if (existing && !existing.startsWith(PENDING_UPSTREAM)) return { upstreamJobId: existing };
         // Prep may have used up the time: submitting video segments now would just waste upstream spend.
-        if (index > 0 && Date.now() > deadline) return { timeout: true as const };
+        if (!existing && index > 0 && Date.now() > deadline) return { timeout: true as const };
+        const request = existing
+          ? readPendingSubmit(existing)
+          : { input: submitInput(job, index), key: single ? jobId : `${jobId}:${partId}` };
+        const pending = existing ?? pendingSubmit(request.input, request.key);
+        if (setup.verifiedBilling) adapter.prepare?.(request.input);
+        if (setup.verifiedBilling && !(await claimUpstreamJob(deps.db, jobId, index, pending))) return { done: true as const };
         try {
           const { upstreamJobId } = await adapter.submit(
-            submitInput(job, index),
-            single ? jobId : `${jobId}:${partId}`,
+            request.input,
+            request.key,
           );
           if (!(await appendUpstreamJob(deps.db, jobId, index, upstreamJobId))) {
             // The job was canceled during submit: nobody needs the task just placed, cancel it.
@@ -820,24 +844,19 @@ async function runSteps(deps: RunnerDeps, jobId: string, step: StepRunner): Prom
           }
           return { upstreamJobId };
         } catch (error) {
-          if (error instanceof UpstreamError && !error.retryable && index < prepCount) {
-            // Prep rejected (e.g. a celebrity photo): don't fail, record a placeholder and fall back to the original photo.
+          if (!setup.verifiedBilling && error instanceof UpstreamError && !error.retryable && index < prepCount) {
             deps.log?.('prep rejected, using original photo', { jobId, part: partId, code: error.code });
             const skipped = `${SKIPPED}${partId}`;
             if (!(await appendUpstreamJob(deps.db, jobId, index, skipped))) return { done: true as const };
             return { upstreamJobId: skipped };
           }
-          if (error instanceof UpstreamError && !error.retryable) {
-            deps.log?.('upstream rejected job', {
-              jobId,
-              part: partId,
-              code: error.code,
-              message: error.message,
-            });
+          if (!setup.verifiedBilling && error instanceof UpstreamError && !error.retryable) {
             await cancelAll(adapter, upstreamIds(job));
             await markFailed(deps.db, jobId, 'failed', error.code, error.message);
             return { done: true as const };
           }
+          // Even an explicit 4xx cannot rule out another concurrent invocation with the same key.
+          // Preserve the request until a matching upstream job or human-reviewed evidence resolves it.
           throw error;
         }
       });

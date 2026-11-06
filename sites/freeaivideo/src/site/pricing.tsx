@@ -1,14 +1,14 @@
 import { useCheckout } from '@shipwords/core/react/account';
 import type { Product } from '@shipwords/core/site';
 import { getRouteApi, Link } from '@tanstack/react-router';
-import { type MouseEvent, type ReactNode, useEffect, useRef } from 'react';
+import { type MouseEvent, type ReactNode, useEffect, useRef, useState } from 'react';
 import { authClient } from '~/lib/auth';
 import { track } from '~/lib/track';
 import { m } from '~/paraglide/messages.js';
 import { getLocale } from '~/paraglide/runtime.js';
+import { useSharedCreditBalance } from '~/site/credit-balance';
 import { openSignIn } from '~/site/sign-in';
 import site from '../../site.config';
-import models from '../../site.models';
 
 // No separate pricing page: buy from the home #pricing section; other entry points (nav, low credits, account) open a dialog in place.
 // Change prices in site.config.ts only.
@@ -17,9 +17,9 @@ const OPEN_EVENT = 'site:pricing';
 /** Checkout success and cancel both return here; on resume the home page restores the generator from sessionStorage and shows a notice. */
 export const RESUME_PATH = '/?resume=1#tool';
 
-export function openPricing(source: string) {
+export function openPricing(source: string, requiredCredits?: number) {
   track('pricing_open', { source });
-  window.dispatchEvent(new Event(OPEN_EVENT));
+  window.dispatchEvent(new CustomEvent(OPEN_EVENT, { detail: { requiredCredits } }));
 }
 
 export function formatPrice(product: Product) {
@@ -36,6 +36,7 @@ export function productName(productId: string) {
   const product = site.products.find((item) => item.id === productId);
   if (product?.id === 'pack_100') return m.common_plan_starter();
   if (product?.id === 'pack_500') return m.common_plan_creator();
+  if (product?.id === 'pack_1250') return m.common_plan_studio();
   return product?.name ?? productId;
 }
 
@@ -55,10 +56,12 @@ function describe(product: Product) {
 export function PricingLink({
   className,
   source,
+  requiredCredits,
   children,
 }: {
   className?: string;
   source: string;
+  requiredCredits?: number;
   children: ReactNode;
 }) {
   return (
@@ -68,7 +71,7 @@ export function PricingLink({
       className={className}
       onClick={(e: MouseEvent) => {
         e.preventDefault();
-        openPricing(source);
+        openPricing(source, requiredCredits);
       }}
     >
       {children}
@@ -110,16 +113,8 @@ export function Plans({
       <div className="plans">
         {site.products.map((product) => (
           <article key={product.id} className="plan">
-            {product.id === 'pack_500' && <span className="plan-badge">{m.common_plan_recommended()}</span>}
             <Heading>{productName(product.id)}</Heading>
             <p className="price">{formatPrice(product)}</p>
-            {product.kind === 'credits' && (
-              <p className="plan-videos">
-                {product.credits === models[0].credits
-                  ? m.common_plan_video_one()
-                  : m.common_plan_videos({ count: Math.floor(product.credits / models[0].credits) })}
-              </p>
-            )}
             <p className="muted small">{describe(product)}</p>
             <p className="small">
               <strong>{m.common_no_watermark()}</strong>
@@ -157,9 +152,25 @@ export function Plans({
 
 export function PricingDialog() {
   const dialog = useRef<HTMLDialogElement>(null);
+  const [requiredCredits, setRequiredCredits] = useState<number | null>(null);
+  const balance = useSharedCreditBalance();
+  const shortfall =
+    requiredCredits !== null && balance.status === 'ready' && balance.available !== null
+      ? Math.max(0, requiredCredits - balance.available)
+      : 0;
+  const largestPack = Math.max(
+    0,
+    ...site.products.map((product) => (product.kind === 'credits' ? product.credits : 0)),
+  );
 
   useEffect(() => {
-    const onOpen = () => dialog.current?.showModal();
+    const onOpen = (event: Event) => {
+      const amount = (event as CustomEvent<{ requiredCredits?: unknown }>).detail?.requiredCredits;
+      setRequiredCredits(
+        typeof amount === 'number' && Number.isSafeInteger(amount) && amount > 0 ? amount : null,
+      );
+      if (dialog.current && !dialog.current.open) dialog.current.showModal();
+    };
     window.addEventListener(OPEN_EVENT, onOpen);
     return () => window.removeEventListener(OPEN_EVENT, onOpen);
   }, []);
@@ -182,6 +193,16 @@ export function PricingDialog() {
         ×
       </button>
       <h2 id="pricing-title">{m.common_pricing_dialog_title()}</h2>
+      {shortfall > 0 && (
+        <p className="pricing-shortfall">
+          {shortfall > largestPack && largestPack > 0
+            ? m.home_credit_multiple_packs({
+                amount: shortfall.toLocaleString(),
+                max: largestPack.toLocaleString(),
+              })
+            : m.home_credit_shortfall({ amount: shortfall.toLocaleString() })}
+        </p>
+      )}
       <Plans source="dialog" />
     </dialog>
   );

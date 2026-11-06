@@ -6,6 +6,9 @@ declare global {
       DB: D1Database;
       OUTPUTS: R2Bucket;
       TEST_MIGRATIONS: D1Migration[];
+      ADMIN_EMAIL: string;
+      YIR_API_KEY: string;
+      GENERATION_WORKFLOW: Workflow<{ jobId: string }>;
     }
   }
 }

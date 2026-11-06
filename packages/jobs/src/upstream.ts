@@ -38,6 +38,8 @@ export class UpstreamError extends Error {
     message: string,
     /** false means retrying won't help (bad parameters, content rejected, etc.); fail immediately. */
     readonly retryable: boolean,
+    /** A request was rejected before a provider job was created. */
+    readonly definitelyNotSubmitted = false,
   ) {
     super(message);
     this.name = 'UpstreamError';
@@ -46,6 +48,8 @@ export class UpstreamError extends Error {
 
 export interface UpstreamAdapter {
   readonly name: string;
+  /** Validate local configuration and serialization without making a network request. */
+  prepare?(input: SubmitInput): void;
   /** Repeated submits with the same idempotencyKey must return the same upstream task. */
   submit(input: SubmitInput, idempotencyKey: string): Promise<{ upstreamJobId: string }>;
   /** Long poll: waits up to waitSeconds, returns immediately on a state change or completion. */

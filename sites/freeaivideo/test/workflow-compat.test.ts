@@ -10,6 +10,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import site from '../site.config';
 import { createSiteJob } from '../src/create-job.server';
 import { GenerationWorkflow } from '../src/generation-workflow.server';
+import { paidMaxCost } from '../src/video-pricing.server';
+import models from '../src/models.server';
+import { creditsFor } from '@shipwords/jobs/models';
 
 const db = createDb(env.DB);
 const BASE = 'https://www.freeaivideo.app';
@@ -49,38 +52,19 @@ async function accountWith(credits = 200) {
 
 async function currentPaid(image = false) {
   const user = await accountWith();
-  const dispatch = vi.fn(async () => ({}));
-  const core = {
-    db,
-    site,
-    env: {
-      DB: env.DB,
-      OUTPUTS: env.OUTPUTS,
-      APP_URL: BASE,
-      GUEST_COOKIE_SECRET: 'test-only-secret',
-      GENERATION_WORKFLOW: { create: dispatch },
-    },
-    getUser: async () => user,
-    log: () => {},
-  } as unknown as Core;
-  const response = await createSiteJob(
-    core,
-    new Request(`${BASE}/api/jobs`, {
-      method: 'POST',
-      headers: { origin: BASE, 'content-type': 'application/json' },
-      body: JSON.stringify({
-        mode: 'paid',
-        modelId: 'seedance-2-5',
-        prompt: 'A lighthouse above the quiet sea',
-        parameters: { duration: 30, resolution: '1080p', aspect_ratio: '9:16' },
-        ...(image ? { references: ['/files/uploads/reference.jpg'] } : {}),
+  // A job accepted before the new catalog existed, with its original charge and input.
+  const id = `job_${crypto.randomUUID().replaceAll('-', '')}`;
+  await spendCredits(db, { userId: user.id, amount: 100, idemKey: spendKey(id), ref: id }, [
+    db.insert(jobs).values({
+      id, userId: user.id, modelId: 'seedance-2-5', kind: 'video',
+      prompt: 'A lighthouse above the quiet sea', costCredits: 100, upstream: 'yir',
+      inputJson: JSON.stringify({
+        references: image ? [{ url: `${BASE}/files/uploads/reference.jpg`, role: 'first_frame' }] : [],
+        parameters: { duration: 10, resolution: '720p', aspect_ratio: image ? 'auto' : '9:16' },
       }),
     }),
-  );
-  expect(response.status).toBe(201);
-  const { job } = (await response.json()) as { job: { id: string } };
-  expect(dispatch).toHaveBeenCalledTimes(1);
-  return { user, job: (await loadJob(db, job.id))! };
+  ]);
+  return { user, job: (await loadJob(db, id))! };
 }
 
 function cachedSteps(options: { failPolicy?: boolean } = {}) {
@@ -128,6 +112,84 @@ function fakeUpstream() {
 }
 
 describe('account and legacy Workflow compatibility', () => {
+  it('charges the selected paid specification and submits it with its own saved cost ceiling', async () => {
+    const user = await accountWith(5000);
+    const dispatch = vi.fn(async () => ({}));
+    const core = {
+      db, site,
+      env: { DB: env.DB, OUTPUTS: env.OUTPUTS, APP_URL: BASE, GENERATION_WORKFLOW: { create: dispatch } },
+      getUser: async () => user,
+      log: () => {},
+    } as unknown as Core;
+    const response = await createSiteJob(core, new Request(`${BASE}/api/jobs`, {
+      method: 'POST', headers: { origin: BASE, 'content-type': 'application/json' },
+      body: JSON.stringify({ mode: 'paid', modelId: 'seedance-2-5-v2', prompt: 'A quiet sea',
+        parameters: { duration: 30, resolution: '1080p', aspect_ratio: '9:16' } }),
+    }));
+    expect(response.status).toBe(201);
+    const { job: result } = await response.json() as { job: { id: string } };
+    const job = (await loadJob(db, result.id))!;
+    const parameters = JSON.parse(job.inputJson).parameters;
+    expect(parameters).toMatchObject({ duration: 30, resolution: '1080p', aspect_ratio: '9:16', generate_audio: false });
+    expect(job.costCredits).toBe(creditsFor(models.find((model) => model.id === job.modelId)!, parameters));
+    expect((await getBalance(db, user.id)).available).toBe(5000 - job.costCredits);
+    const submit = fakeUpstream();
+    await actualRun(job.id, cachedSteps().step);
+    expect(submit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      parameters, maxCost: paidMaxCost(job.modelId, parameters),
+    }), job.id);
+    expect((await getBalance(db, user.id)).available).toBe(5000);
+  });
+
+  it('fails closed and refunds a saved new-version job with an invalid specification', async () => {
+    const user = await accountWith();
+    const id = `job_${crypto.randomUUID().replaceAll('-', '')}`;
+    await spendCredits(db, { userId: user.id, amount: 100, idemKey: spendKey(id), ref: id }, [
+      db.insert(jobs).values({ id, userId: user.id, modelId: 'seedance-2-5-v2', kind: 'video',
+        prompt: 'Invalid saved job', costCredits: 100, upstream: 'yir',
+        inputJson: JSON.stringify({ references: [], parameters: { duration: 999, resolution: '1080p' } }),
+      }),
+    ]);
+    const submit = fakeUpstream();
+    await actualRun(id, cachedSteps().step);
+    expect(submit).not.toHaveBeenCalled();
+    expect(await loadJob(db, id)).toMatchObject({ status: 'failed', errorCode: 'internal_error' });
+    expect((await getBalance(db, user.id)).available).toBe(200);
+  });
+
+  it('limits a queued job to the value of the credits actually charged if prices later change', async () => {
+    const user = await accountWith();
+    const id = `job_${crypto.randomUUID().replaceAll('-', '')}`;
+    await spendCredits(db, { userId: user.id, amount: 10, idemKey: spendKey(id), ref: id }, [
+      db.insert(jobs).values({ id, userId: user.id, modelId: 'seedance-2-5-v2', kind: 'video',
+        prompt: 'Previously priced job', costCredits: 10, upstream: 'yir',
+        inputJson: JSON.stringify({ references: [], parameters: {
+          duration: 30, resolution: '1080p', aspect_ratio: '16:9', generate_audio: false,
+        } }),
+      }),
+    ]);
+    const submit = fakeUpstream();
+    await actualRun(id, cachedSteps().step);
+    expect(submit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ maxCost: '0.199900' }), id);
+    expect((await getBalance(db, user.id)).available).toBe(200);
+  });
+
+  it('uses the selected specification margin when capping an older paid charge', async () => {
+    const user = await accountWith();
+    const id = `job_${crypto.randomUUID().replaceAll('-', '')}`;
+    await spendCredits(db, { userId: user.id, amount: 10, idemKey: spendKey(id), ref: id }, [
+      db.insert(jobs).values({ id, userId: user.id, modelId: 'seedance-2-5-v2', kind: 'video',
+        prompt: 'Previously priced job', costCredits: 10, upstream: 'yir',
+        inputJson: JSON.stringify({ references: [], parameters: {
+          duration: 4, resolution: '480p', aspect_ratio: '16:9', generate_audio: false,
+        } }),
+      }),
+    ]);
+    const submit = fakeUpstream();
+    await actualRun(id, cachedSteps().step);
+    expect(submit).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ maxCost: '0.259870' }), id);
+    expect((await getBalance(db, user.id)).available).toBe(200);
+  });
   it.each([false, true])('uses the current 10s720p $2.60 policy for an account image=%s', async (image) => {
     const { user, job } = await currentPaid(image);
     expect(job.costCredits).toBe(100);

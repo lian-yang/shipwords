@@ -1,4 +1,5 @@
 import { createNodeYirClient } from '@yir-ai/sdk/server';
+import { validateGeneration } from '@yir-ai/sdk/shared';
 import type {
   StandardImageGenerationRequest,
   StandardMusicGenerationRequest,
@@ -20,7 +21,8 @@ type YirClient = ReturnType<typeof createNodeYirClient>;
  */
 function toUpstreamError(error: unknown): UpstreamError {
   const e = error as { code?: string; message?: string; status?: number };
-  return new UpstreamError(e?.code ?? 'yir_error', e?.message ?? String(error), e?.status === 429);
+  const rejected = e?.status !== undefined && [400, 401, 403, 404, 422, 429].includes(e.status);
+  return new UpstreamError(e?.code ?? 'yir_error', e?.message ?? String(error), e?.status === 429, rejected);
 }
 
 type YirRequest =
@@ -37,7 +39,8 @@ export function buildYirRequest(input: SubmitInput): YirRequest {
   };
   // Music takes text only: a style prompt plus the lyrics, when the user wrote them.
   if (input.kind === 'music') {
-    if (references.length) throw new UpstreamError('invalid_input', 'music jobs take no references', false);
+    if (references.length)
+      throw new UpstreamError('invalid_input', 'music jobs take no references', false, true);
     return {
       ...base,
       input: { type: 'text', prompt: input.prompt, ...(input.lyrics ? { lyrics: input.lyrics } : {}) },
@@ -69,13 +72,27 @@ export class YirAdapter implements UpstreamAdapter {
   /** Created lazily: a missing API key raises a non-retryable error inside a step, so the job fails and is refunded instead of hanging. */
   private get client(): YirClient {
     if (this.instance) return this.instance;
-    if (!this.options.apiKey) throw new UpstreamError('yir_not_configured', 'YIR_API_KEY is not set', false);
+    if (!this.options.apiKey)
+      throw new UpstreamError('yir_not_configured', 'YIR_API_KEY is not set', false, true);
     this.instance = createNodeYirClient({
       apiKey: this.options.apiKey,
       ...(this.options.baseURL ? { baseURL: this.options.baseURL } : {}),
       ...(this.options.referralCode ? { referralCode: this.options.referralCode } : {}),
     });
     return this.instance;
+  }
+
+  prepare(input: SubmitInput): void {
+    const request = buildYirRequest(input);
+    const operation =
+      input.kind === 'music'
+        ? 'generate_music'
+        : input.kind === 'video'
+          ? 'generate_video'
+          : 'generate_image';
+    validateGeneration(operation, request);
+    JSON.stringify(request);
+    void this.client;
   }
 
   async submit(input: SubmitInput, idempotencyKey: string) {

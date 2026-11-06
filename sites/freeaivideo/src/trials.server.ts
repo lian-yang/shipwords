@@ -11,6 +11,8 @@ import { referenceRoleOf, sanitizeParameters } from '@shipwords/jobs/models';
 import type { JobsEnv } from '@shipwords/jobs/workflow';
 import { guestModels } from './models.server';
 import { type GenerationMode, type TrialStatus, trialErrors, trialReasons } from './trial-types';
+import { VIDEO_OPTIONS } from './video-options';
+import { VIDEO_UPSTREAMS } from './video-pricing.server';
 
 // New verified registrations only. Existing signup credits remain untouched.
 export const SIGNUP_TRIAL_START = Date.parse('2026-11-01T11:04:07.000Z');
@@ -276,7 +278,19 @@ export async function createTrialJob(
   mode: Exclude<GenerationMode, 'paid'>,
 ) {
   if (!sameOrigin(request)) return errorResponse(403, 'forbidden');
-  const model = guestModels.find((item) => item.id === body.modelId && item.guest && item.kind === 'video');
+  const options = (
+    VIDEO_OPTIONS as Readonly<
+      Record<
+        string,
+        {
+          aspectRatios: readonly string[];
+          imageAspectRatio?: string;
+        }
+      >
+    >
+  )[typeof body.modelId === 'string' ? body.modelId : ''];
+  const model =
+    options && guestModels.find((item) => item.id === body.modelId && item.guest && item.kind === 'video');
   if (!model) return errorResponse(400, 'unknown_model');
   if (typeof body.prompt !== 'string' || !body.prompt.trim() || body.prompt.trim().length > 4000)
     return errorResponse(400, 'invalid_prompt');
@@ -284,6 +298,21 @@ export async function createTrialJob(
   const refs = body.references ?? [];
   if (!Array.isArray(refs) || refs.length > model.maxReferences)
     return errorResponse(400, 'invalid_references');
+  if (VIDEO_UPSTREAMS[model.id]?.requiresReference && refs.length !== 1)
+    return errorResponse(400, 'invalid_references');
+  const rawParameters = body.parameters;
+  if (
+    rawParameters !== undefined &&
+    (!rawParameters || typeof rawParameters !== 'object' || Array.isArray(rawParameters))
+  )
+    return errorResponse(400, 'invalid_parameters');
+  const ratio = (rawParameters as Record<string, unknown> | undefined)?.aspect_ratio;
+  if (
+    ratio !== undefined &&
+    (typeof ratio !== 'string' ||
+      (!options!.aspectRatios.includes(ratio) && !(refs.length > 0 && options!.imageAspectRatio === ratio)))
+  )
+    return errorResponse(400, 'invalid_parameters');
   const references: { url: string; role: ReturnType<typeof referenceRoleOf> }[] = [];
   for (const ref of refs) {
     const prefix = `${baseURL}/files/uploads/`;
@@ -311,7 +340,7 @@ export async function createTrialJob(
     ? dailyRules(core, request, guest.guestId)
     : [{ key: usedKey(user!.id), window: LIFETIME, limit: 1 }];
   const parameters = sanitizeParameters(model, body.parameters);
-  if (references.length > 0) parameters.aspect_ratio = 'auto';
+  if (references.length > 0 && options!.imageAspectRatio) parameters.aspect_ratio = options!.imageAspectRatio;
   const id = newId('job');
   const write = core.env.DB.prepare(
     `insert into jobs (id, user_id, guest_id, model_id, kind, prompt, input_json, cost_credits, upstream)
@@ -323,7 +352,7 @@ export async function createTrialJob(
     model.id,
     model.kind,
     body.prompt.trim(),
-    JSON.stringify({ references, parameters, trialMode: mode }),
+    JSON.stringify({ references, parameters, trialMode: mode, _verifiedBilling: true }),
     model.upstream,
   );
   const reserved = await reserve(

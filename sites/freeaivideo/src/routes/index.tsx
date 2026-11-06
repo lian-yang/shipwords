@@ -7,12 +7,16 @@ import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { authClient } from '~/lib/auth';
 import { track } from '~/lib/track';
 import { notifyTrialsChanged, signupTrialDescription, useTrials } from '~/lib/trials';
+import { notifyCreditsChanged } from '~/lib/use-credit-balance';
 import { m } from '~/paraglide/messages.js';
 import { getLocale } from '~/paraglide/runtime.js';
+import { useSharedCreditBalance } from '~/site/credit-balance';
+import { CreditSummary, creditShortfall } from '~/site/credit-summary';
 import { getFaqs } from '~/site/faq';
 import { Plans, PricingLink } from '~/site/pricing';
 import { openSignIn } from '~/site/sign-in';
 import type { GenerationMode } from '~/trial-types';
+import { VIDEO_OPTIONS } from '~/video-options';
 import site from '../../site.config';
 import models from '../../site.models';
 
@@ -48,7 +52,6 @@ export const Route = createFileRoute('/')({
 });
 
 const root = getRouteApi('__root__');
-const ASPECT_RATIOS = ['1:1', '16:9', '9:16', '4:3', '3:4'];
 const STEPS = [
   { id: 'prompt', title: m.home_how_prompt_title, body: m.home_how_prompt },
   { id: 'options', title: m.home_how_options_title, body: m.home_how_options },
@@ -68,6 +71,8 @@ type ToolState = {
   aspectRatio: string;
   references: string[];
   mode?: GenerationMode;
+  resolution?: string;
+  duration?: number;
 };
 
 function saveState(state: ToolState) {
@@ -112,6 +117,7 @@ const CASES = [
 function ToolPage() {
   const config = root.useLoaderData();
   const session = authClient(config.googleClientId).useSession();
+  const balance = useSharedCreditBalance();
   const trials = useTrials(session.data?.user.id, session.isPending);
   const [mode, setMode] = useState<GenerationMode>('daily-trial');
   const { jobs, generate, cancel, submitting, error, clearError } = useGeneration({
@@ -121,6 +127,8 @@ function ToolPage() {
   const [modelId, setModelId] = useState<string>(models[0].id);
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState(String(models[0].defaults.aspect_ratio ?? '16:9'));
+  const [resolution, setResolution] = useState(VIDEO_OPTIONS[models[0].id]!.default.resolution);
+  const [duration, setDuration] = useState(VIDEO_OPTIONS[models[0].id]!.default.duration);
   const [references, setReferences] = useState<string[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [resumed, setResumed] = useState(false);
@@ -129,10 +137,40 @@ function ToolPage() {
   const [restored, setRestored] = useState(false);
   const requestedTrial = useRef<GenerationMode | null>(null);
   const requestedPrompt = useRef<string | null>(null);
-  const model = models.find((item) => item.id === modelId) ?? models[0];
-  const cost = creditsFor(model, sanitizeParameters(model, { aspect_ratio: aspectRatio }));
-  const rendering = jobs.some(isActive);
   const freeMode = mode !== 'paid';
+  const availableModels = freeMode ? models.filter((item) => item.guest) : models;
+  const model = availableModels.find((item) => item.id === modelId) ?? availableModels[0]!;
+  const videoOptions = VIDEO_OPTIONS[model.id]!;
+  const selectedAspectRatio = videoOptions.aspectRatios.includes(aspectRatio)
+    ? aspectRatio
+    : videoOptions.aspectRatios[0]!;
+  const imageAspectRatio = references.length > 0 ? videoOptions.imageAspectRatio : undefined;
+  const selectedResolution = freeMode
+    ? videoOptions.trial.resolution
+    : videoOptions.options.some((item) => item.resolution === resolution)
+      ? resolution
+      : videoOptions.default.resolution;
+  const durations =
+    videoOptions.options.find((item) => item.resolution === selectedResolution)?.durations ?? [];
+  const selectedDuration = freeMode
+    ? videoOptions.trial.duration
+    : durations.includes(duration)
+      ? duration
+      : durations.includes(videoOptions.default.duration)
+        ? videoOptions.default.duration
+        : durations[0]!;
+  const cost = freeMode
+    ? 0
+    : creditsFor(
+        model,
+        sanitizeParameters(model, {
+          aspect_ratio: selectedAspectRatio,
+          resolution: selectedResolution,
+          duration: selectedDuration,
+        }),
+      );
+  const rendering = jobs.some(isActive);
+  const shortfall = freeMode ? 0 : creditShortfall(balance.status, balance.available, cost);
   const unavailable =
     mode === 'daily-trial'
       ? !trials.data?.daily.available
@@ -147,6 +185,8 @@ function ToolPage() {
       setPrompt(saved.prompt);
       setAspectRatio(saved.aspectRatio);
       setReferences(saved.references);
+      if (typeof saved.resolution === 'string') setResolution(saved.resolution);
+      if (typeof saved.duration === 'number') setDuration(saved.duration);
       if (saved.mode === 'daily-trial' || saved.mode === 'signup-trial' || saved.mode === 'paid')
         setMode(saved.mode);
     }
@@ -186,8 +226,9 @@ function ToolPage() {
   useEffect(() => {
     // Wait for the restored state to render before saving. Saving initial defaults during
     // mount can overwrite a draft before a repeated development effect reads it again.
-    if (restored) saveState({ modelId, prompt, aspectRatio, references, mode });
-  }, [restored, modelId, prompt, aspectRatio, references, mode]);
+    if (restored)
+      saveState({ modelId: model.id, prompt, aspectRatio, references, mode, resolution, duration });
+  }, [restored, model.id, prompt, aspectRatio, references, mode, resolution, duration]);
 
   useEffect(() => {
     if (!rendering) setConfirmAnother(false);
@@ -198,12 +239,21 @@ function ToolPage() {
   }, [error]);
 
   // Result events: only track jobs seen going from running to done/failed on this page; ones already finished on load are not re-tracked.
-  const statuses = useRef(new Map<string, PublicJob['status']>());
+  const statuses = useRef(
+    new Map<string, { status: PublicJob['status']; settlement: PublicJob['settlement'] }>(),
+  );
   useEffect(() => {
     for (const job of jobs) {
       const before = statuses.current.get(job.id);
-      statuses.current.set(job.id, job.status);
-      if (before !== 'queued' && before !== 'submitted') continue;
+      statuses.current.set(job.id, { status: job.status, settlement: job.settlement });
+      if (
+        before &&
+        job.costCredits > 0 &&
+        (((before.status === 'queued' || before.status === 'submitted') && !isActive(job)) ||
+          (before.settlement !== 'refunded' && job.settlement === 'refunded'))
+      )
+        notifyCreditsChanged();
+      if (before?.status !== 'queued' && before?.status !== 'submitted') continue;
       const seconds = job.finishedAt ? Math.round((job.finishedAt - job.createdAt) / 1000) : 0;
       if (job.status === 'succeeded') track('result_ready', { seconds });
       else if (job.status === 'failed' || job.status === 'canceled')
@@ -225,21 +275,26 @@ function ToolPage() {
 
   async function start() {
     const input = {
-      modelId,
+      modelId: model.id,
       mode,
       prompt,
-      references,
-      parameters: { aspect_ratio: references.length > 0 ? 'auto' : aspectRatio },
+      references: references.slice(0, model.maxReferences),
+      parameters: {
+        aspect_ratio: imageAspectRatio ?? selectedAspectRatio,
+        resolution: selectedResolution,
+        duration: selectedDuration,
+      },
     };
     const job = await generate(input);
     notifyTrialsChanged();
-    if (job) track('generate_started', { model: modelId, mode, another: rendering });
+    if (mode === 'paid') notifyCreditsChanged();
+    if (job) track('generate_started', { model: model.id, mode, another: rendering });
   }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     // blocked records which step this click got stuck on; none means generation started directly.
-    const click = (blocked: string) => track('generate_click', { model: modelId, blocked });
+    const click = (blocked: string) => track('generate_click', { model: model.id, blocked });
     if (mode !== 'daily-trial' && !session.data?.user) {
       click('login_required');
       openSignIn(undefined, 'generation_mode');
@@ -263,6 +318,19 @@ function ToolPage() {
     setPrompt(value);
     document.getElementById('prompt')?.focus();
     document.getElementById('tool')?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  }
+
+  function chooseMode(nextMode: GenerationMode) {
+    if (nextMode !== 'paid' && !model.guest) {
+      const next = models.find((item) => item.guest)!;
+      setModelId(next.id);
+      setResolution(VIDEO_OPTIONS[next.id]!.default.resolution);
+      setDuration(VIDEO_OPTIONS[next.id]!.default.duration);
+      setReferences((items) => items.slice(0, next.maxReferences));
+    }
+    setMode(nextMode);
+    setConfirmAnother(false);
+    clearError();
   }
 
   return (
@@ -301,8 +369,17 @@ function ToolPage() {
             <div className="tool-controls">
               <label>
                 {m.home_tool_model()}
-                <select value={modelId} onChange={(e) => setModelId(e.target.value)}>
-                  {models.map((item) => (
+                <select
+                  value={model.id}
+                  onChange={(e) => {
+                    const next = availableModels.find((item) => item.id === e.target.value)!;
+                    setModelId(next.id);
+                    setResolution(VIDEO_OPTIONS[next.id]!.default.resolution);
+                    setDuration(VIDEO_OPTIONS[next.id]!.default.duration);
+                    setReferences((items) => items.slice(0, next.maxReferences));
+                  }}
+                >
+                  {availableModels.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.name}
                     </option>
@@ -312,13 +389,44 @@ function ToolPage() {
               <label>
                 {m.home_tool_aspect_ratio()}
                 <select
-                  value={references.length > 0 ? 'auto' : aspectRatio}
-                  disabled={references.length > 0}
+                  value={imageAspectRatio ?? selectedAspectRatio}
+                  disabled={Boolean(imageAspectRatio)}
                   onChange={(e) => setAspectRatio(e.target.value)}
                 >
-                  {references.length > 0 && <option value="auto">{m.home_tool_auto_aspect()}</option>}
-                  {ASPECT_RATIOS.map((ratio) => (
+                  {imageAspectRatio && <option value={imageAspectRatio}>{m.home_tool_auto_aspect()}</option>}
+                  {videoOptions.aspectRatios.map((ratio) => (
                     <option key={ratio}>{ratio}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {freeMode && <p className="model-choice-note">{m.home_models_paid_hint()}</p>}
+            <div className="tool-controls">
+              <label>
+                {m.home_tool_resolution()}
+                <select
+                  value={selectedResolution}
+                  disabled={freeMode}
+                  onChange={(event) => setResolution(event.target.value)}
+                >
+                  {(freeMode ? [{ resolution: selectedResolution }] : videoOptions.options).map((item) => (
+                    <option key={item.resolution} value={item.resolution}>
+                      {item.resolution}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                {m.home_tool_duration()}
+                <select
+                  value={selectedDuration}
+                  disabled={freeMode}
+                  onChange={(event) => setDuration(Number(event.target.value))}
+                >
+                  {(freeMode ? [selectedDuration] : durations).map((seconds) => (
+                    <option key={seconds} value={seconds}>
+                      {m.home_tool_seconds({ seconds })}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -328,11 +436,7 @@ function ToolPage() {
               <select
                 value={mode}
                 disabled={submitting}
-                onChange={(event) => {
-                  setMode(event.target.value as GenerationMode);
-                  setConfirmAnother(false);
-                  clearError();
-                }}
+                onChange={(event) => chooseMode(event.target.value as GenerationMode)}
               >
                 <option value="daily-trial">{m.home_tool_mode_daily()}</option>
                 <option value="signup-trial">{m.home_tool_mode_signup()}</option>
@@ -344,7 +448,9 @@ function ToolPage() {
                 <span className="upload-icon" aria-hidden="true">
                   +
                 </span>
-                <span>{m.home_tool_references()}</span>
+                <span>
+                  {videoOptions.requiresReference ? m.home_reference_required() : m.home_tool_references()}
+                </span>
                 <span className="upload-hint">
                   {references.length > 0 ? m.home_tool_image_added() : m.home_tool_add_photo()}
                 </span>
@@ -356,6 +462,9 @@ function ToolPage() {
                   onChange={(e) => void onUpload(e.target.files)}
                 />
               </label>
+            )}
+            {videoOptions.requiresReference && (
+              <p className="muted small">{m.home_tool_reference_required()}</p>
             )}
             {references.length > 0 && (
               <div className="references">
@@ -377,6 +486,15 @@ function ToolPage() {
             <p className="small">
               <strong>{m.common_no_watermark()}</strong>
             </p>
+            {mode === 'paid' && (
+              <CreditSummary
+                status={balance.status}
+                available={balance.available}
+                cost={cost}
+                onRefresh={balance.refresh}
+                onSignIn={() => openSignIn(undefined, 'balance')}
+              />
+            )}
             <button
               type="submit"
               className="primary generate-button"
@@ -385,6 +503,7 @@ function ToolPage() {
                 !prompt.trim() ||
                 !restored ||
                 session.isPending ||
+                (videoOptions.requiresReference && references.length === 0) ||
                 (freeMode && (trials.loading || unavailable))
               }
             >
@@ -420,6 +539,26 @@ function ToolPage() {
                   : m.home_tool_daily_unavailable()}
               </p>
             )}
+            {mode === 'daily-trial' && !trials.loading && trials.data?.daily.reason === 'quota' && (
+              <div className="trial-next-steps">
+                {session.data?.user &&
+                  trials.data.verificationAvailable &&
+                  trials.data.signup.status === 'available' && (
+                    <button type="button" className="link-button" onClick={() => chooseMode('signup-trial')}>
+                      {m.home_use_signup_trial()}
+                    </button>
+                  )}
+                {!session.data?.user && trials.data.verificationAvailable && (
+                  <button type="button" className="link-button" onClick={() => chooseMode('signup-trial')}>
+                    {m.home_check_signup_trial()}
+                  </button>
+                )}
+                <button type="button" className="link-button" onClick={() => chooseMode('paid')}>
+                  {m.home_use_credits()}
+                </button>
+                <p>{m.home_use_credits_note()}</p>
+              </div>
+            )}
             {mode === 'signup-trial' && !trials.loading && (
               <p className="notice">
                 {signupTrialDescription(trials.data?.signup.status)}
@@ -447,6 +586,22 @@ function ToolPage() {
                 )}
               </p>
             )}
+            {mode === 'signup-trial' &&
+              !trials.loading &&
+              trials.data &&
+              ['used', 'expired', 'ineligible', 'daily_limit'].includes(trials.data.signup.status) && (
+                <div className="trial-next-steps">
+                  {trials.data.daily.available && (
+                    <button type="button" className="link-button" onClick={() => chooseMode('daily-trial')}>
+                      {m.home_use_daily_trial()}
+                    </button>
+                  )}
+                  <button type="button" className="link-button" onClick={() => chooseMode('paid')}>
+                    {m.home_use_credits()}
+                  </button>
+                  <p>{m.home_use_credits_note()}</p>
+                </div>
+              )}
             {mode === 'signup-trial' && trials.data && !trials.data.verificationAvailable && (
               <p className="notice">{m.home_tool_verification_unavailable()}</p>
             )}
@@ -466,7 +621,9 @@ function ToolPage() {
                 {uploadError}
               </p>
             )}
-            {error && <GenerationError code={error.code} />}
+            {error && !(error.code === 'insufficient_credits' && shortfall > 0) && (
+              <GenerationError code={error.code} cost={cost} />
+            )}
           </form>
           <figure className="inspiration">
             <img
@@ -701,7 +858,7 @@ function generationErrorText(code: string | undefined): string {
   }
 }
 
-function GenerationError({ code }: { code: string | undefined }) {
+function GenerationError({ code, cost }: { code: string | undefined; cost: number }) {
   if (code === 'login_required') {
     return (
       <p className="notice">
@@ -716,7 +873,9 @@ function GenerationError({ code }: { code: string | undefined }) {
     return (
       <p className="notice">
         {m.home_tool_need_credits()}{' '}
-        <PricingLink source="insufficient_credits">{m.home_tool_get_credits()}</PricingLink>
+        <PricingLink source="insufficient_credits" requiredCredits={cost}>
+          {m.home_tool_get_credits()}
+        </PricingLink>
       </p>
     );
   }
@@ -727,7 +886,7 @@ function GenerationError({ code }: { code: string | undefined }) {
   );
 }
 
-function JobCard({ job, email, onCancel }: { job: PublicJob; email?: string; onCancel: () => void }) {
+export function JobCard({ job, email, onCancel }: { job: PublicJob; email?: string; onCancel: () => void }) {
   const active = isActive(job);
   return (
     <article className="job">
@@ -752,10 +911,26 @@ function JobCard({ job, email, onCancel }: { job: PublicJob; email?: string; onC
         </div>
       )}
       {job.status === 'failed' && (
-        <p className="error">{job.costCredits > 0 ? m.home_job_failed() : m.home_job_failed_free()}</p>
+        <p className="error">
+          {job.costCredits === 0
+            ? m.home_job_failed_free()
+            : job.settlement === 'refunded'
+              ? m.home_job_failed()
+              : job.settlement === 'charged'
+                ? m.home_job_failed_charged({ jobId: job.id })
+                : m.home_job_failed_pending({ jobId: job.id })}
+        </p>
       )}
       {job.status === 'canceled' && (
-        <p className="muted">{job.costCredits > 0 ? m.home_job_canceled() : m.home_job_canceled_free()}</p>
+        <p className="muted">
+          {job.costCredits === 0
+            ? m.home_job_canceled_free()
+            : job.settlement === 'refunded'
+              ? m.home_job_canceled_refunded()
+              : job.settlement === 'charged'
+                ? m.home_job_canceled_charged({ jobId: job.id })
+                : m.home_job_canceled_pending({ jobId: job.id })}
+        </p>
       )}
       <p className="job-prompt">{job.prompt}</p>
       {/* Only before the upstream has it: a running render bills anyway, so the engine refuses to cancel and refund it. */}

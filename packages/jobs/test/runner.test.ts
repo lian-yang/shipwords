@@ -5,7 +5,7 @@ import { user } from '@shipwords/core/db/schema';
 import type { Mailer } from '@shipwords/core/email/send';
 import { consumeQuota } from '@shipwords/core/quota/counters';
 import { eq } from 'drizzle-orm';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { cancelQueued, loadJob, markFailed, markSubmitted, markSucceeded, spendKey } from '../src/lifecycle';
 import { defineModels } from '../src/models';
 import { emailOnFinish } from '../src/notify';
@@ -41,6 +41,7 @@ class FakeAdapter implements UpstreamAdapter {
   readonly name = 'yir';
   submits: { input: SubmitInput; key: string }[] = [];
   polls: PollResult[] = [];
+  lastPoll: PollResult | null = null;
   cancelled: string[] = [];
   submitError: Error | null = null;
   /** Runs after the upstream accepted the task, before the runner records it (to land a cancel in between). */
@@ -52,10 +53,15 @@ class FakeAdapter implements UpstreamAdapter {
     return { upstreamJobId: `up_${key}` };
   }
   async poll() {
-    return this.polls.shift() ?? { state: 'running' as const };
+    const result = this.polls.shift() ?? this.lastPoll ?? { state: 'running' as const };
+    if (result.state !== 'running') this.lastPoll = result;
+    return result;
   }
   async cancel(id: string) {
     this.cancelled.push(id);
+  }
+  async cost(_id: string): Promise<UpstreamCost> {
+    return { usd: '0', settled: true };
   }
 }
 
@@ -104,6 +110,76 @@ const deps = (adapter: FakeAdapter) => ({
 });
 
 describe('generation jobs', () => {
+  it('replays the frozen request and max_cost with the original key', async () => {
+    const { claimUpstreamJob, pendingSubmit } = await import('../src/lifecycle');
+    const { jobId } = await paidJob(10, {
+      inputJson: JSON.stringify({
+        references: [],
+        parameters: { aspect_ratio: '9:16' },
+        _verifiedBilling: true,
+      }),
+    });
+    const frozen: SubmitInput = {
+      upstreamModel: 'vendor/frozen',
+      kind: 'image',
+      prompt: 'saved',
+      references: [],
+      parameters: { aspect_ratio: '1:1' },
+      maxCost: '0.123',
+    };
+    await claimUpstreamJob(db, jobId, 0, pendingSubmit(frozen, jobId));
+    const adapter = new FakeAdapter();
+    adapter.polls = [{ state: 'succeeded', files: [{ url: 'https://up/x.png', mediaType: 'image/png' }] }];
+    await runGeneration(deps(adapter), jobId, immediateSteps());
+    expect(adapter.submits).toEqual([{ input: frozen, key: jobId }]);
+    expect((await loadJob(db, jobId))?.status).toBe('succeeded');
+  });
+  it.each([
+    new UpstreamError('YIR_RATE_LIMITED', 'slow', true, true),
+    new UpstreamError('YIR_INVALID_REQUEST', 'rejected', false, true),
+    new Error('connection lost'),
+  ])('never refunds when another submit accepts while this submit fails: %s', async (failure) => {
+    const { userId, jobId } = await paidJob(10, {
+      inputJson: JSON.stringify({
+        references: [],
+        parameters: { aspect_ratio: '1:1' },
+        _verifiedBilling: true,
+      }),
+    });
+    const adapter = new FakeAdapter();
+    let start!: () => void;
+    let release!: () => void;
+    const started = new Promise<void>((resolve) => {
+      start = resolve;
+    });
+    const accepted = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let calls = 0;
+    adapter.submit = async (_input, _key) => {
+      calls++;
+      if (calls === 1) {
+        start();
+        await accepted;
+        return { upstreamJobId: 'accepted_upstream' };
+      }
+      throw failure;
+    };
+    adapter.poll = async () => ({ state: 'failed', code: 'provider_failed', message: 'billed' });
+    adapter.cost = async () => ({ usd: '0.3', settled: true });
+    const first = runGeneration(deps(adapter), jobId, immediateSteps());
+    await started;
+    await runGeneration(deps(adapter), jobId, immediateSteps());
+    expect((await getBalance(db, userId)).available).toBe(40);
+    release();
+    await first;
+    expect(await loadJob(db, jobId)).toMatchObject({
+      status: 'failed',
+      errorCode: 'billing_charged',
+      upstreamJobId: 'accepted_upstream',
+    });
+    expect((await getBalance(db, userId)).available).toBe(40);
+  });
   it('success: submits with jobId as idempotency key, stores results in R2, no refund', async () => {
     const { userId, jobId } = await paidJob();
     const adapter = new FakeAdapter();
@@ -298,16 +374,23 @@ describe('generation jobs', () => {
     expect((await getBalance(db, userId)).available).toBe(40);
   });
 
-  it('cancel lands while the first submit is in flight: the cancel wins, the just-submitted task is canceled, refunded once', async () => {
-    const { userId, jobId } = await paidJob();
+  it('cancel during first submit leaves the upstream task running and does not refund', async () => {
+    const { userId, jobId } = await paidJob(10, {
+      inputJson: JSON.stringify({
+        references: [],
+        parameters: { aspect_ratio: '1:1' },
+        _verifiedBilling: true,
+      }),
+    });
     const adapter = new FakeAdapter();
     adapter.onSubmit = async () => {
-      await cancelQueued(db, jobId);
+      expect(await cancelQueued(db, jobId)).toMatchObject({ status: 'submitted' });
     };
+    adapter.polls = [{ state: 'succeeded', files: [{ url: 'https://up/x.png', mediaType: 'image/png' }] }];
     await runGeneration(deps(adapter), jobId, immediateSteps());
-    expect(await loadJob(db, jobId)).toMatchObject({ status: 'canceled' });
-    expect(adapter.cancelled).toEqual([`up_${jobId}`]);
-    expect((await getBalance(db, userId)).available).toBe(50);
+    expect(await loadJob(db, jobId)).toMatchObject({ status: 'succeeded' });
+    expect(adapter.cancelled).toEqual([]);
+    expect((await getBalance(db, userId)).available).toBe(40);
   });
 
   it('failed guest job returns quota, only once', async () => {
@@ -392,6 +475,50 @@ describe('settlement catch-up', () => {
 });
 
 describe('Yir not configured', () => {
+  it('rejects an SDK-invalid video request before claim and refunds without network access', async () => {
+    const { userId, jobId } = await paidJob(10, {
+      kind: 'video',
+      inputJson: JSON.stringify({ references: [], parameters: {}, _verifiedBilling: true }),
+    });
+    const network = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      throw new Error('unexpected network request');
+    });
+    try {
+      const adapter = new YirAdapter({ apiKey: 'test-only', baseURL: 'https://test.invalid' });
+      await runGeneration(
+        {
+          ...deps(new FakeAdapter()),
+          models: models.map((model) => ({ ...model, kind: 'video' as const, maxCost: '.12' })),
+          adapters: { yir: adapter },
+        },
+        jobId,
+        immediateSteps(),
+      );
+      expect(network).not.toHaveBeenCalled();
+      expect(await loadJob(db, jobId)).toMatchObject({
+        status: 'failed',
+        errorCode: 'billing_refunded',
+        upstreamJobId: null,
+      });
+      expect((await getBalance(db, userId)).available).toBe(50);
+    } finally {
+      network.mockRestore();
+    }
+  });
+
+  it('validates missing local credentials before claiming a verified job and refunds', async () => {
+    const { userId, jobId } = await paidJob(10, {
+      inputJson: JSON.stringify({ references: [], parameters: {}, _verifiedBilling: true }),
+    });
+    const adapter = new YirAdapter({ apiKey: '' });
+    await runGeneration({ ...deps(new FakeAdapter()), adapters: { yir: adapter } }, jobId, immediateSteps());
+    expect(await loadJob(db, jobId)).toMatchObject({
+      status: 'failed',
+      errorCode: 'billing_refunded',
+      upstreamJobId: null,
+    });
+    expect((await getBalance(db, userId)).available).toBe(50);
+  });
   it('missing API key fails as non-retryable with a refund, job never hangs', async () => {
     const { userId, jobId } = await paidJob();
     const adapter = new YirAdapter({ apiKey: '' });
@@ -481,7 +608,7 @@ class CostingAdapter extends FakeAdapter {
   costError: Error | null = null;
   /** Reads that succeed before costError starts applying. */
   readsBeforeError = 0;
-  async cost(id: string) {
+  override async cost(id: string) {
     if (this.costError && this.readsBeforeError-- <= 0) throw this.costError;
     const queue = this.charges.get(id) ?? [];
     return (queue.length > 1 ? queue.shift() : queue[0]) ?? { usd: '0', settled: true };
@@ -592,7 +719,13 @@ describe('upstream cost', () => {
     const plain = await paidJob();
     const fake = new FakeAdapter();
     fake.polls = [done];
-    await runGeneration(deps(fake), plain.jobId, immediateSteps());
+    const withoutCost: UpstreamAdapter = {
+      name: fake.name,
+      submit: fake.submit.bind(fake),
+      poll: fake.poll.bind(fake),
+      cancel: fake.cancel.bind(fake),
+    };
+    await runGeneration({ ...deps(fake), adapters: { yir: withoutCost } }, plain.jobId, immediateSteps());
     expect(await loadJob(db, plain.jobId)).toMatchObject({ status: 'succeeded', upstreamCostUsd: null });
   });
 

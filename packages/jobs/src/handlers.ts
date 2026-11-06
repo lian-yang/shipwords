@@ -9,8 +9,14 @@ import { imageSize } from './image-size';
 import {
   cancelQueued,
   claimGuestJobs,
+  BILLING_CHARGED,
+  BILLING_PENDING,
+  BILLING_REFUNDING,
+  BILLING_REFUNDED,
+  hasVerifiedBilling,
   loadJob,
   markFailed,
+  reconcileFailure,
   SKIPPED_UPSTREAM,
   type StoredOutput,
   settleFailure,
@@ -58,6 +64,11 @@ export function publicJob(job: JobRow, baseURL: string) {
     status: job.status,
     prompt: job.prompt,
     costCredits: job.costCredits,
+    settlement: job.costCredits === 0 || job.status === 'succeeded' || job.status === 'queued' || job.status === 'submitted'
+      ? 'not_applicable' as const
+      : job.errorCode === BILLING_CHARGED ? 'charged' as const
+        : job.errorCode === BILLING_REFUNDED ? 'refunded' as const
+          : hasVerifiedBilling(job) ? 'pending' as const : 'refunded' as const,
     outputs: outputs.map((output) => ({
       url: `${baseURL}/files/${output.key}`,
       mediaType: output.mediaType,
@@ -95,8 +106,12 @@ export function createJobs(core: Core, models: readonly ModelDefinition[]) {
   async function healStale(job: JobRow): Promise<JobRow> {
     if (job.status === 'failed' || job.status === 'canceled') {
       // Settlement is idempotent: a refund that previously failed halfway is completed here.
+      if (job.errorCode === BILLING_PENDING || job.errorCode === BILLING_REFUNDING) {
+        try { return (await reconcileFailure(core.db, job.id, createAdapters(env()))) ?? job; }
+        catch { return job; }
+      }
       await settleFailure(core.db, job);
-      return job;
+      return (await loadJob(core.db, job.id)) ?? job;
     }
     if (job.status !== 'queued' && job.status !== 'submitted') return job;
     const model = models.find((m) => m.id === job.modelId);
@@ -192,6 +207,7 @@ export function createJobs(core: Core, models: readonly ModelDefinition[]) {
           inputJson = JSON.stringify(input);
         }
       }
+      if (model.verifiedBilling) inputJson = JSON.stringify({ ...JSON.parse(inputJson), _verifiedBilling: true });
       const jobId = newId('job');
       const user = await core.getUser(request);
 

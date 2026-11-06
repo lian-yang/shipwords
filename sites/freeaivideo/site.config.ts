@@ -26,6 +26,14 @@ export default defineSite({
       credits: 500,
       expiresDays: null,
     },
+    {
+      id: 'pack_1250',
+      kind: 'credits',
+      name: 'Studio',
+      price: { amount: 4999, currency: 'usd' },
+      credits: 1250,
+      expiresDays: null,
+    },
   ] as readonly Product[],
   // Registration vouchers are issued by src/trials.server.ts; previously issued credits stay valid.
   signup: { bonusCredits: 0, bonusExpiresDays: 30, bonusPerIpDaily: 2, bonusSiteDaily: 2 },

@@ -5,9 +5,11 @@ import { type ReactNode, useEffect } from 'react';
 import { authClient } from '~/lib/auth';
 import { getPublicConfig } from '~/lib/public-config';
 import { identify } from '~/lib/track';
+import { useCreditBalance } from '~/lib/use-credit-balance';
 import { m } from '~/paraglide/messages.js';
 import { getLocale, setLocale } from '~/paraglide/runtime.js';
 import { AccountDialog, AccountLink } from '~/site/account';
+import { CreditBalanceContext } from '~/site/credit-balance';
 import { SUPPORT_EMAIL } from '~/site/legal';
 import { PricingDialog, PricingLink } from '~/site/pricing';
 import { openSignIn, promptGoogleOneTap, SignInDialog } from '~/site/sign-in';
@@ -69,6 +71,11 @@ function Layout() {
   const auth = authClient(config.googleClientId);
   const session = auth.useSession();
   const user = session.data?.user;
+  const credits = useCreditBalance(session.isPending ? undefined : (user?.id ?? null));
+  const balanceText =
+    credits.status === 'ready' && credits.available !== null
+      ? `${m.home_balance_available({ credits: Math.max(0, credits.available).toLocaleString() })}${credits.available < 0 ? `, ${m.home_balance_debt({ amount: (-credits.available).toLocaleString() })}` : ''}`
+      : undefined;
 
   useEffect(() => {
     captureAttribution();
@@ -85,75 +92,89 @@ function Layout() {
   }, [user?.id]);
 
   return (
-    <div className="page">
-      <a className="skip-link" href="#main">
-        {m.common_skip_content()}
-      </a>
-      <header className="site-header">
-        <Link to="/" className="brand">
-          <span className="brand-symbol" aria-hidden="true">
-            <span />
-          </span>
-          {site.name}
-        </Link>
-        <nav aria-label={m.common_nav_label()}>
-          <Link to="/" className="nav-create">
-            {m.common_nav_create()}
+    <CreditBalanceContext.Provider value={credits}>
+      <div className="page">
+        <a className="skip-link" href="#main">
+          {m.common_skip_content()}
+        </a>
+        <header className="site-header">
+          <Link to="/" className="brand">
+            <span className="brand-symbol" aria-hidden="true">
+              <span />
+            </span>
+            {site.name}
           </Link>
-          <a href="/#cases" className="nav-examples">
-            {m.common_nav_examples()}
-          </a>
-          <PricingLink source="nav">{m.common_nav_pricing()}</PricingLink>
-          {import.meta.env.DEV && <LocaleToggle />}
-          {user ? (
-            <AccountLink className="avatar" title={user.email}>
-              {user.image ? (
-                <img src={user.image} alt="" referrerPolicy="no-referrer" />
-              ) : (
-                (user.name || user.email).slice(0, 1).toUpperCase()
-              )}
-            </AccountLink>
-          ) : (
-            <a
-              href="/login"
-              className="sign-in-link"
-              onClick={(e) => {
-                e.preventDefault();
-                openSignIn();
-              }}
-            >
-              {m.common_nav_sign_in()}
+          <nav aria-label={m.common_nav_label()}>
+            <Link to="/" className="nav-create">
+              {m.common_nav_create()}
+            </Link>
+            <a href="/#cases" className="nav-examples">
+              {m.common_nav_examples()}
             </a>
-          )}
-        </nav>
-      </header>
-      <main id="main">
-        <Outlet />
-      </main>
-      <footer className="site-footer">
-        <span>{m.common_footer_notice({ year: new Date().getFullYear(), name: site.name })}</span>
-        <nav aria-label={m.common_footer_label()}>
-          <a href="/#faq">{m.common_footer_faq()}</a>
-          {/* Trend guide pages: site-wide internal links keep fresh meme pages crawlable beyond sitemap-only discovery. */}
-          <Link to="/w-chews-l-nibbles">{m.common_footer_wchews()}</Link>
-          <Link to="/frutiger-aero-yams">{m.common_footer_frutigerayams()}</Link>
-          <Link to="/fancy-cafe-ai">{m.common_footer_fancycafe()}</Link>
-          <Link to="/red-carpet-ai">{m.common_footer_redcarpet()}</Link>
-          <Link to="/mulmannan-gwangeo-ai">{m.common_footer_mulmannan()}</Link>
-          <Link to="/when-two-legends-try-to-make-coffee">{m.common_footer_coffeelegends()}</Link>
-          <Link to="/paws-at-you-ai">{m.common_footer_paws()}</Link>
-          <Link to="/bicep-heart-ai">{m.common_footer_bicep()}</Link>
-          <Link to="/privacy">{m.common_footer_privacy()}</Link>
-          <Link to="/terms">{m.common_footer_terms()}</Link>
-          <Link to="/refunds">{m.common_footer_refunds()}</Link>
-          <Link to="/dmca">{m.common_footer_dmca()}</Link>
-          <a href={`mailto:${SUPPORT_EMAIL}`}>{m.common_footer_contact()}</a>
-        </nav>
-      </footer>
-      <SignInDialog />
-      <PricingDialog />
-      <AccountDialog />
-    </div>
+            <PricingLink source="nav">{m.common_nav_pricing()}</PricingLink>
+            {import.meta.env.DEV && <LocaleToggle />}
+            {user ? (
+              <AccountLink
+                className="account-entry"
+                title={user.email}
+                ariaLabel={balanceText ? `${m.common_account_label()}, ${balanceText}` : undefined}
+              >
+                {credits.status === 'ready' && credits.available !== null && (
+                  <span className="header-credit-balance">
+                    {Math.max(0, credits.available).toLocaleString()}{' '}
+                    <span>{m.common_account_credits()}</span>
+                  </span>
+                )}
+                <span className="avatar" aria-hidden="true">
+                  {user.image ? (
+                    <img src={user.image} alt="" referrerPolicy="no-referrer" />
+                  ) : (
+                    (user.name || user.email).slice(0, 1).toUpperCase()
+                  )}
+                </span>
+              </AccountLink>
+            ) : (
+              <a
+                href="/login"
+                className="sign-in-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  openSignIn();
+                }}
+              >
+                {m.common_nav_sign_in()}
+              </a>
+            )}
+          </nav>
+        </header>
+        <main id="main">
+          <Outlet />
+        </main>
+        <footer className="site-footer">
+          <span>{m.common_footer_notice({ year: new Date().getFullYear(), name: site.name })}</span>
+          <nav aria-label={m.common_footer_label()}>
+            <a href="/#faq">{m.common_footer_faq()}</a>
+            {/* Trend guide pages: site-wide internal links keep fresh meme pages crawlable beyond sitemap-only discovery. */}
+            <Link to="/w-chews-l-nibbles">{m.common_footer_wchews()}</Link>
+            <Link to="/frutiger-aero-yams">{m.common_footer_frutigerayams()}</Link>
+            <Link to="/fancy-cafe-ai">{m.common_footer_fancycafe()}</Link>
+            <Link to="/red-carpet-ai">{m.common_footer_redcarpet()}</Link>
+            <Link to="/mulmannan-gwangeo-ai">{m.common_footer_mulmannan()}</Link>
+            <Link to="/when-two-legends-try-to-make-coffee">{m.common_footer_coffeelegends()}</Link>
+            <Link to="/paws-at-you-ai">{m.common_footer_paws()}</Link>
+            <Link to="/bicep-heart-ai">{m.common_footer_bicep()}</Link>
+            <Link to="/privacy">{m.common_footer_privacy()}</Link>
+            <Link to="/terms">{m.common_footer_terms()}</Link>
+            <Link to="/refunds">{m.common_footer_refunds()}</Link>
+            <Link to="/dmca">{m.common_footer_dmca()}</Link>
+            <a href={`mailto:${SUPPORT_EMAIL}`}>{m.common_footer_contact()}</a>
+          </nav>
+        </footer>
+        <SignInDialog />
+        <PricingDialog />
+        <AccountDialog />
+      </div>
+    </CreditBalanceContext.Provider>
   );
 }
 

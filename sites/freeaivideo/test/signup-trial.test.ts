@@ -16,6 +16,10 @@ import site from '../site.config';
 import { createSiteJob } from '../src/create-job.server';
 import { GenerationWorkflow } from '../src/generation-workflow.server';
 import models, { guestModels } from '../src/models.server';
+import { paidMaxCost, trialMaxCost } from '../src/video-pricing.server';
+import { VIDEO_UPSTREAMS } from '../src/video-pricing.server';
+import { VIDEO_OPTIONS } from '../src/video-options';
+import { creditsFor, sanitizeParameters } from '@shipwords/jobs/models';
 import type { TrialStatus } from '../src/trial-types';
 import { claimSignupTrial, getTrialStatus, SIGNUP_TRIAL_START } from '../src/trials.server';
 
@@ -94,6 +98,7 @@ function generationRequest(
     ip?: string;
     token?: string | null;
     prompt?: unknown;
+    modelId?: string;
     parameters?: Record<string, unknown>;
     references?: unknown;
     origin?: string;
@@ -109,7 +114,7 @@ function generationRequest(
     },
     body: JSON.stringify({
       ...(mode === undefined ? {} : { mode }),
-      modelId: 'seedance-2-5',
+      modelId: options.modelId ?? 'seedance-2-5-v2',
       prompt: options.prompt ?? 'A boat crossing a quiet lake',
       parameters: options.parameters ?? { aspect_ratio: '16:9' },
       references: options.references,
@@ -276,6 +281,25 @@ describe('verified signup trial entitlement', () => {
     expect(await quotaCount('signup-bonus:site', dayWindow())).toBe(0);
   });
 
+  it.each([
+    { modelId: 'seedance-2-5-v2', ratio: 'auto', mode: 'paid' },
+    { modelId: 'minimax-h3-v2', ratio: 'adaptive', mode: 'paid' },
+    { modelId: 'seedance-2-5-v2', ratio: 'auto', mode: 'daily-trial' },
+    { modelId: 'minimax-h3-v2', ratio: 'adaptive', mode: 'daily-trial' },
+  ])('only accepts image-specific $ratio with a reference for $modelId $mode', async ({ modelId, ratio, mode }) => {
+    const user = await newUser({ credits: 1000 });
+    const { core } = fakeCore(user);
+    const noImage = await createSiteJob(core, generationRequest(mode, {
+      modelId, parameters: { aspect_ratio: ratio },
+    }));
+    expect(noImage.status).toBe(400);
+    const withImage = await createSiteJob(core, generationRequest(mode, {
+      modelId, parameters: { aspect_ratio: ratio }, references: ['/files/uploads/reference.jpg'],
+    }));
+    const job = await storedJob(withImage);
+    expect(JSON.parse(job.inputJson).parameters.aspect_ratio).toBe(ratio);
+  });
+
   it('does not issue signup credits through the old auth hook under the new site configuration', async () => {
     expect(site.signup.bonusCredits).toBe(0);
     const user = await newUser();
@@ -317,6 +341,26 @@ describe('verified signup trial entitlement', () => {
 });
 
 describe('signup trial redemption and paid generation', () => {
+  it.each(guestModels.filter((model) => model.guest && model.id.endsWith('-v2')))(
+    'locks the $id trial to its server-owned specification and cap', async (model) => {
+      const user = await newUser();
+      const { core } = fakeCore(user);
+      const spec = VIDEO_OPTIONS[model.id]!;
+      const upstream = VIDEO_UPSTREAMS[model.id]!;
+      const job = await storedJob(await createSiteJob(core, generationRequest('daily-trial', {
+        modelId: model.id,
+        parameters: { duration: 999, resolution: '4k', aspect_ratio: spec.aspectRatios[0] },
+        ...(upstream.requiresReference ? { references: ['/files/uploads/reference.jpg'] } : {}),
+      })));
+      const parameters = JSON.parse(job.inputJson).parameters;
+      expect(parameters).toMatchObject(spec.trial);
+      if (upstream.generateAudio === undefined) expect(parameters).not.toHaveProperty('generate_audio');
+      else expect(parameters.generate_audio).toBe(upstream.generateAudio);
+      expect(partsOf(job, model)[0]!.maxCost).toBe(trialMaxCost(model.id));
+      expect(job.costCredits).toBe(0);
+    },
+  );
+
   it('redeems the voucher for an owned 4s480p job without spending paid credits', async () => {
     const user = await newUser({ credits: 100 });
     const { core, dispatch, getUser } = fakeCore(user);
@@ -335,6 +379,7 @@ describe('signup trial redemption and paid generation', () => {
       duration: 4,
       resolution: '480p',
       aspect_ratio: '9:16',
+      generate_audio: false,
     });
     expect(await quotaCount(`signup-trial:used:${user.id}`)).toBe(1);
     expect((await getBalance(db, user.id)).available).toBe(100);
@@ -494,8 +539,8 @@ describe('signup trial redemption and paid generation', () => {
     });
   });
 
-  it('keeps explicit paid generation at 100 credits, 10s720p with a 2.60 ceiling', async () => {
-    const user = await newUser({ credits: 200 });
+  it('charges the chosen paid specification and keeps the quote bound to it', async () => {
+    const user = await newUser({ credits: 1000 });
     const { core } = fakeCore(user);
     const job = await storedJob(
       await createSiteJob(
@@ -503,21 +548,40 @@ describe('signup trial redemption and paid generation', () => {
         generationRequest('paid', { parameters: { duration: 4, resolution: '480p' } }),
       ),
     );
-    expect(job.costCredits).toBe(100);
-    expect(JSON.parse(job.inputJson).parameters).toMatchObject({ duration: 10, resolution: '720p' });
-    expect((await getBalance(db, user.id)).available).toBe(100);
-    const part = partsOf(job, models[0]!)[0]!;
-    expect(buildYirRequest({ ...part, kind: 'video' }).max_cost).toBe('2.60');
+    const parameters = JSON.parse(job.inputJson).parameters;
+    const model = models.find((item) => item.id === 'seedance-2-5-v2')!;
+    expect(parameters).toMatchObject({ duration: 4, resolution: '480p', generate_audio: false });
+    expect(job.costCredits).toBe(creditsFor(model, sanitizeParameters(model, parameters)));
+    expect((await getBalance(db, user.id)).available).toBe(1000 - job.costCredits);
+    expect(paidMaxCost(model.id, parameters)).toBeTruthy();
   });
 
-  it('uses the 0.60 ceiling in the actual trial request serializer', async () => {
+  it.each([
+    { duration: 999, resolution: '480p' },
+    { duration: 4.5, resolution: '480p' },
+    { duration: 4, resolution: '4k' },
+    { duration: '4', resolution: '480p' },
+    { duration: 4, resolution: '480p', generate_audio: true },
+    { duration: 4, resolution: '480p', aspect_ratio: 'hacked' },
+  ])('rejects unsupported paid parameters before charging: %j', async (parameters) => {
+    const user = await newUser({ credits: 1000 });
+    const { core, dispatch } = fakeCore(user);
+    const response = await createSiteJob(core, generationRequest('paid', { parameters }));
+    expect(response.status).toBe(400);
+    expect(await responseCode(response)).toBe('invalid_parameters');
+    expect((await getBalance(db, user.id)).available).toBe(1000);
+    expect(await totalJobs()).toBe(0);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it('uses the configured ceiling in the actual trial request serializer', async () => {
     const user = await newUser();
     const { core } = fakeCore(user);
     await claimSignupTrial(core, trialRequest());
     const job = await storedJob(await createSiteJob(core, generationRequest('signup-trial')));
-    const part = partsOf(job, guestModels[0]!)[0]!;
+    const part = partsOf(job, guestModels.find((item) => item.id === 'seedance-2-5-v2')!)[0]!;
     const request = buildYirRequest({ ...part, kind: 'video' });
-    expect(request.max_cost).toBe('0.60');
+    expect(request.max_cost).toBe(trialMaxCost('seedance-2-5-v2'));
     expect(request.parameters).toMatchObject({ duration: 4, resolution: '480p' });
   });
 
@@ -711,7 +775,7 @@ describe('actual Workflow execution for trial ownership and budget', () => {
     { mode: 'daily-trial' as const, signedIn: true },
     { mode: 'signup-trial' as const, signedIn: true },
   ])(
-    'keeps $0.60 for $mode with signedIn=$signedIn and never returns charged trial usage',
+    'keeps the trial ceiling for $mode with signedIn=$signedIn and never returns charged trial usage',
     async ({ mode, signedIn }) => {
       const user = await newUser({ credits: 100 });
       const { core } = fakeCore(signedIn ? user : null);
@@ -732,8 +796,8 @@ describe('actual Workflow execution for trial ownership and budget', () => {
       await actualWorkflowRun(job.id, step);
       expect(submit).toHaveBeenCalledExactlyOnceWith(
         expect.objectContaining({
-          maxCost: '0.60',
-          parameters: { duration: 4, resolution: '480p', aspect_ratio: '16:9' },
+          maxCost: trialMaxCost('seedance-2-5-v2'),
+          parameters: { duration: 4, resolution: '480p', aspect_ratio: '16:9', generate_audio: false },
         }),
         job.id,
       );

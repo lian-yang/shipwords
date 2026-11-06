@@ -6,6 +6,7 @@ import { authClient } from '~/lib/auth';
 import { signupTrialDescription, useTrials } from '~/lib/trials';
 import { m } from '~/paraglide/messages.js';
 import { getLocale } from '~/paraglide/runtime.js';
+import { useSharedCreditBalance } from '~/site/credit-balance';
 import { openPricing, productName } from '~/site/pricing';
 import site from '../../site.config';
 
@@ -24,17 +25,19 @@ export function openAccount() {
 export function AccountLink({
   className,
   title,
+  ariaLabel,
   children,
 }: {
   className?: string;
   title?: string;
+  ariaLabel?: string;
   children: ReactNode;
 }) {
   return (
     <a
       href="/account"
       className={className}
-      aria-label={m.common_account_label()}
+      aria-label={ariaLabel ?? m.common_account_label()}
       title={title}
       onClick={(e: MouseEvent) => {
         e.preventDefault();
@@ -63,11 +66,20 @@ function orderStatus(order: Order) {
   return m.common_account_status_paid();
 }
 
-function resultStatus(job: PublicJob) {
+export function resultStatus(job: PublicJob) {
   if (job.status === 'queued' || job.status === 'submitted') return m.common_results_generating();
-  if (job.status === 'failed')
-    return job.costCredits > 0 ? m.common_results_failed() : m.common_results_failed_free();
-  if (job.status === 'canceled') return m.common_results_canceled();
+  if (job.status === 'failed') {
+    if (job.costCredits === 0) return m.common_results_failed_free();
+    if (job.settlement === 'refunded') return m.common_results_failed();
+    if (job.settlement === 'charged') return m.common_results_failed_charged({ jobId: job.id });
+    return m.common_results_failed_pending({ jobId: job.id });
+  }
+  if (job.status === 'canceled') {
+    if (job.costCredits === 0) return m.common_results_canceled();
+    if (job.settlement === 'refunded') return m.common_results_canceled_refunded();
+    if (job.settlement === 'charged') return m.common_results_canceled_charged({ jobId: job.id });
+    return m.common_results_canceled_pending({ jobId: job.id });
+  }
   return null;
 }
 
@@ -112,6 +124,7 @@ export function AccountPanel({
 }) {
   const config = root.useLoaderData();
   const { data, loading } = useAccount();
+  const balance = useSharedCreditBalance();
   const trials = useTrials(data?.user.id, loading);
 
   if (loading) return <p className="muted">{m.common_account_loading()}</p>;
@@ -133,7 +146,18 @@ export function AccountPanel({
 
       <div className="account-card">
         <h3>{m.common_account_credits()}</h3>
-        <p className="balance">{Math.max(0, data.balance.available).toLocaleString()}</p>
+        {balance.status === 'ready' && balance.available !== null ? (
+          <p className="balance">{Math.max(0, balance.available).toLocaleString()}</p>
+        ) : balance.status === 'error' ? (
+          <p className="muted">
+            {m.home_balance_unavailable()}{' '}
+            <button type="button" className="link-button" onClick={balance.refresh}>
+              {m.home_balance_retry()}
+            </button>
+          </p>
+        ) : (
+          <p className="muted">{m.home_balance_loading()}</p>
+        )}
         {data.balance.debt > 0 && (
           <p className="muted">{m.common_account_debt({ debt: data.balance.debt })}</p>
         )}

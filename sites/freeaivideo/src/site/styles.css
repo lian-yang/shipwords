@@ -178,6 +178,17 @@ button.primary:disabled {
 .site-header :where(nav) a:hover {
   color: #4e6735;
 }
+.account-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  white-space: nowrap;
+}
+.header-credit-balance {
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
 .nav-create {
   position: relative;
 }
@@ -354,6 +365,48 @@ select:focus-visible {
   padding: 9px 12px;
   background: #f4f6ef;
   border-color: transparent;
+}
+.model-choice-note {
+  margin: -6px 0 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.credit-summary {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 9px;
+  background: #eff3e8;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.credit-summary-balance {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.credit-shortfall {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.credit-shortfall a {
+  color: #3e5929;
+  font-weight: 650;
+  text-underline-offset: 3px;
+}
+.trial-next-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  font-size: 14px;
+}
+.trial-next-steps p {
+  flex-basis: 100%;
+  color: var(--color-muted);
+  font-size: 13px;
 }
 .upload-control {
   display: flex;
@@ -683,10 +736,12 @@ a.link-accent {
 }
 .plans {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
   gap: 18px;
 }
 .plan {
+  display: flex;
+  flex-direction: column;
   padding: 26px;
   border: 1px solid var(--color-line);
   border-radius: 15px;
@@ -714,8 +769,11 @@ a.link-accent {
 }
 .plan button {
   width: 100%;
-  margin-top: 24px;
+  margin-top: auto;
   font-size: 14px;
+}
+.plan > p:last-of-type {
+  margin-bottom: 24px;
 }
 .pricing-content > .muted,
 .pricing-dialog > .muted {
@@ -871,6 +929,13 @@ a.link-accent {
 }
 .pricing-dialog {
   width: min(760px, calc(100vw - 32px));
+}
+.pricing-shortfall {
+  margin: -6px 0 18px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #eff3e8;
+  font-size: 14px;
 }
 .dialog-close {
   float: right;
@@ -1310,6 +1375,9 @@ main > .content:not(.examples-section, .how-section, .limits-section, .pricing-s
   .site-header nav {
     gap: 10px;
   }
+  .header-credit-balance > span {
+    display: none;
+  }
   .brand {
     font-size: 15px;
   }
@@ -1368,17 +1436,6 @@ html[lang="zh"] .lead {
   color: var(--color-ink);
   font-weight: 600;
 }
-.plan-badge {
-  display: inline-block;
-  margin-bottom: 0.5rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 6px;
-  background: #eff3e8;
-  color: var(--color-ink);
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
 /* Admin: an internal utility page, so plain tables and no marketing styling. */
 .admin {
   padding: 2.5rem 0 4rem;

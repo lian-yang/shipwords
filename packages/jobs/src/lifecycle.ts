@@ -4,6 +4,7 @@ import { quotaCounters } from '@shipwords/core/db/schema';
 import type { QuotaRule } from '@shipwords/core/quota/counters';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { type JobRow, jobs } from './schema';
+import type { SubmitInput, UpstreamAdapter } from './upstream';
 
 // Every write to job state goes through here. Each state change is a conditional UPDATE;
 // refunds and quota returns after failure or cancel settle on the final state, so they can be repeated and survive partial failure.
@@ -11,6 +12,28 @@ import { type JobRow, jobs } from './schema';
 const ACTIVE: JobRow['status'][] = ['queued', 'submitted'];
 
 export const spendKey = (jobId: string) => `job:${jobId}`;
+export const BILLING_PENDING = 'billing_pending';
+export const BILLING_CHARGED = 'billing_charged';
+export const BILLING_REFUNDING = 'billing_refunding';
+export const BILLING_REFUNDED = 'billing_refunded';
+export const PENDING_UPSTREAM = 'pending:';
+
+/** Server-owned policy snapshot; request parameters cannot opt themselves into a settlement policy. */
+export function hasVerifiedBilling(job: Pick<JobRow, 'inputJson'>): boolean {
+  try { return (JSON.parse(job.inputJson) as { _verifiedBilling?: unknown })._verifiedBilling === true; }
+  catch { return false; }
+}
+
+/** Serialize a request before dispatch; base64 contains no comma, the existing upstream ID separator. */
+export function pendingSubmit(input: SubmitInput, key: string): string {
+  const bytes = new TextEncoder().encode(JSON.stringify({ input, key }));
+  return PENDING_UPSTREAM + btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(''));
+}
+
+export function readPendingSubmit(value: string): { input: SubmitInput; key: string } {
+  const bytes = Uint8Array.from(atob(value.slice(PENDING_UPSTREAM.length)), (c) => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes)) as { input: SubmitInput; key: string };
+}
 
 export async function loadJob(db: Db, jobId: string): Promise<JobRow | null> {
   const [row] = await db.select().from(jobs).where(eq(jobs.id, jobId)).limit(1);
@@ -30,8 +53,28 @@ export async function markSubmitted(db: Db, jobId: string, upstreamJobId: string
 /** Placeholder ID recorded in a segment slot when the upstream rejects a prep submit: no upstream task, never polled or canceled. */
 export const SKIPPED_UPSTREAM = 'skipped:';
 
-export function upstreamIds(job: Pick<JobRow, 'upstreamJobId'>): string[] {
+function rawUpstreamEntries(job: Pick<JobRow, 'upstreamJobId'>): string[] {
   return job.upstreamJobId ? job.upstreamJobId.split(',') : [];
+}
+export function upstreamIds(job: Pick<JobRow, 'upstreamJobId'>): string[] {
+  return rawUpstreamEntries(job);
+}
+
+/** Atomically claim a slot before its request can be sent. Only an identical request may reuse a claim. */
+export async function claimUpstreamJob(db: Db, jobId: string, index: number, pending: string): Promise<boolean> {
+  if (index === 0) {
+    const result = await db.update(jobs).set({ status: 'submitted', upstreamJobId: pending, submittedAt: Date.now() })
+      .where(and(eq(jobs.id, jobId), eq(jobs.status, 'queued'))).run();
+    if (result.meta.changes > 0) return true;
+  }
+  const job = await loadJob(db, jobId);
+  if (!job || job.status !== 'submitted') return false;
+  const ids = upstreamIds(job);
+  if (ids[index] === pending) return true;
+  if (ids.length !== index || !job.upstreamJobId) return false;
+  const result = await db.update(jobs).set({ upstreamJobId: [...ids, pending].join(',') })
+    .where(and(eq(jobs.id, jobId), eq(jobs.status, 'submitted'), eq(jobs.upstreamJobId, job.upstreamJobId))).run();
+  return result.meta.changes > 0;
 }
 
 /**
@@ -47,17 +90,24 @@ export async function appendUpstreamJob(
 ): Promise<boolean> {
   if (index === 0 && (await markSubmitted(db, jobId, upstreamJobId))) return true;
   const job = await loadJob(db, jobId);
-  if (index === 0) return job?.status === 'submitted' && upstreamIds(job)[0] === upstreamJobId;
-  if (job?.status !== 'submitted') return false;
+  if (!job || (job.status !== 'submitted' && job.status !== 'failed')) return false;
   const ids = upstreamIds(job);
+  // Only a verified failure may record an in-flight claim after termination.
+  // Legacy jobs were already refunded, so a late submission must be canceled.
+  if (job.status === 'failed' && (!hasVerifiedBilling(job) ||
+    (ids[index] !== upstreamJobId && (job.errorCode !== BILLING_PENDING || !ids[index]?.startsWith(PENDING_UPSTREAM))))) return false;
   if (ids[index] === upstreamJobId) return true;
-  if (ids.length !== index) return false;
+  if (ids.length !== index && !ids[index]?.startsWith(PENDING_UPSTREAM)) return false;
+  const next = [...ids];
+  next[index] = upstreamJobId;
   const result = await db
     .update(jobs)
-    .set({ upstreamJobId: [...ids, upstreamJobId].join(',') })
-    .where(and(eq(jobs.id, jobId), eq(jobs.status, 'submitted'), eq(jobs.upstreamJobId, job.upstreamJobId!)))
+    .set({ upstreamJobId: next.join(',') })
+    .where(and(eq(jobs.id, jobId), eq(jobs.status, job.status), eq(jobs.upstreamJobId, job.upstreamJobId!)))
     .run();
-  return result.meta.changes > 0;
+  if (result.meta.changes > 0) return true;
+  const latest = await loadJob(db, jobId);
+  return Boolean(latest && upstreamIds(latest)[index] === upstreamJobId);
 }
 
 export interface StoredOutput {
@@ -76,7 +126,8 @@ export async function markSucceeded(db: Db, jobId: string, outputs: StoredOutput
 
 /** Record the upstream charge of an ended job; only bookkeeping, it never touches state or credits, so a re-read simply overwrites it. */
 export async function recordUpstreamCost(db: Db, jobId: string, usd: string): Promise<void> {
-  await db.update(jobs).set({ upstreamCostUsd: usd }).where(eq(jobs.id, jobId)).run();
+  await db.update(jobs).set({ upstreamCostUsd: usd }).where(and(eq(jobs.id, jobId),
+    sql`(${jobs.errorCode} is null or ${jobs.errorCode} not in (${BILLING_REFUNDING}, ${BILLING_REFUNDED}, ${BILLING_CHARGED}))`)).run();
 }
 
 /** Move an in-progress job to failed or canceled, then settle the refund. If the job already ended the state isn't changed, but settlement still runs. */
@@ -89,7 +140,7 @@ export async function markFailed(
 ): Promise<JobRow | null> {
   await db
     .update(jobs)
-    .set({ status, errorCode: code, errorMessage: message.slice(0, 500), finishedAt: Date.now() })
+    .set({ status, errorCode: sql`case when ${jobs.status} = 'submitted' and case when json_valid(${jobs.inputJson}) then json_extract(${jobs.inputJson}, '$._verifiedBilling') = 1 else 0 end then ${BILLING_PENDING} else ${code} end`, errorMessage: message.slice(0, 500), finishedAt: Date.now() })
     .where(and(eq(jobs.id, jobId), inArray(jobs.status, ACTIVE)));
   const job = await loadJob(db, jobId);
   if (job) await settleFailure(db, job);
@@ -124,12 +175,14 @@ export async function cancelQueued(db: Db, jobId: string): Promise<JobRow | null
  */
 export async function settleFailure(db: Db, job: JobRow): Promise<void> {
   if (job.status !== 'failed' && job.status !== 'canceled') return;
+  if (job.errorCode === BILLING_PENDING || job.errorCode === BILLING_CHARGED) return;
   if (job.costCredits > 0 && job.userId) {
-    await refundSpend(db, {
+    const refund = await refundSpend(db, {
       spendIdemKey: spendKey(job.id),
       idemKey: `refund:${spendKey(job.id)}`,
       ref: job.id,
     });
+    if (!refund.ledgerId) throw new Error('cannot confirm the original credit spend');
   }
   if (job.status === 'failed' && job.quotaJson && !job.quotaReleased) {
     // The quota decrements and the "returned" flag share one batch: each decrement is conditioned on the flag not being set,
@@ -147,6 +200,50 @@ export async function settleFailure(db: Db, job: JobRow): Promise<void> {
     const items: BatchItem[] = [...decrements, markReleased];
     await db.batch(items as [BatchItem, ...BatchItem[]]);
   }
+  if (hasVerifiedBilling(job) && (job.errorCode === BILLING_REFUNDING || (job.costCredits > 0 && job.userId))) {
+    await db.update(jobs).set({ errorCode: BILLING_REFUNDED })
+      .where(and(eq(jobs.id, job.id), inArray(jobs.status, ['failed', 'canceled']),
+        job.errorCode ? eq(jobs.errorCode, job.errorCode) : isNull(jobs.errorCode))).run();
+  }
+}
+
+/** Retryable, fail-closed settlement: only a complete settled-zero bill permits a refund. */
+export async function reconcileFailure(db: Db, jobId: string, adapters: Record<string, UpstreamAdapter>): Promise<JobRow | null> {
+  let job = await loadJob(db, jobId);
+  if (!job || !hasVerifiedBilling(job) || (job.status !== 'failed' && job.status !== 'canceled')) return job;
+  if (job.errorCode === BILLING_PENDING) {
+    const adapter = adapters[job.upstream];
+    const ids = upstreamIds(job);
+    if (!adapter?.cost || ids.some((id) => id.startsWith(PENDING_UPSTREAM)) || !ids.length) return job;
+    const real = ids.filter((id) => !id.startsWith(SKIPPED_UPSTREAM));
+    try {
+      const statuses = await Promise.all(real.map((id) => adapter.poll(id, 0)));
+      if (statuses.some((status) => status.state === 'running')) return job;
+      const bills = await Promise.all(real.map((id) => adapter.cost!(id)));
+      if (bills.some((bill) => !bill.settled || !/^(?:0|[1-9]\d{0,30})(?:\.\d{1,30})?$/.test(bill.usd))) return job;
+      const scale = Math.max(6, ...bills.map((bill) => (bill.usd.split('.')[1] ?? '').length));
+      const multiplier = 10n ** BigInt(scale);
+      const micros = bills.reduce((total, bill) => {
+        const [whole, fraction = ''] = bill.usd.split('.');
+        return total + BigInt(whole!) * multiplier + BigInt(fraction.padEnd(scale, '0') || '0');
+      }, 0n);
+      const charged = micros > 0n;
+      const usd = `${micros / multiplier}.${String(micros % multiplier).padStart(scale, '0')}`;
+      const result = await db.update(jobs)
+        .set({ errorCode: charged ? BILLING_CHARGED : BILLING_REFUNDING, upstreamCostUsd: usd })
+        .where(and(eq(jobs.id, jobId), eq(jobs.status, job.status), eq(jobs.errorCode, BILLING_PENDING), eq(jobs.upstreamJobId, job.upstreamJobId!))).run();
+      if (result.meta.changes) job = (await loadJob(db, jobId))!;
+    } catch { return job; }
+  }
+  if (job.errorCode !== BILLING_PENDING && job.errorCode !== BILLING_CHARGED) await settleFailure(db, job);
+  return loadJob(db, jobId);
+}
+
+/** Operator-only: list frozen idempotency keys without disclosing prompts or references. */
+export function pendingSubmissionKeys(job: JobRow): { index: number; key: string }[] {
+  return upstreamIds(job).flatMap((id, index) => id.startsWith(PENDING_UPSTREAM)
+    ? [{ index, key: readPendingSubmit(id).key }]
+    : []);
 }
 
 /** After a guest signs in, move this device's guest jobs to the new account. */
