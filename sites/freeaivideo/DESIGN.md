@@ -21,7 +21,7 @@ Retain one H1 and its original keyword, metadata, canonical, OG image and WebApp
 
 Real examples keep their clips, posters and prompts. Newly generated planet artwork is prompt inspiration with a button that inserts its prompt; it is not presented as an actual video output. Compact reassurance replaces repeated sales copy; factual limits and refund distinctions remain visible.
 
-Admin (/admin, noindex) is an internal utility page behind the ADMIN_EMAIL gate: plain white cards and bordered tables with tabular numbers, none of the marketing styling. It is not linked from the site.
+Admin (/admin, noindex) is an internal utility page behind the ADMIN_EMAIL gate, written in Chinese regardless of the site locale: plain white cards and bordered tables with tabular numbers, none of the marketing styling. It is not linked from the site.
 
 ## Motion and states
 Motion feels like a scene settling into a frame: short and controlled. A 350ms workspace entrance, 150ms button feedback, 220ms dialog entrance, and a subtle pending render indicator. FAQ uses native disclosure. Reduced motion removes transforms and automatic clip playback. This is a tool page, so no scroll hijacking or pinned stage.

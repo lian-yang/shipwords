@@ -1431,3 +1431,28 @@ html[lang="zh"] .lead {
   color: #62685e;
   font-weight: 600;
 }
+.admin h1 .button {
+  margin-left: 0.75rem;
+  vertical-align: middle;
+  font-size: 0.9rem;
+}
+.admin-dists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  align-items: flex-start;
+}
+.admin-dist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 220px;
+}
+.admin-dist li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid #dce1d6;
+  font-size: 0.9rem;
+}
