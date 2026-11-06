@@ -14,6 +14,7 @@ import { useSharedCreditBalance } from '~/site/credit-balance';
 import { CreditSummary, creditShortfall } from '~/site/credit-summary';
 import { getFaqs } from '~/site/faq';
 import { Plans, PricingLink } from '~/site/pricing';
+import { getPromptPreset } from '~/site/prompt-presets';
 import { openSignIn } from '~/site/sign-in';
 import type { GenerationMode } from '~/trial-types';
 import { VIDEO_OPTIONS } from '~/video-options';
@@ -195,16 +196,10 @@ function ToolPage() {
     const url = new URL(window.location.href);
     // An explicit guide CTA replaces only the prompt. Keep the reference photo,
     // model and generation mode from the saved draft; checkout resume takes priority.
-    const promptPresets: Record<string, () => string> = {
-      'mulmannan-floor': m.pages_mulmannan_prompt_solo,
-      'coffee-duo': m.pages_coffeelegends_prompt_duo,
-      'paws-at-you': m.pages_paws_prompt_close,
-      'bicep-heart': m.pages_bicep_prompt_close,
-    };
     const preset = url.searchParams.get('preset');
-    const presetPrompt = preset && Object.hasOwn(promptPresets, preset) ? promptPresets[preset] : undefined;
+    const presetPrompt = preset ? getPromptPreset(preset) : undefined;
     if (presetPrompt) {
-      if (!url.searchParams.has('resume')) requestedPrompt.current = presetPrompt();
+      if (!url.searchParams.has('resume')) requestedPrompt.current = presetPrompt;
       url.searchParams.delete('preset');
       window.history.replaceState(window.history.state, '', url);
     }

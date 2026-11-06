@@ -37,7 +37,7 @@ function WChewsPage() {
       <h1>{m.pages_wchews_title()}</h1>
       <p className="lead">{m.pages_wchews_intro()}</p>
       <p>
-        <a className="button primary" href="/#tool">
+        <a className="button primary" href="/?preset=w-chews-l-nibbles#tool">
           {m.pages_wchews_generate_link()}
         </a>
       </p>
@@ -72,7 +72,7 @@ function WChewsPage() {
         <strong>{m.pages_wchews_question_free()}</strong> {m.pages_wchews_answer_free()}
       </p>
       <p>
-        {m.pages_wchews_ready()} <a href="/#tool">{m.pages_wchews_generate_link()}</a>
+        {m.pages_wchews_ready()} <a href="/?preset=w-chews-l-nibbles#tool">{m.pages_wchews_generate_link()}</a>
       </p>
     </section>
   );

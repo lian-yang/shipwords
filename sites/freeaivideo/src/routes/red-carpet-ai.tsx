@@ -39,7 +39,7 @@ function RedCarpetPage() {
       <h1>{m.pages_redcarpet_title()}</h1>
       <p className="lead">{m.pages_redcarpet_intro()}</p>
       <p>
-        <a className="button primary" href="/#tool">
+        <a className="button primary" href="/?preset=red-carpet#tool">
           {m.pages_redcarpet_generate_link()}
         </a>
       </p>
@@ -72,7 +72,7 @@ function RedCarpetPage() {
         <strong>{m.pages_redcarpet_question_free()}</strong> {m.pages_redcarpet_answer_free()}
       </p>
       <p>
-        {m.pages_redcarpet_ready()} <a href="/#tool">{m.pages_redcarpet_generate_link()}</a>
+        {m.pages_redcarpet_ready()} <a href="/?preset=red-carpet#tool">{m.pages_redcarpet_generate_link()}</a>
       </p>
     </section>
   );

@@ -38,7 +38,7 @@ function FancyCafePage() {
       <h1>{m.pages_fancycafe_title()}</h1>
       <p className="lead">{m.pages_fancycafe_intro()}</p>
       <p>
-        <a className="button primary" href="/#tool">
+        <a className="button primary" href="/?preset=fancy-cafe#tool">
           {m.pages_fancycafe_generate_link()}
         </a>
       </p>
@@ -71,7 +71,7 @@ function FancyCafePage() {
         <strong>{m.pages_fancycafe_question_free()}</strong> {m.pages_fancycafe_answer_free()}
       </p>
       <p>
-        {m.pages_fancycafe_ready()} <a href="/#tool">{m.pages_fancycafe_generate_link()}</a>
+        {m.pages_fancycafe_ready()} <a href="/?preset=fancy-cafe#tool">{m.pages_fancycafe_generate_link()}</a>
       </p>
     </section>
   );

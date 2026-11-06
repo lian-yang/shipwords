@@ -77,7 +77,7 @@ function CoffeeLegendsPage() {
         <strong>{m.pages_coffeelegends_question_free()}</strong> {m.pages_coffeelegends_answer_free()}
       </p>
       <p>
-        {m.pages_coffeelegends_ready()} <a href="/#tool">{m.pages_coffeelegends_open_generator()}</a>
+        {m.pages_coffeelegends_ready()} <a href="/?preset=coffee-duo#tool">{m.pages_coffeelegends_open_generator()}</a>
       </p>
     </section>
   );

@@ -38,7 +38,7 @@ function FrutigerAeroYamsPage() {
       <h1>{m.pages_frutigerayams_title()}</h1>
       <p className="lead">{m.pages_frutigerayams_intro()}</p>
       <p>
-        <a className="button primary" href="/#tool">
+        <a className="button primary" href="/?preset=frutiger-aero-yams#tool">
           {m.pages_frutigerayams_generate_link()}
         </a>
       </p>
@@ -71,7 +71,7 @@ function FrutigerAeroYamsPage() {
         <strong>{m.pages_frutigerayams_question_free()}</strong> {m.pages_frutigerayams_answer_free()}
       </p>
       <p>
-        {m.pages_frutigerayams_ready()} <a href="/#tool">{m.pages_frutigerayams_generate_link()}</a>
+        {m.pages_frutigerayams_ready()} <a href="/?preset=frutiger-aero-yams#tool">{m.pages_frutigerayams_generate_link()}</a>
       </p>
     </section>
   );

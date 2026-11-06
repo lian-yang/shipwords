@@ -68,7 +68,7 @@ function MulmannanPage() {
         <strong>{m.pages_mulmannan_question_free()}</strong> {m.pages_mulmannan_answer_free()}
       </p>
       <p>
-        {m.pages_mulmannan_ready()} <a href="/#tool">{m.pages_mulmannan_open_generator()}</a>
+        {m.pages_mulmannan_ready()} <a href="/?preset=mulmannan-floor#tool">{m.pages_mulmannan_open_generator()}</a>
       </p>
     </section>
   );
