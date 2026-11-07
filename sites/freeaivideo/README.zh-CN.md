@@ -1,8 +1,8 @@
 # Free AI Video
 
 - 站点：https://www.freeaivideo.app
-- 目标关键词：free AI video generator、no sign-up、Seedance 2.5 free online。
-- 模型：30 个积分生成模型，其中 6 个支持试用；文字及参考照片的支持情况由所选模型决定。
+- 目标关键词：free AI video generator、no sign-up、Seedance 2.5 video generation。
+- 模型：30 个积分生成模型，其中 5 个支持试用；文字及参考照片的支持情况由所选模型决定。Seedance 2.5 需要积分。
 - 联系邮箱：support@freeaivideo.app
 - 语言：生产环境英文；本地预览支持英文与中文。
 - 分析：GA4 `G-YJ3Q2BRW3C`。

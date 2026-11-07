@@ -3,10 +3,20 @@ import { creditsFor } from '@shipwords/jobs/models';
 import { YirAdapter } from '@shipwords/jobs/yir';
 import catalog from '../site.models';
 import { paidParameters } from '../src/create-job.server';
-import { VIDEO_OPTIONS } from '../src/video-options';
+import { DEFAULT_TRIAL_MODEL_ID, restoredModelId, VIDEO_OPTIONS } from '../src/video-options';
 import { paidMaxCost, trialMaxCost, VIDEO_UPSTREAMS } from '../src/video-pricing.server';
 
 describe('published video specifications', () => {
+  it('restores free drafts to an eligible model but preserves paid and eligible free selections', () => {
+    expect(restoredModelId('seedance-2-5-v2', 'daily-trial', catalog)).toBe(DEFAULT_TRIAL_MODEL_ID);
+    expect(restoredModelId('seedance-2-5-v2', 'signup-trial', catalog)).toBe(DEFAULT_TRIAL_MODEL_ID);
+    expect(restoredModelId('seedance-2-5-v2', undefined, catalog)).toBe(DEFAULT_TRIAL_MODEL_ID);
+    expect(restoredModelId('seedance-2-5-v2', 'paid', catalog)).toBe('seedance-2-5-v2');
+    expect(restoredModelId('seedance-2-5-v2', 'paid', catalog, true)).toBe(DEFAULT_TRIAL_MODEL_ID);
+    expect(restoredModelId('kling-2-6-v2', 'daily-trial', catalog)).toBe('kling-2-6-v2');
+    expect(restoredModelId('kling-2-6-v2', 'paid', catalog, true)).toBe('kling-2-6-v2');
+    expect(restoredModelId('not-a-model', 'paid', catalog)).toBe(DEFAULT_TRIAL_MODEL_ID);
+  });
   it('rejects unsupported Wan 2.7 text aspect ratios', () => {
     expect(VIDEO_OPTIONS['wan-2-7-v2']!.aspectRatios).toEqual(['16:9', '9:16', '1:1', '4:3', '3:4']);
     expect(paidParameters('wan-2-7-v2', { resolution: '720p', duration: 5, aspect_ratio: '21:9' })).toBe(false);
@@ -20,7 +30,7 @@ describe('published video specifications', () => {
     expect(paidParameters(id, { resolution: '720p', duration: 5, aspect_ratio: '21:9' })).toBe(true);
     expect(paidParameters(id, { resolution: '720p', duration: 5, aspect_ratio: 'auto' }, true)).toBe(true);
   });
-  it('passes all six trial caps through the real Yir submit validator without network access', async () => {
+  it('passes all five trial caps through the real Yir submit validator without network access', async () => {
     const requests: { max_cost: string }[] = [];
     const fetcher = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
       requests.push(JSON.parse(String(init?.body)) as { max_cost: string });
@@ -30,7 +40,9 @@ describe('published video specifications', () => {
     try {
       const adapter = new YirAdapter({ apiKey: 'test-only', baseURL: 'https://test.invalid' });
       const trials = catalog.filter((model) => model.guest);
-      expect(trials).toHaveLength(6);
+      expect(trials).toHaveLength(5);
+      expect(trials.some((model) => model.id === DEFAULT_TRIAL_MODEL_ID)).toBe(true);
+      expect(catalog.find((model) => model.id === 'seedance-2-5-v2')?.guest).toBe(false);
       for (const model of trials) {
         const spec = VIDEO_UPSTREAMS[model.id]!;
         const trial = VIDEO_OPTIONS[model.id]!.trial;
@@ -47,7 +59,7 @@ describe('published video specifications', () => {
         }, `test-${model.id}`)).resolves.toEqual({ upstreamJobId: 'test-upstream-job' });
         expect(requests.at(-1)?.max_cost).toBe(cap);
       }
-      expect(fetcher).toHaveBeenCalledTimes(6);
+      expect(fetcher).toHaveBeenCalledTimes(5);
     } finally {
       vi.unstubAllGlobals();
     }

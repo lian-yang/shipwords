@@ -8,7 +8,7 @@ export const Route = createFileRoute('/llms.txt')({
       GET: () =>
         llmsTxt(
           site,
-          `An AI video generator with 30 models for credit generation and six eligible for free trials. The free trial settings are Seedance 2.5 at 480p for 4 seconds, Seedance 2.0 Mini at 480p for 4 seconds, MiniMax H3 at 480p for 4 seconds, Kling 2.6 at 720p for 5 seconds, Grok Imagine Video at 480p for 6 seconds and Gemini Omni 1.2 Flash at 360p for 3 seconds. Daily free allowance per device, shared before and after sign-in: ${site.guest.dailyPerDevice}, subject to shared limits and daily availability. Credit costs depend on the model, resolution and duration and are shown before generation; some models require a reference image. Eligible new verified accounts can receive one additional registration trial voucher, valid for 30 days from registration, subject to daily allocation. Daily trials and registration vouchers are separate from credits and are used when a generation request is accepted; failure or cancellation does not automatically restore them. For credit jobs, unsettled billing remains pending; a confirmed zero charge or pre-submission rejection is eligible for a credit return. Previously issued credits remain valid under their original terms. Credit packs are one-time purchases: $4.99 for 100 credits, $19.99 for 500 credits or $49.99 for 1,250 credits. Purchased credits never expire.`,
+          `An AI video generator with 30 models for credit generation and five eligible for free trials. The free trial settings are MiniMax H3 at 480p for 4 seconds, Seedance 2.0 Mini at 480p for 4 seconds, Kling 2.6 at 720p for 5 seconds, Grok Imagine Video at 480p for 6 seconds and Gemini Omni 1.2 Flash at 360p for 3 seconds. MiniMax H3 is the default trial model. Seedance 2.5 requires credits. Daily free allowance per device, shared before and after sign-in: ${site.guest.dailyPerDevice}, subject to shared limits and daily availability. Credit costs depend on the model, resolution and duration and are shown before generation; some models require a reference image. Eligible new verified accounts can receive one additional registration trial voucher, valid for 30 days from registration, subject to daily allocation. Daily trials and registration vouchers are separate from credits and are used when a generation request is accepted; failure or cancellation does not automatically restore them. For credit jobs, unsettled billing remains pending; a confirmed zero charge or pre-submission rejection is eligible for a credit return. Previously issued credits remain valid under their original terms. Credit packs are one-time purchases: $4.99 for 100 credits, $19.99 for 500 credits or $49.99 for 1,250 credits. Purchased credits never expire.`,
           [
             {
               title: 'AI Video Generator',
@@ -30,7 +30,7 @@ export const Route = createFileRoute('/llms.txt')({
             {
               title: 'Seedance 2.5 Video Generation',
               path: '/seedance-2-5-free',
-              description: 'Seedance 2.5 video generation and trial availability.',
+              description: 'Seedance 2.5 credit video generation and available trial models.',
             },
             {
               title: 'AI Video Generator with No Watermark',

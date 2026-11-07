@@ -7,6 +7,22 @@ export interface VideoOptions {
   imageAspectRatio?: string;
   requiresReference?: boolean;
 }
+/** Cheapest supported trial based on the latest verified model quote. */
+export const DEFAULT_TRIAL_MODEL_ID = 'minimax-h3-v2';
+
+/** Restore a free draft only to a model still eligible for free generation. */
+export function restoredModelId(
+  savedId: string,
+  savedMode: string | undefined,
+  models: readonly { id: string; guest: boolean }[],
+  signupRequested = false,
+): string {
+  const saved = models.find((model) => model.id === savedId);
+  return saved && ((savedMode === 'paid' && !signupRequested) || saved.guest)
+    ? saved.id
+    : DEFAULT_TRIAL_MODEL_ID;
+}
+
 export const VIDEO_OPTIONS: Readonly<Record<string, VideoOptions>> = {
   'gemini-omni-1-1-flash-v2': {
     options: [

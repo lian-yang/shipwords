@@ -917,7 +917,7 @@ export default definePublicModels([
     name: 'Seedance 2.5',
     kind: 'video',
     credits: (parameters: Record<string, unknown>) => priceCredits('seedance-2-5-v2', parameters),
-    guest: true,
+    guest: false,
     allowedParameters: ['aspect_ratio', 'duration', 'resolution'],
     // Default must fit the Starter pack (100 credits), so a first purchase always completes one video.
     defaults: { aspect_ratio: '16:9', duration: 8, resolution: '720p' },

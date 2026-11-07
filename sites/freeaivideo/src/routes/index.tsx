@@ -17,7 +17,7 @@ import { Plans, PricingLink } from '~/site/pricing';
 import { getPromptPreset } from '~/site/prompt-presets';
 import { openSignIn } from '~/site/sign-in';
 import type { GenerationMode } from '~/trial-types';
-import { VIDEO_OPTIONS } from '~/video-options';
+import { DEFAULT_TRIAL_MODEL_ID, restoredModelId, VIDEO_OPTIONS } from '~/video-options';
 import site from '../../site.config';
 import models from '../../site.models';
 
@@ -53,6 +53,11 @@ export const Route = createFileRoute('/')({
 });
 
 const root = getRouteApi('__root__');
+const defaultTrialModel = (() => {
+  const model = models.find((item) => item.id === DEFAULT_TRIAL_MODEL_ID && item.guest);
+  if (!model) throw new Error('Default trial model must be trial eligible');
+  return model;
+})();
 const STEPS = [
   { id: 'prompt', title: m.home_how_prompt_title, body: m.home_how_prompt },
   { id: 'options', title: m.home_how_options_title, body: m.home_how_options },
@@ -125,11 +130,11 @@ function ToolPage() {
     recaptchaSiteKey: mode === 'paid' ? null : config.recaptchaSiteKey,
     turnstileSiteKey: mode === 'paid' ? null : config.turnstileSiteKey,
   });
-  const [modelId, setModelId] = useState<string>(models[0].id);
+  const [modelId, setModelId] = useState<string>(defaultTrialModel.id);
   const [prompt, setPrompt] = useState('');
-  const [aspectRatio, setAspectRatio] = useState(String(models[0].defaults.aspect_ratio ?? '16:9'));
-  const [resolution, setResolution] = useState(VIDEO_OPTIONS[models[0].id]!.default.resolution);
-  const [duration, setDuration] = useState(VIDEO_OPTIONS[models[0].id]!.default.duration);
+  const [aspectRatio, setAspectRatio] = useState(String(defaultTrialModel.defaults.aspect_ratio ?? '16:9'));
+  const [resolution, setResolution] = useState(VIDEO_OPTIONS[defaultTrialModel.id]!.default.resolution);
+  const [duration, setDuration] = useState(VIDEO_OPTIONS[defaultTrialModel.id]!.default.duration);
   const [references, setReferences] = useState<string[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [resumed, setResumed] = useState(false);
@@ -140,7 +145,7 @@ function ToolPage() {
   const requestedPrompt = useRef<string | null>(null);
   const freeMode = mode !== 'paid';
   const availableModels = freeMode ? models.filter((item) => item.guest) : models;
-  const model = availableModels.find((item) => item.id === modelId) ?? availableModels[0]!;
+  const model = availableModels.find((item) => item.id === modelId) ?? (freeMode ? defaultTrialModel : availableModels[0]!);
   const videoOptions = VIDEO_OPTIONS[model.id]!;
   const selectedAspectRatio = videoOptions.aspectRatios.includes(aspectRatio)
     ? aspectRatio
@@ -181,8 +186,12 @@ function ToolPage() {
 
   useEffect(() => {
     const saved = loadState();
+    const url = new URL(window.location.href);
+    // An explicit registration trial takes priority over a saved paid mode. Keep
+    // the request across repeated development effects after the URL is cleaned.
+    const signupRequested = url.searchParams.get('trial') === 'signup' || requestedTrial.current === 'signup-trial';
     if (saved) {
-      if (models.some((item) => item.id === saved.modelId)) setModelId(saved.modelId);
+      setModelId(restoredModelId(saved.modelId, saved.mode, models, signupRequested));
       setPrompt(saved.prompt);
       setAspectRatio(saved.aspectRatio);
       setReferences(saved.references);
@@ -193,7 +202,6 @@ function ToolPage() {
     }
     setRestored(true);
     // Checkout return (RESUME_PATH in pricing.tsx): show a notice, then drop resume from the URL so a reload does not repeat it.
-    const url = new URL(window.location.href);
     // An explicit guide CTA replaces only the prompt. Keep the reference photo,
     // model and generation mode from the saved draft; checkout resume takes priority.
     const preset = url.searchParams.get('preset');
@@ -317,7 +325,7 @@ function ToolPage() {
 
   function chooseMode(nextMode: GenerationMode) {
     if (nextMode !== 'paid' && !model.guest) {
-      const next = models.find((item) => item.guest)!;
+      const next = defaultTrialModel;
       setModelId(next.id);
       setResolution(VIDEO_OPTIONS[next.id]!.default.resolution);
       setDuration(VIDEO_OPTIONS[next.id]!.default.duration);
