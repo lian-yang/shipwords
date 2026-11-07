@@ -85,6 +85,24 @@ export const Route = createFileRoute('/llms.txt')({
               description:
                 'A bicep heart pose guide with editable video prompts and optional single-photo input.',
             },
+            {
+              title: 'Epic Dunk AI',
+              path: '/epic-dunk-ai',
+              description:
+                'A slam dunk highlight guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Burning Bridges AI',
+              path: '/burning-bridges-ai',
+              description:
+                'A walk-away-from-the-explosion guide with original video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Tip Toeing in My Jordans AI',
+              path: '/tiptoeing-in-my-jordans-ai',
+              description:
+                'A tiptoe sneaker meme guide with editable video prompts and optional single-photo input.',
+            },
           ],
         ),
     },
