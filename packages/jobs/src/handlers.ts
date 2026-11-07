@@ -1,5 +1,5 @@
 import { InsufficientCreditsError, spendCredits } from '@shipwords/core/credits/ledger';
-import { newId } from '@shipwords/core/db/client';
+import { type BatchItem, newId } from '@shipwords/core/db/client';
 import { clientIp, errorResponse, ipBucket, json, readJson } from '@shipwords/core/http';
 import { consumeQuota, dayWindow, releaseQuota } from '@shipwords/core/quota/counters';
 import { ensureGuestId, readGuestId } from '@shipwords/core/quota/guest';
@@ -7,12 +7,12 @@ import type { Core } from '@shipwords/core/server';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 import { imageSize } from './image-size';
 import {
-  cancelQueued,
-  claimGuestJobs,
   BILLING_CHARGED,
   BILLING_PENDING,
-  BILLING_REFUNDING,
   BILLING_REFUNDED,
+  BILLING_REFUNDING,
+  cancelQueued,
+  claimGuestJobs,
   hasVerifiedBilling,
   loadJob,
   markFailed,
@@ -56,6 +56,13 @@ interface CreateBody {
   recaptchaToken?: string;
 }
 
+/** Trusted site hooks, bound to an authenticated user and a client request key. */
+export interface JobIdempotency {
+  lookup(): Promise<{ jobId: string; matches: boolean } | null>;
+  /** Return an unexecuted statement protected by a unique constraint on the user's request key. */
+  insert(jobId: string): BatchItem;
+}
+
 export function publicJob(job: JobRow, baseURL: string) {
   const outputs = job.outputsJson ? (JSON.parse(job.outputsJson) as StoredOutput[]) : [];
   return {
@@ -64,11 +71,19 @@ export function publicJob(job: JobRow, baseURL: string) {
     status: job.status,
     prompt: job.prompt,
     costCredits: job.costCredits,
-    settlement: job.costCredits === 0 || job.status === 'succeeded' || job.status === 'queued' || job.status === 'submitted'
-      ? 'not_applicable' as const
-      : job.errorCode === BILLING_CHARGED ? 'charged' as const
-        : job.errorCode === BILLING_REFUNDED ? 'refunded' as const
-          : hasVerifiedBilling(job) ? 'pending' as const : 'refunded' as const,
+    settlement:
+      job.costCredits === 0 ||
+      job.status === 'succeeded' ||
+      job.status === 'queued' ||
+      job.status === 'submitted'
+        ? ('not_applicable' as const)
+        : job.errorCode === BILLING_CHARGED
+          ? ('charged' as const)
+          : job.errorCode === BILLING_REFUNDED
+            ? ('refunded' as const)
+            : hasVerifiedBilling(job)
+              ? ('pending' as const)
+              : ('refunded' as const),
     outputs: outputs.map((output) => ({
       url: `${baseURL}/files/${output.key}`,
       mediaType: output.mediaType,
@@ -107,8 +122,11 @@ export function createJobs(core: Core, models: readonly ModelDefinition[]) {
     if (job.status === 'failed' || job.status === 'canceled') {
       // Settlement is idempotent: a refund that previously failed halfway is completed here.
       if (job.errorCode === BILLING_PENDING || job.errorCode === BILLING_REFUNDING) {
-        try { return (await reconcileFailure(core.db, job.id, createAdapters(env()))) ?? job; }
-        catch { return job; }
+        try {
+          return (await reconcileFailure(core.db, job.id, createAdapters(env()))) ?? job;
+        } catch {
+          return job;
+        }
       }
       await settleFailure(core.db, job);
       return (await loadJob(core.db, job.id)) ?? job;
@@ -174,7 +192,23 @@ export function createJobs(core: Core, models: readonly ModelDefinition[]) {
     models,
 
     /** POST /api/jobs */
-    async create(request: Request): Promise<Response> {
+    async create(request: Request, idempotency?: JobIdempotency): Promise<Response> {
+      const boundUser = idempotency ? await core.getUser(request) : null;
+      if (idempotency && !boundUser) return errorResponse(401, 'login_required');
+
+      async function replay(): Promise<Response | null> {
+        if (!idempotency || !boundUser) return null;
+        const existing = await idempotency.lookup();
+        if (!existing) return null;
+        const job = await loadJob(core.db, existing.jobId);
+        // The site owns the mapping, but it must never authorize access to a different user's job.
+        if (!job || job.userId !== boundUser.id) return errorResponse(500, 'invalid_idempotency_record');
+        if (!existing.matches) return errorResponse(409, 'idempotency_conflict');
+        return json({ job: publicJob(job, baseURL()) });
+      }
+
+      const existing = await replay();
+      if (existing) return existing;
       const body = await readJson<CreateBody>(request);
       const model = models.find((m) => m.id === body?.modelId);
       if (!body || !model) return errorResponse(400, 'unknown_model');
@@ -207,9 +241,10 @@ export function createJobs(core: Core, models: readonly ModelDefinition[]) {
           inputJson = JSON.stringify(input);
         }
       }
-      if (model.verifiedBilling) inputJson = JSON.stringify({ ...JSON.parse(inputJson), _verifiedBilling: true });
+      if (model.verifiedBilling)
+        inputJson = JSON.stringify({ ...JSON.parse(inputJson), _verifiedBilling: true });
       const jobId = newId('job');
-      const user = await core.getUser(request);
+      const user = idempotency ? boundUser : await core.getUser(request);
 
       if (user) {
         const cost = creditsFor(model, parameters);
@@ -225,16 +260,24 @@ export function createJobs(core: Core, models: readonly ModelDefinition[]) {
         };
         try {
           // Charge and job creation share one batch: either both happen or neither does.
+          const inserts: BatchItem[] = [core.db.insert(jobs).values(row)];
+          if (idempotency) inserts.push(idempotency.insert(jobId));
           if (cost > 0) {
-            await spendCredits(
+            const charged = await spendCredits(
               core.db,
               { userId: user.id, amount: cost, idemKey: spendKey(jobId), ref: jobId },
-              [core.db.insert(jobs).values(row)],
+              inserts,
             );
+            if (!charged.applied) throw new Error('unexpected duplicate job charge');
           } else {
-            await core.db.insert(jobs).values(row);
+            if (idempotency) await core.db.batch(inserts as [BatchItem, ...BatchItem[]]);
+            else await core.db.insert(jobs).values(row);
           }
         } catch (error) {
+          // A concurrent winner may have used the last credits or the same request key.
+          // Its job and mapping committed together, so a matching record is safe to return.
+          const raced = await replay();
+          if (raced) return raced;
           if (error instanceof InsufficientCreditsError) {
             return errorResponse(402, 'insufficient_credits', 'Not enough credits.', {
               required: error.required,

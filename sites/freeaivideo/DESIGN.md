@@ -36,5 +36,7 @@ Keep the existing daylight studio palette and section order. Add a labelled nati
 
 Give the account dialog more reading room on desktop while keeping its existing phone width and spacing. Long account details, including email addresses, must wrap within the dialog at phone widths.
 
+The account is a compact workspace: place credits and the registration trial side by side on desktop, with results and orders as quiet secondary sections. Group agent access, the setup-prompt copy action and API key management together; stack everything on narrow screens. Keep the existing dialog entrance and button feedback, with reduced-motion behavior unchanged. The main navigation links directly to the agent integration guide on desktop and mobile.
+
 ## Credit balance and purchase guidance
 Show a signed-in customer's available credit balance beside the account entry and next to the paid generator's cost. Treat it as a refreshable snapshot: loading or failed reads must never appear as a zero balance or replace the server's final credit check. When a known balance is below the selected cost, show the shortfall and a clear link to the existing credit packs; if one pack cannot cover the shortfall, say that multiple purchases may be needed. When free allowance is exhausted, offer an explicit switch to credit generation without starting a job or spending credits. Keep free trials, balance and purchase choices distinct; preserve the current layout, native controls and quiet green palette on narrow screens.

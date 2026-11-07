@@ -6,9 +6,11 @@ import { authClient } from '~/lib/auth';
 import { signupTrialDescription, useTrials } from '~/lib/trials';
 import { m } from '~/paraglide/messages.js';
 import { getLocale } from '~/paraglide/runtime.js';
+import { AgentKeys } from '~/site/agent-keys';
 import { useSharedCreditBalance } from '~/site/credit-balance';
 import { openPricing, productName } from '~/site/pricing';
 import site from '../../site.config';
+import './account.css';
 
 // Account is a dialog like pricing: it only holds credits, my creations, orders and sign out, not worth leaving the page for.
 // The /account page stays for no-JS visitors and direct links, sharing AccountPanel.
@@ -87,7 +89,7 @@ export function resultStatus(job: PublicJob) {
 function MyResults() {
   const { jobs } = useGeneration({ recaptchaSiteKey: null });
   return (
-    <div className="account-card">
+    <div className="account-card account-history-card">
       <h3>{m.common_results_title()}</h3>
       {jobs.length > 0 ? (
         <ul className="orders">
@@ -140,73 +142,80 @@ export function AccountPanel({
   }
   const subscription = data.subscription;
   return (
-    <>
-      <Heading id="account-title">{m.common_account_heading()}</Heading>
-      <p className="muted">{m.common_account_signed_in_as({ email: data.user.email })}</p>
+    <div className="account-panel">
+      <header className="account-heading">
+        <Heading id="account-title">{m.common_account_heading()}</Heading>
+        <p className="muted">{m.common_account_signed_in_as({ email: data.user.email })}</p>
+      </header>
 
-      <div className="account-card">
-        <h3>{m.common_account_credits()}</h3>
-        {balance.status === 'ready' && balance.available !== null ? (
-          <p className="balance">{Math.max(0, balance.available).toLocaleString()}</p>
-        ) : balance.status === 'error' ? (
-          <p className="muted">
-            {m.home_balance_unavailable()}{' '}
-            <button type="button" className="link-button" onClick={balance.refresh}>
-              {m.home_balance_retry()}
-            </button>
-          </p>
-        ) : (
-          <p className="muted">{m.home_balance_loading()}</p>
-        )}
-        {data.balance.debt > 0 && (
-          <p className="muted">{m.common_account_debt({ debt: data.balance.debt })}</p>
-        )}
-        {data.balance.nextExpiry && (
-          <p className="muted">
-            {m.common_account_expiry({
-              amount: data.balance.nextExpiry.amount,
-              date: date(data.balance.nextExpiry.at),
-            })}
-          </p>
-        )}
-        <button
-          type="button"
-          className="primary"
-          onClick={() => {
-            onLeave?.();
-            openPricing('account');
-          }}
-        >
-          {m.common_account_get_more()}
-        </button>
-      </div>
-
-      <div className="account-card">
-        <h3>{m.common_trial_title()}</h3>
-        <p className="small">
-          <strong>{m.common_no_watermark()}</strong>
-        </p>
-        <p>
-          {trials.loading
-            ? m.common_trial_loading()
-            : trials.failed
-              ? m.common_trial_load_failed()
-              : signupTrialDescription(trials.data?.signup.status)}
-        </p>
-        {trials.data?.signup.status === 'available' && trials.data.signup.expiresAt && (
-          <p className="muted">{m.common_trial_expiry({ date: date(trials.data.signup.expiresAt) })}</p>
-        )}
-        <p className="muted small">{m.common_trial_note()}</p>
-        {trials.data?.signup.status === 'available' && (
-          <a className="button" href="/?trial=signup#tool">
-            {m.common_trial_generate()}
-          </a>
-        )}
-        {trials.failed && (
-          <button type="button" className="link-button" onClick={() => void trials.refresh()}>
-            {m.common_trial_refresh()}
+      <div className="account-overview">
+        <div className="account-card account-credit-card">
+          <h3>{m.common_account_credits()}</h3>
+          {balance.status === 'ready' && balance.available !== null ? (
+            <p className="balance">{Math.max(0, balance.available).toLocaleString()}</p>
+          ) : balance.status === 'error' ? (
+            <p className="muted">
+              {m.home_balance_unavailable()}{' '}
+              <button type="button" className="link-button" onClick={balance.refresh}>
+                {m.home_balance_retry()}
+              </button>
+            </p>
+          ) : (
+            <p className="muted">{m.home_balance_loading()}</p>
+          )}
+          {data.balance.debt > 0 && (
+            <p className="muted">{m.common_account_debt({ debt: data.balance.debt })}</p>
+          )}
+          {data.balance.nextExpiry && (
+            <p className="muted">
+              {m.common_account_expiry({
+                amount: data.balance.nextExpiry.amount,
+                date: date(data.balance.nextExpiry.at),
+              })}
+            </p>
+          )}
+          <button
+            type="button"
+            className="primary"
+            onClick={() => {
+              onLeave?.();
+              openPricing('account');
+            }}
+          >
+            {m.common_account_get_more()}
           </button>
-        )}
+        </div>
+
+        <div className="account-card account-trial-card">
+          <h3>{m.common_trial_title()}</h3>
+          <p className="small">
+            <strong>{m.common_no_watermark()}</strong>
+          </p>
+          <p>
+            {trials.loading
+              ? m.common_trial_loading()
+              : trials.failed
+                ? m.common_trial_load_failed()
+                : signupTrialDescription(trials.data?.signup.status)}
+          </p>
+          {trials.data?.signup.status === 'available' && trials.data.signup.expiresAt && (
+            <p className="muted">{m.common_trial_expiry({ date: date(trials.data.signup.expiresAt) })}</p>
+          )}
+          <details className="account-trial-details">
+            <summary>{m.common_trial_details()}</summary>
+            <p className="muted small">{m.common_trial_note()}</p>
+          </details>
+          {trials.data?.signup.status === 'available' && (
+            <a className="button" href="/?trial=signup#tool">
+              {m.common_trial_generate()}
+            </a>
+          )}
+          {trials.failed && (
+            <button type="button" className="link-button" onClick={() => void trials.refresh()}>
+              {m.common_trial_refresh()}
+            </button>
+          )}
+        </div>
       </div>
 
       {SELLS_SUBSCRIPTIONS && (
@@ -229,34 +238,38 @@ export function AccountPanel({
         </div>
       )}
 
-      <MyResults />
+      <div className="account-history">
+        <MyResults />
 
-      <div className="account-card">
-        <h3>{m.common_account_orders()}</h3>
-        {data.orders.length > 0 ? (
-          <ul className="orders">
-            {data.orders.map((order) => (
-              <li key={order.id}>
-                {date(order.createdAt)} · {productName(order.productId)} ·{' '}
-                {money(order.amountPaid, order.currency)} · {orderStatus(order)} ·{' '}
-                <a
-                  href={`/api/billing/receipt?order=${encodeURIComponent(order.id)}`}
-                  target="_blank"
-                  rel="noopener"
-                >
-                  {m.common_account_receipt()}
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="muted">{m.common_account_no_orders()}</p>
-        )}
+        <div className="account-card account-history-card">
+          <h3>{m.common_account_orders()}</h3>
+          {data.orders.length > 0 ? (
+            <ul className="orders">
+              {data.orders.map((order) => (
+                <li key={order.id}>
+                  {date(order.createdAt)} · {productName(order.productId)} ·{' '}
+                  {money(order.amountPaid, order.currency)} · {orderStatus(order)} ·{' '}
+                  <a
+                    href={`/api/billing/receipt?order=${encodeURIComponent(order.id)}`}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    {m.common_account_receipt()}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="muted">{m.common_account_no_orders()}</p>
+          )}
+        </div>
       </div>
+
+      <AgentKeys />
 
       <button
         type="button"
-        className="link-button"
+        className="link-button account-sign-out"
         onClick={() =>
           void authClient(config.googleClientId)
             .signOut()
@@ -265,7 +278,7 @@ export function AccountPanel({
       >
         {m.common_account_sign_out()}
       </button>
-    </>
+    </div>
   );
 }
 

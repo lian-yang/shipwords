@@ -1,6 +1,6 @@
 import { errorResponse } from '@shipwords/core/http';
 import type { Core } from '@shipwords/core/server';
-import { createJobs } from '@shipwords/jobs/handlers';
+import { createJobs, type JobIdempotency } from '@shipwords/jobs/handlers';
 import models from './models.server';
 import { createTrialJob, type SiteJobBody } from './trials.server';
 import { VIDEO_OPTIONS } from './video-options';
@@ -39,7 +39,11 @@ export function paidParameters(modelId: unknown, input: unknown, usesImage = fal
 }
 
 /** Resolve identity once so selecting the trial settings and charging the job use the same user. */
-export async function createSiteJob(core: Core, request: Request): Promise<Response> {
+export async function createSiteJob(
+  core: Core,
+  request: Request,
+  idempotency?: JobIdempotency,
+): Promise<Response> {
   const user = await core.getUser(request);
   const requestCore: Core = { ...core, getUser: async () => user };
   const body = (await request
@@ -74,5 +78,5 @@ export async function createSiteJob(core: Core, request: Request): Promise<Respo
             : model,
         )
       : models;
-  return createJobs(requestCore, requestModels).create(request);
+  return createJobs(requestCore, requestModels).create(request, idempotency);
 }

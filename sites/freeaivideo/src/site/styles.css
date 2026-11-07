@@ -1377,14 +1377,18 @@ main > .content:not(.examples-section, .how-section, .limits-section, .pricing-s
   .page {
     width: calc(100% - 28px);
   }
+  .site-header {
+    gap: 8px;
+  }
   .site-header nav {
-    gap: 10px;
+    gap: 4px;
   }
   .header-credit-balance > span {
     display: none;
   }
   .brand {
-    font-size: 15px;
+    font-size: 14px;
+    gap: 6px;
   }
   .sign-in-link {
     padding: 8px 9px;

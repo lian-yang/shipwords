@@ -1,6 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "common_nav_pricing": "价格",
+  "common_nav_agent_docs": "Agent API 接入文档",
   "common_nav_sign_in": "登录",
   "common_footer_notice": "© {year} {name}",
   "common_footer_wchews": "W Chews / L Nibbles 梗",
@@ -134,5 +135,19 @@
   "common_results_failed_charged": "失败，服务商已收费，积分未退回。如需帮助请联系 support@freeaivideo.app 并提供任务编号 {jobId}。",
   "common_results_canceled_refunded": "已取消，积分已退回",
   "common_results_canceled_pending": "已取消，积分退还情况待确认。请勿重复提交，如需帮助请联系 support@freeaivideo.app 并提供任务编号 {jobId}。",
-  "common_results_canceled_charged": "已取消，服务商已收费，积分未退回。如需帮助请联系 support@freeaivideo.app 并提供任务编号 {jobId}。"
+  "common_results_canceled_charged": "已取消，服务商已收费，积分未退回。如需帮助请联系 support@freeaivideo.app 并提供任务编号 {jobId}。",
+  "common_agent_title": "AI Agent 接入",
+  "common_agent_description": "创建密钥以通过 API 或 MCP 使用账户积分生成视频。",
+  "common_agent_guide": "查看接入文档",
+  "common_agent_name": "密钥名称",
+  "common_agent_create": "创建密钥",
+  "common_agent_save": "请立即保存密钥，关闭后无法再次查看：",
+  "common_agent_load_error": "无法加载密钥。",
+  "common_agent_create_error": "无法创建密钥，请检查名称和密钥数量。",
+  "common_agent_revoke_error": "无法撤销密钥。",
+  "common_agent_revoke": "撤销",
+  "common_agent_copy_prompt": "复制 AI agent 接入提示词",
+  "common_agent_copy_success": "提示词已复制，可以粘贴给 AI agent。",
+  "common_agent_copy_error": "复制失败，请手动选择并复制下面的提示词：",
+  "common_trial_details": "试用规则"
 }

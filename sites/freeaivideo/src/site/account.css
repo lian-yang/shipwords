@@ -1,0 +1,251 @@
+/* A compact account workspace, using the site's existing daylight palette. */
+.account-dialog {
+  scrollbar-width: thin;
+  scrollbar-color: #a5b499 #f6f8f2;
+}
+.account-dialog .dialog-close {
+  min-width: 44px;
+  min-height: 44px;
+}
+.account-panel {
+  min-width: 0;
+}
+.account-heading {
+  margin: 0 42px 25px 0;
+}
+.account-panel .account-heading h1,
+.account-panel .account-heading h2 {
+  margin: 0 0 5px;
+  font-size: clamp(26px, 3vw, 31px);
+  line-height: 1.16;
+  letter-spacing: -0.04em;
+}
+.account-panel .account-heading p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.account-overview,
+.account-history {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.account-panel .account-card {
+  min-width: 0;
+  margin: 0;
+  padding: 20px;
+  border-radius: 14px;
+}
+.account-panel .account-card h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.account-panel .account-card p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.account-panel .account-card p:last-child {
+  margin-bottom: 0;
+}
+.account-panel .account-credit-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #eff3e8;
+  border-color: #e2e9d8;
+}
+.account-panel .account-credit-card .balance {
+  margin: 4px 0 16px;
+  font-size: 44px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.055em;
+}
+.account-panel .account-credit-card .primary {
+  margin-top: 10px;
+}
+.account-panel .account-trial-card .small {
+  font-size: 13px;
+}
+.account-panel .account-trial-card strong {
+  color: #4b6b30;
+  font-weight: 600;
+}
+.account-trial-details {
+  margin-top: 8px;
+}
+.account-trial-details summary {
+  min-height: 36px;
+  padding: 7px 0;
+  color: #4b6b30;
+  cursor: pointer;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.account-panel .account-trial-details p {
+  margin-top: 3px;
+}
+.account-history {
+  margin-top: 12px;
+}
+.account-panel .account-history-card {
+  border: 0;
+  border-radius: 0;
+  padding: 19px 3px 8px;
+  border-top: 1px solid var(--color-line);
+}
+.account-panel .account-history-card .orders,
+.account-panel .account-agent-card .orders {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.account-panel .account-history-card .orders li,
+.account-panel .account-agent-card .orders li {
+  padding: 7px 0;
+  overflow-wrap: anywhere;
+}
+.account-panel .account-history-card .orders li + li,
+.account-panel .account-agent-card .orders li + li {
+  border-top: 1px solid #edf0e9;
+}
+.account-panel .account-agent-card {
+  margin-top: 15px;
+  background: #fafbf8;
+}
+.account-agent-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px 20px;
+}
+.account-agent-heading > div {
+  min-width: 0;
+}
+.account-panel .account-agent-heading p {
+  margin-bottom: 0;
+}
+.account-agent-heading > a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 40px;
+  margin-top: -8px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.account-key-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 17px;
+}
+.account-key-field {
+  display: grid;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 6px;
+}
+.account-key-field input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+}
+.account-panel .account-key-form button {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.account-panel .account-agent-card .account-key-secret {
+  margin: 14px 0 0;
+  padding: 12px;
+  border-radius: 9px;
+  background: #eff3e8;
+}
+.account-key-secret code {
+  display: inline-block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+.account-panel .account-key-error {
+  margin-top: 12px;
+  color: #9b342f;
+}
+.account-panel .account-agent-card .orders {
+  margin-top: 12px;
+}
+.account-panel .account-agent-card .orders button {
+  margin: 0;
+}
+.account-panel .account-sign-out {
+  margin-top: 22px;
+  color: var(--color-muted);
+}
+@media (max-width: 600px) {
+  .account-overview,
+  .account-history {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .account-heading {
+    margin-bottom: 20px;
+  }
+  .account-panel .account-card {
+    padding: 18px;
+  }
+  .account-panel .account-history-card {
+    padding: 16px 2px 4px;
+  }
+  .account-agent-heading {
+    display: block;
+  }
+  .account-agent-heading > a {
+    margin-top: 2px;
+  }
+  .account-key-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .account-panel .account-key-form button {
+    align-self: flex-start;
+  }
+}
+.account-agent-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 14px;
+}
+.account-panel .account-agent-card .account-agent-copy button {
+  margin: 0;
+}
+.account-agent-copy [role="status"] {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4b6b30;
+}
+.account-agent-copy .account-copy-fallback {
+  flex-basis: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  background: #eff3e8;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}

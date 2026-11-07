@@ -1,6 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "common_nav_pricing": "Pricing",
+  "common_nav_agent_docs": "Agent API documentation",
   "common_nav_sign_in": "Sign in",
   "common_footer_notice": "© {year} {name}",
   "common_footer_wchews": "W Chews / L Nibbles meme",
@@ -134,5 +135,19 @@
   "common_results_failed_charged": "failed; the provider charged for this request and credits have not been returned. Contact support@freeaivideo.app with task ID {jobId} if you need help.",
   "common_results_canceled_refunded": "canceled; credits returned",
   "common_results_canceled_pending": "canceled; credit return pending. Do not resubmit. Contact support@freeaivideo.app with task ID {jobId}.",
-  "common_results_canceled_charged": "canceled; provider charged and credits not returned. Contact support@freeaivideo.app with task ID {jobId} if you need help."
+  "common_results_canceled_charged": "canceled; provider charged and credits not returned. Contact support@freeaivideo.app with task ID {jobId} if you need help.",
+  "common_agent_title": "AI agent access",
+  "common_agent_description": "Create a key to generate videos with your account credits through the API or MCP.",
+  "common_agent_guide": "Read the integration guide",
+  "common_agent_name": "Key name",
+  "common_agent_create": "Create key",
+  "common_agent_save": "Save this key now; it will not be shown again:",
+  "common_agent_load_error": "Could not load keys.",
+  "common_agent_create_error": "Could not create the key. Check its name and your key limit.",
+  "common_agent_revoke_error": "Could not revoke the key.",
+  "common_agent_revoke": "Revoke",
+  "common_agent_copy_prompt": "Copy setup prompt for your AI agent",
+  "common_agent_copy_success": "Prompt copied. Paste it into your AI agent.",
+  "common_agent_copy_error": "Could not copy. Select and copy the prompt below:",
+  "common_trial_details": "Trial details"
 }
