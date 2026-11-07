@@ -927,6 +927,11 @@ a.link-accent {
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
+@media (min-width: 761px) {
+  .account-dialog {
+    width: min(840px, calc(100vw - 32px));
+  }
+}
 .pricing-dialog {
   width: min(760px, calc(100vw - 32px));
 }
