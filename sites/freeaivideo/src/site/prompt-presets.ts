@@ -13,6 +13,10 @@ const presets: Record<string, () => string> = {
   'epic-dunk': m.pages_epicdunk_prompt_a,
   'burning-bridges': m.pages_burningbridges_prompt_a,
   'tiptoe-jordans': m.pages_tiptoejordans_prompt_a,
+  'buggin-dance': m.pages_buggindance_prompt_a,
+  'dog-elevator-prank': m.pages_dogelevator_prompt_a,
+  'chipmunks-dance': m.pages_chipmunks_prompt_a,
+  'anime-star-eye': m.pages_animestareye_prompt_a,
 };
 
 export function getPromptPreset(id: string): string | undefined {

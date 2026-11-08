@@ -103,6 +103,30 @@ export const Route = createFileRoute('/llms.txt')({
               description:
                 'A tiptoe sneaker meme guide with editable video prompts and optional single-photo input.',
             },
+            {
+              title: 'Buggin Dance AI',
+              path: '/buggin-dance-ai',
+              description:
+                'A witch-hat pet dance trend guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Dog Elevator Prank AI',
+              path: '/dog-elevator-prank-ai',
+              description:
+                'A dog elevator prank guide with original security-camera style video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Chipmunks Dance AI',
+              path: '/chipmunks-dance-ai',
+              description:
+                'A three-person rotation dance guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Anime Star Eye AI',
+              path: '/anime-star-eye-ai',
+              description:
+                'A sparkle-eye trend guide with editable video prompts and optional single-photo input.',
+            },
           ],
         ),
     },

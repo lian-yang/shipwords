@@ -169,6 +169,10 @@ function Layout() {
             <Link to="/epic-dunk-ai">{m.common_footer_epicdunk()}</Link>
             <Link to="/burning-bridges-ai">{m.common_footer_burningbridges()}</Link>
             <Link to="/tiptoeing-in-my-jordans-ai">{m.common_footer_tiptoejordans()}</Link>
+            <Link to="/buggin-dance-ai">{m.common_footer_buggindance()}</Link>
+            <Link to="/dog-elevator-prank-ai">{m.common_footer_dogelevator()}</Link>
+            <Link to="/chipmunks-dance-ai">{m.common_footer_chipmunks()}</Link>
+            <Link to="/anime-star-eye-ai">{m.common_footer_animestareye()}</Link>
             <Link to="/privacy">{m.common_footer_privacy()}</Link>
             <Link to="/terms">{m.common_footer_terms()}</Link>
             <Link to="/refunds">{m.common_footer_refunds()}</Link>
