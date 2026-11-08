@@ -133,6 +133,66 @@ export const Route = createFileRoute('/llms.txt')({
               description:
                 'A sparkle-eye trend guide with editable video prompts and optional single-photo input.',
             },
+            {
+              title: 'Can I Ride Dance AI',
+              path: '/can-i-ride-dance-ai',
+              description:
+                'A dusk parking-lot face-off dance guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Ba Ba Ba Dance AI',
+              path: '/ba-ba-ba-dance-ai',
+              description:
+                'A locker-hallway relay duo dance guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Birthday Car AI',
+              path: '/birthday-car-ai',
+              description:
+                'A car-window candle blow-out guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Dog Bohemian Rhapsody AI',
+              path: '/dog-bohemian-rhapsody-ai',
+              description:
+                'A stadium piano pet-performance guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Fish Cutting Meme AI',
+              path: '/fish-cutting-meme-ai',
+              description:
+                'A cowboy-hat precision fish-cutting guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Pimpwalk Entrance AI',
+              path: '/pimpwalk-entrance-ai',
+              description:
+                'A slow-motion door entrance guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Flamingo Float AI',
+              path: '/flamingo-float-ai',
+              description:
+                'A rooftop infinity-pool flamingo drift guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Snatch Back Splash AI',
+              path: '/snatch-back-splash-ai',
+              description:
+                'A crowd-view steal-back three-pointer guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Tears Falling Down AI',
+              path: '/tears-falling-down-filter-ai',
+              description:
+                'A quiet tear-filter close-up guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Dog Couple Dance AI',
+              path: '/dog-couple-dance-ai',
+              description:
+                'A mirrored pet slow-dance guide with editable video prompts and optional single-photo input.',
+            }
           ],
         ),
     },

@@ -173,6 +173,16 @@ function Layout() {
             <Link to="/dog-elevator-prank-ai">{m.common_footer_dogelevator()}</Link>
             <Link to="/chipmunks-dance-ai">{m.common_footer_chipmunks()}</Link>
             <Link to="/anime-star-eye-ai">{m.common_footer_animestareye()}</Link>
+            <Link to="/can-i-ride-dance-ai">{m.common_footer_canride()}</Link>
+            <Link to="/ba-ba-ba-dance-ai">{m.common_footer_bababa()}</Link>
+            <Link to="/birthday-car-ai">{m.common_footer_bdaycar()}</Link>
+            <Link to="/dog-bohemian-rhapsody-ai">{m.common_footer_dogrhapsody()}</Link>
+            <Link to="/fish-cutting-meme-ai">{m.common_footer_fishcut()}</Link>
+            <Link to="/pimpwalk-entrance-ai">{m.common_footer_pimpwalk()}</Link>
+            <Link to="/flamingo-float-ai">{m.common_footer_flamingofloat()}</Link>
+            <Link to="/snatch-back-splash-ai">{m.common_footer_snatchback()}</Link>
+            <Link to="/tears-falling-down-filter-ai">{m.common_footer_tearsfall()}</Link>
+            <Link to="/dog-couple-dance-ai">{m.common_footer_dogcouple()}</Link>
             <Link to="/privacy">{m.common_footer_privacy()}</Link>
             <Link to="/terms">{m.common_footer_terms()}</Link>
             <Link to="/refunds">{m.common_footer_refunds()}</Link>

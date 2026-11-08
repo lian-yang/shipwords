@@ -17,6 +17,16 @@ const presets: Record<string, () => string> = {
   'dog-elevator-prank': m.pages_dogelevator_prompt_a,
   'chipmunks-dance': m.pages_chipmunks_prompt_a,
   'anime-star-eye': m.pages_animestareye_prompt_a,
+  'can-i-ride': m.pages_canride_prompt_a,
+  'ba-ba-ba': m.pages_bababa_prompt_a,
+  'birthday-car': m.pages_bdaycar_prompt_a,
+  'dog-rhapsody': m.pages_dogrhapsody_prompt_a,
+  'fish-cutting': m.pages_fishcut_prompt_a,
+  'pimpwalk-entrance': m.pages_pimpwalk_prompt_a,
+  'flamingo-float': m.pages_flamingofloat_prompt_a,
+  'snatch-back-splash': m.pages_snatchback_prompt_a,
+  'tears-falling-down': m.pages_tearsfall_prompt_a,
+  'dog-couple-dance': m.pages_dogcouple_prompt_a,
 };
 
 export function getPromptPreset(id: string): string | undefined {
