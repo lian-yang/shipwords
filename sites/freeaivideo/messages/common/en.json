@@ -153,5 +153,8 @@
   "common_agent_copy_prompt": "Copy setup prompt for your AI agent",
   "common_agent_copy_success": "Prompt copied. Paste it into your AI agent.",
   "common_agent_copy_error": "Could not copy. Select and copy the prompt below:",
-  "common_trial_details": "Trial details"
+  "common_trial_details": "Trial details",
+  "common_agent_copy_key": "Copy key",
+  "common_agent_copy_key_success": "Key copied.",
+  "common_agent_copy_key_error": "Could not copy. Select and copy the key above."
 }

@@ -184,6 +184,20 @@
   overflow-wrap: anywhere;
   word-break: break-all;
 }
+.account-key-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 12px;
+}
+.account-panel .account-agent-card .account-key-copy button {
+  margin: 0;
+}
+.account-key-copy [role="status"] {
+  font-size: 13px;
+  line-height: 1.5;
+}
 .account-panel .account-key-error {
   margin-top: 12px;
   color: #9b342f;

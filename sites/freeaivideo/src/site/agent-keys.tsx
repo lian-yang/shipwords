@@ -4,7 +4,7 @@ import { getLocale } from '~/paraglide/runtime.js';
 
 type Key = { id: string; name: string; createdAt: number };
 const AGENT_SETUP_PROMPT =
-  'Read https://www.freeaivideo.app/agent-api.md and help me set up Free AI Video API or MCP access.';
+  'Read https://www.freeaivideo.app/api-docs and help me set up Free AI Video API or MCP access.';
 
 /** Keys are managed only from an authenticated browser session. */
 export function AgentKeys() {
@@ -14,6 +14,9 @@ export function AgentKeys() {
   const [secret, setSecret] = useState<{ id: string; value: string } | null>(null);
   const [error, setError] = useState('');
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [keyCopyStatus, setKeyCopyStatus] = useState<{ id: string; status: 'success' | 'error' } | null>(
+    null,
+  );
   const [busy, setBusy] = useState(false);
 
   const refresh = useCallback(async () => {
@@ -69,6 +72,17 @@ export function AgentKeys() {
       setCopyStatus('error');
     }
   }
+  async function copyKey() {
+    if (!secret) return;
+    const { id, value } = secret;
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(value);
+      setKeyCopyStatus({ id, status: 'success' });
+    } catch {
+      setKeyCopyStatus({ id, status: 'error' });
+    }
+  }
   return (
     <div className="account-card account-agent-card">
       <div className="account-agent-heading">
@@ -76,7 +90,7 @@ export function AgentKeys() {
           <h3>{m.common_agent_title()}</h3>
           <p className="muted">{m.common_agent_description()}</p>
         </div>
-        <a href="/agent-api.md" target="_blank" rel="noopener noreferrer">
+        <a href="/api-docs" target="_blank" rel="noopener noreferrer">
           {m.common_agent_guide()}
         </a>
       </div>
@@ -108,11 +122,22 @@ export function AgentKeys() {
         </button>
       </div>
       {secret && (
-        <p role="status" className="account-key-secret">
-          {m.common_agent_save()}
-          <br />
+        <div className="account-key-secret">
+          <p role="status">{m.common_agent_save()}</p>
           <code>{secret.value}</code>
-        </p>
+          <div className="account-key-copy">
+            <button type="button" onClick={() => void copyKey()}>
+              {m.common_agent_copy_key()}
+            </button>
+            <span role="status" aria-live="polite">
+              {keyCopyStatus?.id === secret.id
+                ? keyCopyStatus.status === 'success'
+                  ? m.common_agent_copy_key_success()
+                  : m.common_agent_copy_key_error()
+                : ''}
+            </span>
+          </div>
+        </div>
       )}
       {error && (
         <p role="alert" className="account-key-error">

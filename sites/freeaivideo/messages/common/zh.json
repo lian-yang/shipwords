@@ -153,5 +153,8 @@
   "common_agent_copy_prompt": "复制 AI agent 接入提示词",
   "common_agent_copy_success": "提示词已复制，可以粘贴给 AI agent。",
   "common_agent_copy_error": "复制失败，请手动选择并复制下面的提示词：",
-  "common_trial_details": "试用规则"
+  "common_trial_details": "试用规则",
+  "common_agent_copy_key": "复制密钥",
+  "common_agent_copy_key_success": "密钥已复制。",
+  "common_agent_copy_key_error": "复制失败，请选中上方密钥手动复制。"
 }

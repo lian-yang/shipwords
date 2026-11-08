@@ -112,7 +112,7 @@ function Layout() {
               {m.common_nav_examples()}
             </a>
             <PricingLink source="nav">{m.common_nav_pricing()}</PricingLink>
-            <a href="/agent-api.md" aria-label={m.common_nav_agent_docs()} title={m.common_nav_agent_docs()}>
+            <a href="/api-docs" aria-label={m.common_nav_agent_docs()} title={m.common_nav_agent_docs()}>
               API
             </a>
             {import.meta.env.DEV && <LocaleToggle />}
