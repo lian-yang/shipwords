@@ -22,6 +22,7 @@ export const PAGES = [
   '/dog-elevator-prank-ai',
   '/chipmunks-dance-ai',
   '/anime-star-eye-ai',
+  '/api-docs',
   '/privacy',
   '/terms',
   '/refunds',

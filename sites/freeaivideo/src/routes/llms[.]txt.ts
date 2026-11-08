@@ -38,6 +38,12 @@ export const Route = createFileRoute('/llms.txt')({
               description: 'How free and paid video downloads work without a site-added watermark.',
             },
             {
+              title: 'Free AI Video API and MCP Documentation',
+              path: '/api-docs',
+              description:
+                'Connect an application or AI agent with the agent API or MCP: models, balance, uploads, jobs and results.',
+            },
+            {
               title: 'W Chews / L Nibbles',
               path: '/w-chews-l-nibbles',
               description:
