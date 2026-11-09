@@ -26,7 +26,7 @@
   "home_return_generating": "你的视频仍在生成，点这里查看 ↓",
   "home_return_ready": "你的视频已生成，点这里查看 ↓",
   "home_job_generating": "正在生成…通常需要几分钟。",
-  "home_job_email": "可以在账户中查看结果，也可能收到发往 {email} 的通知邮件。",
+  "home_job_email": "可以在账户中查看结果，完成通知会发送到登录邮箱；如需帮助，可发送电子邮件至 support@freeaivideo.app。",
   "home_job_download": "下载",
   "home_job_failed": "生成失败，积分已退回账户。",
   "home_job_canceled": "已取消。",

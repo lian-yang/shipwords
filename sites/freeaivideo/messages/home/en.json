@@ -26,7 +26,7 @@
   "home_return_generating": "Your video is still generating. Jump to it ↓",
   "home_return_ready": "Your video is ready. See it ↓",
   "home_job_generating": "Generating… this usually takes a few minutes.",
-  "home_job_email": "You can check your account for the result. An email may also be sent to {email}.",
+  "home_job_email": "You can check your account for the result. The completion notice goes to your sign-in email; for help, email support@freeaivideo.app.",
   "home_job_download": "Download",
   "home_job_failed": "This one failed. Your credits went back to your account.",
   "home_job_canceled": "Canceled.",

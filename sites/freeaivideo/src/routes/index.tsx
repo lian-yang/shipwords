@@ -910,7 +910,7 @@ export function JobCard({ job, email, onCancel }: { job: PublicJob; email?: stri
         <div className="job-pending">
           <p>{m.home_job_generating()}</p>
           {/* Only signed-in users get the completion email (the notify step in packages/jobs). */}
-          {email && <p className="muted">{m.home_job_email({ email })}</p>}
+          {email && <p className="muted">{m.home_job_email()}</p>}
         </div>
       )}
       {job.status === 'failed' && (
