@@ -166,5 +166,10 @@
   "common_trial_details": "Trial details",
   "common_agent_copy_key": "Copy key",
   "common_agent_copy_key_success": "Key copied.",
-  "common_agent_copy_key_error": "Could not copy. Select and copy the key above."
+  "common_agent_copy_key_error": "Could not copy. Select and copy the key above.",
+  "common_footer_smiths": "I Love the Smiths AI",
+  "common_footer_xmaslights": "Christmas Lights Wife AI",
+  "common_footer_wantwings": "I Want Wings AI",
+  "common_footer_itslifedog": "Its My Life Dog AI",
+  "common_footer_caralarm": "Car Alarm AI Dance"
 }

@@ -166,5 +166,10 @@
   "common_trial_details": "试用规则",
   "common_agent_copy_key": "复制密钥",
   "common_agent_copy_key_success": "密钥已复制。",
-  "common_agent_copy_key_error": "复制失败，请选中上方密钥手动复制。"
+  "common_agent_copy_key_error": "复制失败，请选中上方密钥手动复制。",
+  "common_footer_smiths": "I Love the Smiths 电梯对视",
+  "common_footer_xmaslights": "Christmas Lights Wife 拖灯串",
+  "common_footer_wantwings": "I Want Wings 化蝶",
+  "common_footer_itslifedog": "Its My Life Dog 开车唱歌",
+  "common_footer_caralarm": "Car Alarm 汽车警报舞"
 }

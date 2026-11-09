@@ -27,6 +27,11 @@ const presets: Record<string, () => string> = {
   'snatch-back-splash': m.pages_snatchback_prompt_a,
   'tears-falling-down': m.pages_tearsfall_prompt_a,
   'dog-couple-dance': m.pages_dogcouple_prompt_a,
+  'i-love-the-smiths': m.pages_smiths_prompt_a,
+  'christmas-lights-wife': m.pages_xmaslights_prompt_a,
+  'i-want-wings': m.pages_wantwings_prompt_a,
+  'its-my-life-dog': m.pages_itslifedog_prompt_a,
+  'car-alarm-dance': m.pages_caralarm_prompt_a,
 };
 
 export function getPromptPreset(id: string): string | undefined {

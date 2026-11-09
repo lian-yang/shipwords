@@ -192,6 +192,36 @@ export const Route = createFileRoute('/llms.txt')({
               path: '/dog-couple-dance-ai',
               description:
                 'A mirrored pet slow-dance guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'I Love the Smiths AI',
+              path: '/i-love-the-smiths-ai',
+              description:
+                'An elevator eye-contact meme guide with editable video prompts and optional one- or two-photo input.',
+            },
+            {
+              title: 'Christmas Lights Wife AI',
+              path: '/christmas-lights-wife-ai',
+              description:
+                'A holiday lights-drag sprint guide with editable video prompts and optional one- or two-photo input.',
+            },
+            {
+              title: 'I Want Wings AI',
+              path: '/i-want-wings-ai',
+              description:
+                'A roach-to-butterfly glow-up guide with editable two-beat prompts and optional single-photo input.',
+            },
+            {
+              title: 'Its My Life Dog AI',
+              path: '/its-my-life-dog-ai',
+              description:
+                'A split-screen highway pet lip-sync guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Car Alarm AI Dance',
+              path: '/car-alarm-ai-dance',
+              description:
+                'A car-alarm pet dance guide with editable video prompts and optional single-photo input.',
             }
           ],
         ),

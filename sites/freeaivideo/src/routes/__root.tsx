@@ -183,6 +183,11 @@ function Layout() {
             <Link to="/snatch-back-splash-ai">{m.common_footer_snatchback()}</Link>
             <Link to="/tears-falling-down-filter-ai">{m.common_footer_tearsfall()}</Link>
             <Link to="/dog-couple-dance-ai">{m.common_footer_dogcouple()}</Link>
+            <Link to="/i-love-the-smiths-ai">{m.common_footer_smiths()}</Link>
+            <Link to="/christmas-lights-wife-ai">{m.common_footer_xmaslights()}</Link>
+            <Link to="/i-want-wings-ai">{m.common_footer_wantwings()}</Link>
+            <Link to="/its-my-life-dog-ai">{m.common_footer_itslifedog()}</Link>
+            <Link to="/car-alarm-ai-dance">{m.common_footer_caralarm()}</Link>
             <Link to="/privacy">{m.common_footer_privacy()}</Link>
             <Link to="/terms">{m.common_footer_terms()}</Link>
             <Link to="/refunds">{m.common_footer_refunds()}</Link>
