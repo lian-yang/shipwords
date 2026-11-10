@@ -149,6 +149,6 @@
   "home_credit_multiple_packs": "还需 {amount} 积分。单个积分包最多 {max} 积分，可能需要购买多次。",
   "home_use_signup_trial": "使用注册试用券",
   "home_use_daily_trial": "使用每日免费试用",
-  "home_check_signup_trial": "查看是否符合注册试用资格",
+  "home_check_signup_trial": "注册并领取免费视频券",
   "home_balance_debt": "余额低于零 {amount} 积分，新购买的积分会先补足这部分差额。"
 }

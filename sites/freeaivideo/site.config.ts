@@ -36,8 +36,10 @@ export default defineSite({
     },
   ] as readonly Product[],
   // Registration vouchers are issued by src/trials.server.ts; previously issued credits stay valid.
-  signup: { bonusCredits: 0, bonusExpiresDays: 30, bonusPerIpDaily: 2, bonusSiteDaily: 2 },
-  guest: { dailyPerDevice: 1, dailyPerIp: 3, dailySiteBudget: 4, minRecaptchaScore: 0.5 },
+  // Site budgets are sized for referral bursts (ChatGPT citations sent 58 signups on 2026-11-06/07
+  // while the old budgets of 2/4 were exhausted every day). Worst case ≈ $0.31 upstream per trial.
+  signup: { bonusCredits: 0, bonusExpiresDays: 30, bonusPerIpDaily: 4, bonusSiteDaily: 40 },
+  guest: { dailyPerDevice: 1, dailyPerIp: 3, dailySiteBudget: 100, minRecaptchaScore: 0.5 },
   billing: { provider: 'stripe', automaticTax: false },
   analytics: { ga4: 'G-YJ3Q2BRW3C' },
 });

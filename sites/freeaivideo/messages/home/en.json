@@ -149,6 +149,6 @@
   "home_credit_multiple_packs": "You need {amount} more credits. The largest pack has {max} credits, so you may need more than one purchase.",
   "home_use_signup_trial": "Use registration voucher",
   "home_use_daily_trial": "Use daily free trial",
-  "home_check_signup_trial": "Check registration trial eligibility",
+  "home_check_signup_trial": "Sign up and get a free video voucher",
   "home_balance_debt": "Your balance is {amount} credits below zero. New credits will first cover this shortfall."
 }
