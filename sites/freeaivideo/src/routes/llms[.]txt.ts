@@ -44,6 +44,54 @@ export const Route = createFileRoute('/llms.txt')({
                 'Connect an application or AI agent with the agent API or MCP: models, balance, uploads, jobs and results.',
             },
             {
+              title: 'Shoulder Carry AI',
+              path: '/shoulder-carry-ai',
+              description:
+                'The parking-garage shoulder-lift flip guide with editable video prompts and an announcement-line finish.',
+            },
+            {
+              title: 'Tough Like a Gorilla AI',
+              path: '/tough-like-a-gorilla-ai',
+              description:
+                'The mirror-chant flatbread trend with the shocked headphone friend, explained with editable video prompts.',
+            },
+            {
+              title: 'Jisoo Addicted Dance AI',
+              path: '/jisoo-addicted-dance-ai',
+              description:
+                'The hallway cat-paw choreography guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Christmas Pajama Dance AI',
+              path: '/christmas-pajama-dance-ai',
+              description:
+                'The matching plaid pajama kitchen duo dance guide with editable video prompts and a pet remix option.',
+            },
+            {
+              title: 'Housewife Dance AI',
+              path: '/housewife-dance-ai',
+              description:
+                'The wide-stance hip-swing solo dance guide with editable video prompts and a hind-leg pet version.',
+            },
+            {
+              title: 'I Need a Girl Dance AI',
+              path: '/i-need-a-girl-dance-ai',
+              description:
+                'The night parking-lot duo dance guide with the spoken intro and peace-sign drop, with editable prompts.',
+            },
+            {
+              title: 'Ice Ice Baby Dance AI',
+              path: '/ice-ice-baby-dance-ai',
+              description:
+                'The wet winter basketball court windbreaker routine guide with editable video prompts.',
+            },
+            {
+              title: 'I Thought We Were Having a Nice Date AI',
+              path: '/i-thought-we-were-having-a-nice-date-ai',
+              description:
+                'The dinner-date giggle-to-tears turn guide with editable video prompts and a pet-at-the-table remix.',
+            },
+            {
               title: 'W Chews / L Nibbles',
               path: '/w-chews-l-nibbles',
               description:

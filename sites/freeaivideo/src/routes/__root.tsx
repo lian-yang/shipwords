@@ -158,6 +158,14 @@ function Layout() {
           <nav aria-label={m.common_footer_label()}>
             <a href="/#faq">{m.common_footer_faq()}</a>
             {/* Trend guide pages: site-wide internal links keep fresh meme pages crawlable beyond sitemap-only discovery. */}
+            <Link to="/shoulder-carry-ai">{m.common_footer_shoulder()}</Link>
+            <Link to="/tough-like-a-gorilla-ai">{m.common_footer_gorilla()}</Link>
+            <Link to="/jisoo-addicted-dance-ai">{m.common_footer_jisoo()}</Link>
+            <Link to="/christmas-pajama-dance-ai">{m.common_footer_xmaspajama()}</Link>
+            <Link to="/housewife-dance-ai">{m.common_footer_housewife()}</Link>
+            <Link to="/i-need-a-girl-dance-ai">{m.common_footer_needagirl()}</Link>
+            <Link to="/ice-ice-baby-dance-ai">{m.common_footer_iceicebaby()}</Link>
+            <Link to="/i-thought-we-were-having-a-nice-date-ai">{m.common_footer_nicedate()}</Link>
             <Link to="/w-chews-l-nibbles">{m.common_footer_wchews()}</Link>
             <Link to="/frutiger-aero-yams">{m.common_footer_frutigerayams()}</Link>
             <Link to="/fancy-cafe-ai">{m.common_footer_fancycafe()}</Link>

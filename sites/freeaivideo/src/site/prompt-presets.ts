@@ -2,6 +2,14 @@ import { m } from '~/paraglide/messages.js';
 
 // Resolve at use time so each preset uses the visitor's current language.
 const presets: Record<string, () => string> = {
+  'shoulder-carry': m.pages_shoulder_prompt_a,
+  'tough-gorilla': m.pages_gorilla_prompt_a,
+  'jisoo-addicted': m.pages_jisoo_prompt_a,
+  'christmas-pajama': m.pages_xmaspajama_prompt_a,
+  'housewife': m.pages_housewife_prompt_a,
+  'i-need-a-girl': m.pages_needagirl_prompt_a,
+  'ice-ice-baby': m.pages_iceicebaby_prompt_a,
+  'nice-date': m.pages_nicedate_prompt_a,
   'w-chews-l-nibbles': m.pages_wchews_prompt_w,
   'frutiger-aero-yams': m.pages_frutigerayams_prompt_1,
   'fancy-cafe': m.pages_fancycafe_prompt_1,
