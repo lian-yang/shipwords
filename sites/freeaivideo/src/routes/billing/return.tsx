@@ -2,7 +2,7 @@ import { safeRelativePath } from '@shipwords/core/http';
 import { waitForOrder } from '@shipwords/core/react/account';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { track } from '~/lib/track';
+import { recordConfirmedPayment } from '~/lib/track';
 import { notifyCreditsChanged } from '~/lib/use-credit-balance';
 import { m } from '~/paraglide/messages.js';
 
@@ -16,7 +16,14 @@ export const Route = createFileRoute('/billing/return')({
     order: typeof search.order === 'string' ? search.order : '',
     next: safeNext(search.next),
   }),
-  head: () => ({ meta: [{ title: m.common_billing_title() }, { name: 'robots', content: 'noindex' }] }),
+  head: () => ({
+    meta: [
+      { title: m.common_billing_title() },
+      { name: 'robots', content: 'noindex' },
+      // The return URL contains an order id. Do not leak it to the next page.
+      { name: 'referrer', content: 'no-referrer' },
+    ],
+  }),
   component: ReturnPage,
 });
 
@@ -31,9 +38,8 @@ function ReturnPage() {
       .catch(() => 'pending' as const)
       .then((status) => {
         setState(status);
-        // The order id is not sent with the event; reloading this page re-tracks the same order, which is rare, so dedupe by visitor.
-        track(status === 'paid' ? 'payment_confirmed' : 'payment_pending');
         if (status !== 'paid') return;
+        recordConfirmedPayment(order);
         notifyCreditsChanged();
         setTimeout(() => window.location.assign(next), CONTINUE_DELAY_MS);
       });

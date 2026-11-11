@@ -2,9 +2,10 @@ import { analyticsScripts } from '@shipwords/core/analytics';
 import { captureAttribution } from '@shipwords/core/react/attribution';
 import { createRootRoute, HeadContent, Link, Outlet, Scripts } from '@tanstack/react-router';
 import { type ReactNode, useEffect } from 'react';
+import { guardAnalyticsScripts } from '~/lib/analytics-head';
 import { authClient } from '~/lib/auth';
 import { getPublicConfig } from '~/lib/public-config';
-import { identify } from '~/lib/track';
+import { flushConfirmedPayment } from '~/lib/track';
 import { useCreditBalance } from '~/lib/use-credit-balance';
 import { m } from '~/paraglide/messages.js';
 import { getLocale, setLocale } from '~/paraglide/runtime.js';
@@ -25,7 +26,9 @@ export const Route = createRootRoute({
       { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
     ],
     // Analytics scripts are skipped in local dev so dev traffic stays out of reports.
-    scripts: import.meta.env.DEV ? [] : analyticsScripts(site),
+    // Checkout returns contain an order id in the URL. Do not load any analytics
+    // there, including automatic page views; the paid event is deferred to a clean URL.
+    scripts: import.meta.env.DEV ? [] : guardAnalyticsScripts(analyticsScripts(site)),
   }),
   shellComponent: Document,
   component: Layout,
@@ -79,6 +82,7 @@ function Layout() {
 
   useEffect(() => {
     captureAttribution();
+    flushConfirmedPayment();
   }, []);
 
   useEffect(() => {
@@ -86,10 +90,6 @@ function Layout() {
     if (session.isPending || session.data || !config.googleClientId) return;
     promptGoogleOneTap(config.googleClientId);
   }, [session.isPending, session.data, config.googleClientId]);
-
-  useEffect(() => {
-    if (user?.id) identify(user.id);
-  }, [user?.id]);
 
   return (
     <CreditBalanceContext.Provider value={credits}>

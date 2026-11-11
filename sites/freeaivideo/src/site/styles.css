@@ -622,6 +622,37 @@ select:focus-visible {
   font-weight: 550;
   white-space: nowrap;
 }
+.image-cases-heading {
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  margin-top: 32px;
+}
+.image-cases {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 23px;
+  margin-top: 16px;
+}
+.image-case-media {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.image-case-media span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+.image-case .image-case-media img,
+.image-case .image-case-media video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: contain;
+  border-radius: 13px;
+  background: #172520;
+}
 .cases {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1262,6 +1293,13 @@ main > .content:not(.examples-section, .how-section, .limits-section, .pricing-s
     grid-template-columns: 1fr;
     gap: 29px;
     margin-top: 25px;
+  }
+  .image-cases {
+    grid-template-columns: 1fr;
+    gap: 29px;
+  }
+  .image-case .image-case-media video {
+    aspect-ratio: 9 / 16;
   }
   .case video {
     aspect-ratio: 16 / 9;

@@ -120,6 +120,32 @@ const CASES = [
   },
 ];
 
+// Actual image-to-video inputs and downloads; see design/sample-generation-2026-11-11 for provenance.
+const IMAGE_CASES = [
+  {
+    src: '/examples/product-video.mp4',
+    poster: '/examples/product-poster.jpg',
+    input: '/examples/product-input.jpg',
+    inputAlt: m.home_image_case_product_alt,
+    title: m.home_image_case_product_title,
+    settings: m.home_image_case_product_settings,
+    limit: m.home_image_case_product_limit,
+    prompt:
+      'A slow, subtle camera push toward the amber bottle as soft warm light shifts gently across the glass. The bottle, dropper and stone stay still and keep their shape. Photorealistic product shot, no text, no logos.',
+  },
+  {
+    src: '/examples/music-video.mp4',
+    poster: '/examples/music-poster.jpg',
+    input: '/examples/music-input.jpg',
+    inputAlt: m.home_image_case_music_alt,
+    title: m.home_image_case_music_title,
+    settings: m.home_image_case_music_settings,
+    limit: m.home_image_case_music_limit,
+    prompt:
+      'Animate this rainy city cover art: raindrops move down the window, distant cyan and violet reflections gently shimmer on the wet street, and the camera slowly pushes forward. Preserve the composition and moody nighttime palette. No text, logos, people, or cuts.',
+  },
+];
+
 function ToolPage() {
   const config = root.useLoaderData();
   const session = authClient(config.googleClientId).useSession();
@@ -184,6 +210,27 @@ function ToolPage() {
         ? trials.data?.signup.status !== 'available' || !trials.data.verificationAvailable
         : false;
 
+  // The button is disabled when a trial cannot be used, so a click event would
+  // miss these visitors. Record the displayed unavailable state once per reason.
+  const unavailableSeen = useRef(new Set<string>());
+  useEffect(() => {
+    if (!freeMode || trials.loading) return;
+    const reason = trials.failed
+      ? 'status_error'
+      : unavailable && mode === 'daily-trial'
+        ? (trials.data?.daily.reason ?? 'unknown')
+        : unavailable && mode === 'signup-trial'
+          ? !trials.data?.verificationAvailable
+            ? 'verification_unavailable'
+            : (trials.data?.signup.status ?? 'unknown')
+          : null;
+    if (!reason) return;
+    const key = `${mode}:${reason}`;
+    if (unavailableSeen.current.has(key)) return;
+    unavailableSeen.current.add(key);
+    track('trial_unavailable_view', { mode, reason });
+  }, [freeMode, mode, trials.loading, trials.failed, trials.data, unavailable]);
+
   useEffect(() => {
     const saved = loadState();
     const url = new URL(window.location.href);
@@ -238,8 +285,20 @@ function ToolPage() {
   }, [rendering]);
 
   useEffect(() => {
-    if (error) track('generate_failed', { code: error.code ?? 'unknown' });
-  }, [error]);
+    if (!error) return;
+    track('generate_failed');
+    const trialReason: Record<string, string> = {
+      trial_verification_failed: 'verification_failed',
+      trial_unavailable: 'unknown',
+      trial_quota_exhausted: 'quota',
+      signup_trial_unavailable: 'unknown',
+      signup_trial_used: 'used',
+      signup_trial_expired: 'expired',
+      signup_trial_limit: 'daily_limit',
+    };
+    const reason = trialReason[error.code ?? ''];
+    if (reason) track('trial_blocked', { mode, reason });
+  }, [error, mode]);
 
   // Result events: only track jobs seen going from running to done/failed on this page; ones already finished on load are not re-tracked.
   const statuses = useRef(
@@ -533,6 +592,14 @@ function ToolPage() {
                 : mode === 'signup-trial'
                   ? m.home_tool_signup_note()
                   : m.home_tool_free_note({ count: site.guest.dailyPerDevice })}
+              {mode === 'paid' && (
+                <>
+                  {' '}
+                  <PricingLink source="generator_cost" requiredCredits={cost}>
+                    {m.home_view_credit_packs()}
+                  </PricingLink>
+                </>
+              )}
             </p>
             {freeMode && trials.failed && <p className="notice">{m.home_tool_free_status_error()}</p>}
             {mode === 'daily-trial' && !trials.loading && trials.data && !trials.data.daily.available && (
@@ -675,6 +742,49 @@ function ToolPage() {
             {m.home_cases_create()} <span aria-hidden="true">↑</span>
           </a>
         </div>
+        <h3 className="image-cases-heading">{m.home_image_case_title()}</h3>
+        <div className="image-cases">
+          {IMAGE_CASES.map((item) => (
+            <figure className="case image-case" key={item.src}>
+              <div className="image-case-media">
+                <div>
+                  <span>{m.home_image_case_input()}</span>
+                  <img src={item.input} alt={item.inputAlt()} loading="lazy" width={540} height={960} />
+                </div>
+                <div>
+                  <span>{m.home_image_case_output()}</span>
+                  <video
+                    src={item.src}
+                    poster={item.poster}
+                    controls
+                    muted
+                    loop
+                    playsInline
+                    preload="none"
+                    aria-label={item.title()}
+                  />
+                </div>
+              </div>
+              <figcaption>
+                <div className="case-heading">
+                  <h3>{item.title()}</h3>
+                  <button
+                    type="button"
+                    onClick={() => applyPrompt(item.prompt)}
+                    aria-label={m.home_case_use_prompt({ title: item.title() })}
+                    title={m.home_case_use_prompt_title()}
+                  >
+                    ↑
+                  </button>
+                </div>
+                <p>{item.settings()}</p>
+                <p>“{item.prompt}”</p>
+                <p>{item.limit()}</p>
+                <p>{m.home_image_case_prompt_note()}</p>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
         <div className="cases">
           {CASES.map((item) => (
             <figure className="case" key={item.src}>
@@ -756,7 +866,7 @@ function ToolPage() {
           </p>
         </div>
         <div className="pricing-content">
-          <Plans />
+          <Plans selectedCost={mode === 'paid' ? cost : null} />
         </div>
       </section>
 

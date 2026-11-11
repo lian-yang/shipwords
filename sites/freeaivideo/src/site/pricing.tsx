@@ -81,18 +81,64 @@ export function PricingLink({
 
 const root = getRouteApi('__root__');
 
+/** An estimate from the new pack only; it does not include any existing balance. */
+export function PackEstimate({ credits, cost }: { credits: number; cost?: number | null }) {
+  if (cost == null || !Number.isSafeInteger(cost) || cost <= 0) return null;
+  const count = Math.floor(credits / cost);
+  return (
+    <p className="muted small">
+      {count === 0
+        ? m.common_plan_not_enough_for_selection({ cost: cost.toLocaleString() })
+        : count === 1
+          ? m.common_plan_one_for_selection({ cost: cost.toLocaleString() })
+          : m.common_plan_for_selection({ count: count.toLocaleString(), cost: cost.toLocaleString() })}
+    </p>
+  );
+}
+
 /** Plan cards and buy buttons; signed-out users sign in first, then go straight to checkout. */
 export function Plans({
   heading: Heading = 'h3',
   source = 'section',
+  selectedCost,
 }: {
   heading?: 'h2' | 'h3';
   /** Goes into the checkout_start event: section for the home pricing block, dialog for the dialog. */
   source?: string;
+  /** Cost of the current paid generator settings, when opened from the generator. */
+  selectedCost?: number | null;
 }) {
   const config = root.useLoaderData();
   const session = authClient(config.googleClientId).useSession();
   const { checkout, pending, error } = useCheckout();
+  const plansRef = useRef<HTMLDivElement>(null);
+  const sectionViewed = useRef(false);
+
+  useEffect(() => {
+    const element = plansRef.current;
+    if (
+      source !== 'section' ||
+      sectionViewed.current ||
+      !element ||
+      typeof IntersectionObserver === 'undefined'
+    )
+      return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          !sectionViewed.current &&
+          entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.1)
+        ) {
+          sectionViewed.current = true;
+          track('pricing_view', { source: 'section' });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [source]);
 
   function buy(productId: string) {
     // After paying, return to the generator; its input is restored from sessionStorage (routes/index.tsx).
@@ -110,12 +156,13 @@ export function Plans({
 
   return (
     <>
-      <div className="plans">
+      <div className="plans" ref={plansRef}>
         {site.products.map((product) => (
           <article key={product.id} className="plan">
             <Heading>{productName(product.id)}</Heading>
             <p className="price">{formatPrice(product)}</p>
             <p className="muted small">{describe(product)}</p>
+            {product.kind === 'credits' && <PackEstimate credits={product.credits} cost={selectedCost} />}
             <p className="small">
               <strong>{m.common_no_watermark()}</strong>
             </p>
@@ -203,7 +250,7 @@ export function PricingDialog() {
             : m.home_credit_shortfall({ amount: shortfall.toLocaleString() })}
         </p>
       )}
-      <Plans source="dialog" />
+      <Plans source="dialog" selectedCost={requiredCredits} />
     </dialog>
   );
 }
