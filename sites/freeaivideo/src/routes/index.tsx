@@ -10,6 +10,7 @@ import { notifyTrialsChanged, signupTrialDescription, useTrials } from '~/lib/tr
 import { notifyCreditsChanged } from '~/lib/use-credit-balance';
 import { m } from '~/paraglide/messages.js';
 import { getLocale } from '~/paraglide/runtime.js';
+import { SUPPORT_EMAIL } from '~/site/legal';
 import { useSharedCreditBalance } from '~/site/credit-balance';
 import { CreditSummary, creditShortfall } from '~/site/credit-summary';
 import { getFaqs } from '~/site/faq';
@@ -38,6 +39,25 @@ export const Route = createFileRoute('/')({
           url: site.url,
           applicationCategory: 'MultimediaApplication',
           operatingSystem: 'Web',
+          offers: {
+            '@type': 'AggregateOffer',
+            priceCurrency: 'USD',
+            lowPrice: Math.min(...site.products.map((product) => product.price.amount)) / 100,
+            highPrice: Math.max(...site.products.map((product) => product.price.amount)) / 100,
+            offerCount: site.products.length,
+          },
+        },
+        {
+          '@type': 'Organization',
+          name: site.name,
+          url: site.url,
+          logo: `${site.url}/og.jpg`,
+          email: SUPPORT_EMAIL,
+          contactPoint: {
+            '@type': 'ContactPoint',
+            contactType: 'customer support',
+            email: SUPPORT_EMAIL,
+          },
         },
         {
           '@type': 'FAQPage',
