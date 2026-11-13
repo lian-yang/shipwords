@@ -276,7 +276,127 @@ export const Route = createFileRoute('/llms.txt')({
               path: '/earth-zoom-out-video-generator',
               description:
                 'A photo-to-space-and-back Earth zoom out guide with editable prompts and optional single-photo input; name any target country.',
-            }
+            },
+            {
+              title: "Tung Tung Tung Sahur AI",
+              path: "/tung-tung-tung-sahur-ai",
+              description:
+                "The Indonesian brainrot stick-man meme guide with editable prompts and optional single-photo input.",
+            },
+            {
+              title: "Bulin 47 AI",
+              path: "/bulin-47-ai",
+              description:
+                "A Dame Hombro shoulder-shake dance guide with editable prompts and optional single-photo input.",
+            },
+            {
+              title: "Ozil Goal AI",
+              path: "/ozil-goal-ai",
+              description:
+                "A chip-collision-finish football goal meme guide with editable prompts and optional single-photo input.",
+            },
+            {
+              title: "Raindance AI",
+              path: "/raindance-ai",
+              description:
+                "A lean-and-rock dance challenge guide with editable prompts and optional one- or two-photo input.",
+            },
+            {
+              title: "Smalltown Boy AI",
+              path: "/smalltown-boy-ai",
+              description:
+                "An 80s photo-dance trend guide with editable prompts and two-photo input.",
+            },
+            {
+              title: "Alors On Danse AI",
+              path: "/alors-on-danse-ai",
+              description:
+                "A white-studio keyboard duo meme guide with editable prompts and two-photo input.",
+            },
+            {
+              title: "Cheba Man Dance AI",
+              path: "/cheba-man-dance-ai",
+              description:
+                "A red-stage Tecktonik revival dance guide with editable prompts and optional single-photo input.",
+            },
+            {
+              title: "Tiny Desk AI",
+              path: "/tiny-desk-ai",
+              description:
+                "An office-concert band meme guide with editable prompts and up-to-five-photo input.",
+            },
+            {
+              title: "Venom Makeup AI",
+              path: "/venom-makeup-ai",
+              description:
+                "A symbiote half-face transformation guide with editable prompts and single-photo input.",
+            },
+            {
+              title: "What Stop Sign AI",
+              path: "/what-stop-sign-ai",
+              description:
+                "A night traffic-stop misunderstanding meme guide with editable prompts and optional single-photo input.",
+            },
+            {
+              title: "Hotel Lobby AI",
+              path: "/hotel-lobby-ai",
+              description:
+                "An orange-studio hanging-mic duet guide with editable prompts and two-photo input.",
+            },
+            {
+              title: "58th Floor AI",
+              path: "/58th-floor-ai",
+              description:
+                "A teal-studio verse-trading duet guide with editable prompts and two-photo input.",
+            },
+            {
+              title: "Crazy Frog AI",
+              path: "/crazy-frog-ai",
+              description:
+                "An invisible-motorcycle pose chase guide with editable prompts and full-body photo input.",
+            },
+            {
+              title: "Spooky Scary Skeletons AI",
+              path: "/spooky-scary-skeletons-ai",
+              description:
+                "A Halloween skeleton dance guide with editable prompts; photos optional.",
+            },
+            {
+              title: "Closing Door Prank AI",
+              path: "/closing-door-prank-ai",
+              description:
+                "A countdown-sprint-squeeze prank guide with editable prompts and full-body photo input.",
+            },
+            {
+              title: "Snow Leopard Meme AI",
+              path: "/snow-leopard-meme-ai",
+              description:
+                "A big-eyes paws-at-you pleading meme guide with editable prompts and optional pet photo input.",
+            },
+            {
+              title: "K/DA Firestarter AI",
+              path: "/kda-firestarter-ai",
+              description:
+                "A neon-stage K-pop dance trend guide with editable prompts and single-photo input.",
+            },
+            {
+              title: "Like Jennie AI",
+              path: "/like-jennie-ai",
+              description:
+                "A slick-back hair-sweep dance challenge guide with editable prompts and single-photo input.",
+            },
+            {
+              title: "KATSEYE Animal AI",
+              path: "/katseye-animal-ai",
+              description:
+                "A dark-pop hair-flip and prowl-crouch dance guide with editable prompts and up-to-three-photo input.",
+            },
+            {
+              title: "Chiikawa Dancing Nokia AI",
+              path: "/chiikawa-dancing-nokia-ai",
+              description:
+                "A chibi phone-dance loop trend guide with editable prompts; photos optional.",
+            },
           ],
         ),
     },
