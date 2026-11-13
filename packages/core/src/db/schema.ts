@@ -180,6 +180,8 @@ export const orders = sqliteTable(
     checkoutRef: text('checkout_ref'),
     createdAt: createdAt(),
     paidAt: integer('paid_at', { mode: 'number' }),
+    /** When the abandoned-checkout reminder was sent; null means not reminded yet. */
+    reminderSentAt: integer('reminder_sent_at', { mode: 'number' }),
   },
   (t) => [index('orders_user_idx').on(t.userId, t.createdAt)],
 );

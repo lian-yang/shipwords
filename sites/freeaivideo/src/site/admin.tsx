@@ -18,7 +18,14 @@ interface AdminStats {
     billingTotal: number;
     creditsOutstanding: number;
   };
-  daily: { day: string; signups: number; jobs: number }[];
+  daily: { day: string; signups: number; jobs: number; checkouts: number; paid: number }[];
+  funnel: {
+    signups: number;
+    activated: number;
+    checkouts: number;
+    paidOrders: number;
+    paidUsers: number;
+  };
   modelDist: { label: string | null; count: number }[];
   errorDist: { label: string | null; count: number }[];
   ledger: { kind: string; count: number; delta: number }[];
@@ -88,6 +95,7 @@ const ORDER_STATUS: Record<string, string> = {
 };
 
 const number = (value: number) => value.toLocaleString('zh-CN');
+const pct = (part: number, whole: number) => (whole > 0 ? `${((part / whole) * 100).toFixed(1)}%` : '—');
 const money = (value: number) => `$${value.toFixed(2)}`;
 const cents = (value: number) => money(value / 100);
 const time = (ms: number) =>
@@ -248,10 +256,26 @@ export function AdminPanel() {
       </section>
 
       <section>
+        <h2>近 14 天漏斗</h2>
+        <p className="muted">
+          注册 {number(stats.funnel.signups)} → 首次生成 {number(stats.funnel.activated)}
+          （{pct(stats.funnel.activated, stats.funnel.signups)}）→ 开结账 {number(stats.funnel.checkouts)}
+          （{pct(stats.funnel.checkouts, stats.funnel.signups)}）→ 付款 {number(stats.funnel.paidOrders)} 单
+          / {number(stats.funnel.paidUsers)} 人（{pct(stats.funnel.paidUsers, stats.funnel.signups)}）
+        </p>
+      </section>
+
+      <section>
         <h2>近 14 天</h2>
         <Table
-          columns={['日期', '注册', '任务']}
-          rows={stats.daily.map((row) => [row.day, number(row.signups), number(row.jobs)])}
+          columns={['日期', '注册', '任务', '开结账', '付款']}
+          rows={stats.daily.map((row) => [
+            row.day,
+            number(row.signups),
+            number(row.jobs),
+            number(row.checkouts),
+            number(row.paid),
+          ])}
         />
       </section>
 

@@ -1,12 +1,15 @@
 import { proxyRybbit } from '@shipwords/core/analytics';
 import { createDb } from '@shipwords/core/db/client';
+import { createMailer } from '@shipwords/core/email/send';
 import handler from '@tanstack/react-start/server-entry';
 import { sweepStaleJobs } from '@shipwords/jobs/sweep';
 import { createAdapters } from '@shipwords/jobs/workflow';
 import { paraglideMiddleware } from '~/paraglide/server.js';
+import { core } from './core.server';
 import { reconcilePendingBilling } from './billing-reconciliation.server';
 import { GenerationWorkflow } from './generation-workflow.server';
 import models from './models.server';
+import site from '../site.config';
 
 // Worker entry: pages and API go to TanStack Start; also exports the generation Workflow class.
 export { GenerationWorkflow };
@@ -29,6 +32,13 @@ export default {
       Promise.resolve()
         .then(() => reconcilePendingBilling(db, createAdapters(env)))
         .catch((error: unknown) => console.error('billing reconciliation unavailable', {
+          error: error instanceof Error ? error.name : 'unknown',
+        })),
+    );
+    ctx.waitUntil(
+      Promise.resolve()
+        .then(() => core.billing.remindPendingOrders(createMailer(env, site.name)))
+        .catch((error: unknown) => console.error('checkout reminders unavailable', {
           error: error instanceof Error ? error.name : 'unknown',
         })),
     );

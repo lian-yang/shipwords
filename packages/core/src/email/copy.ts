@@ -13,10 +13,12 @@ export interface EmailCopy {
   signInCode(input: { siteName: string; otp: string }): EmailMessage;
   jobReady(input: { siteName: string; kind: JobKind; resultURL: string; baseURL: string }): EmailMessage;
   jobFailed(input: { siteName: string; kind: JobKind; costCredits: number; baseURL: string }): EmailMessage;
+  checkoutReminder(input: { siteName: string; product: string; price: string; checkoutURL: string }): EmailMessage;
 }
 
 const codeStyle = 'font-size:20px';
 const linkStyle = 'font-size:18px;font-weight:bold';
+const smallStyle = 'font-size:13px;color:#888';
 
 const en: EmailCopy = {
   signInCode: ({ siteName, otp }) => ({
@@ -44,6 +46,11 @@ const en: EmailCopy = {
       html: `<p>Sorry, we couldn't make your ${what} this time.</p><p>${charge}</p><p><a href="${baseURL}/" style="${linkStyle}">Try again on ${siteName}</a></p>`,
     };
   },
+  checkoutReminder: ({ siteName, product, price, checkoutURL }) => ({
+    subject: `Your ${siteName} checkout is still open`,
+    text: `You started buying ${product} (${price}) on ${siteName} but didn't finish. Your checkout is still open: ${checkoutURL}\n\nIf that wasn't you, you can ignore this email.`,
+    html: `<p>You started buying <strong>${product}</strong> (${price}) on ${siteName} but didn't finish.</p><p><a href="${checkoutURL}" style="${linkStyle}">Finish your purchase</a></p><p style="${smallStyle}">If that wasn't you, you can ignore this email.</p>`,
+  }),
 };
 
 const jaWhat: Record<JobKind, string> = { image: '画像', video: '動画', music: '曲' };
@@ -74,6 +81,11 @@ const ja: EmailCopy = {
       html: `<p>申し訳ありません。今回は${what}を作れませんでした。</p><p>${charge}</p><p><a href="${baseURL}/" style="${linkStyle}">${siteName}でもう一度試す</a></p>`,
     };
   },
+  checkoutReminder: ({ siteName, product, price, checkoutURL }) => ({
+    subject: `${siteName}：お支払いが未完了です`,
+    text: `${siteName}で${product}（${price}）のお支払い手続きが途中で終わっています。こちらから続けられます：${checkoutURL}\n\n心当たりがない場合は、このメールは無視してください。`,
+    html: `<p>${siteName}で<strong>${product}</strong>（${price}）のお支払い手続きが途中で終わっています。</p><p><a href="${checkoutURL}" style="${linkStyle}">お支払いを続ける</a></p><p style="${smallStyle}">心当たりがない場合は、このメールは無視してください。</p>`,
+  }),
 };
 
 // Korean particles depend on the noun's final consonant, so each noun carries its subject and object forms.
@@ -109,6 +121,11 @@ const ko: EmailCopy = {
       html: `<p>죄송해요. 이번에는 ${object} 만들지 못했어요.</p><p>${charge}</p><p><a href="${baseURL}/" style="${linkStyle}">${siteName}에서 다시 시도하기</a></p>`,
     };
   },
+  checkoutReminder: ({ siteName, product, price, checkoutURL }) => ({
+    subject: `${siteName}: 결제가 완료되지 않았어요`,
+    text: `${siteName}에서 ${product}(${price}) 결제를 끝내지 못했어요. 여기서 이어서 결제할 수 있어요: ${checkoutURL}\n\n본인이 아니라면 이 이메일은 무시해 주세요.`,
+    html: `<p>${siteName}에서 <strong>${product}</strong>(${price}) 결제를 끝내지 못했어요.</p><p><a href="${checkoutURL}" style="${linkStyle}">결제 마치기</a></p><p style="${smallStyle}">본인이 아니라면 이 이메일은 무시해 주세요.</p>`,
+  }),
 };
 
 const copies: Record<string, EmailCopy> = { en, ja, ko };

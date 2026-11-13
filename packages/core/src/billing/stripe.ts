@@ -239,6 +239,11 @@ export class StripeProvider implements PaymentProvider {
   async fetchCheckout(checkoutRef: string): Promise<CheckoutFact> {
     const session = await this.stripe.checkout.sessions.retrieve(checkoutRef);
     const orderId = session.client_reference_id ?? session.metadata?.orderId ?? null;
+    // session.url is only set while the session can still be paid, which is exactly the recovery-email case.
+    const recoverable = {
+      url: session.url ?? null,
+      expiresAt: session.expires_at ? session.expires_at * 1000 : null,
+    };
     if (session.mode === 'subscription') {
       const subscriptionRef = idOf(session.subscription);
       const invoiceRef = idOf(session.invoice);
@@ -246,12 +251,12 @@ export class StripeProvider implements PaymentProvider {
         subscriptionRef ? this.fetchSubscription(subscriptionRef) : null,
         invoiceRef ? this.fetchPayment(invoiceRef) : null,
       ]);
-      return { orderId, subscription, payment };
+      return { orderId, subscription, payment, ...recoverable };
     }
     const intentRef = idOf(session.payment_intent);
     const payment =
       intentRef && session.payment_status === 'paid' ? await this.fetchPayment(intentRef) : null;
-    return { orderId, subscription: null, payment };
+    return { orderId, subscription: null, payment, ...recoverable };
   }
 
   async fetchPayment(paymentRef: string): Promise<PaymentFact | null> {

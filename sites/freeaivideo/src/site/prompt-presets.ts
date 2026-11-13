@@ -40,6 +40,7 @@ const presets: Record<string, () => string> = {
   'i-want-wings': m.pages_wantwings_prompt_a,
   'its-my-life-dog': m.pages_itslifedog_prompt_a,
   'car-alarm-dance': m.pages_caralarm_prompt_a,
+  'earth-zoom-out': m.pages_earthzoom_prompt_a,
 };
 
 export function getPromptPreset(id: string): string | undefined {

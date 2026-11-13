@@ -59,6 +59,10 @@ export interface CheckoutFact {
   orderId: string | null;
   payment: PaymentFact | null;
   subscription: SubscriptionFact | null;
+  /** The provider's checkout page while the session can still be paid; used by recovery emails. */
+  url?: string | null;
+  /** When the session can no longer be paid (ms); null when the provider doesn't say (treated as still open). */
+  expiresAt?: number | null;
 }
 
 /** A webhook is only a trigger: it tells us which object to fetch the latest state for. */

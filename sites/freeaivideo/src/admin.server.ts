@@ -40,7 +40,15 @@ export interface AdminStats {
     billingTotal: number;
     creditsOutstanding: number;
   };
-  daily: { day: string; signups: number; jobs: number }[];
+  daily: { day: string; signups: number; jobs: number; checkouts: number; paid: number }[];
+  /** 14-day cohort pulse: score a traffic burst the day it happens. */
+  funnel: {
+    signups: number;
+    activated: number;
+    checkouts: number;
+    paidOrders: number;
+    paidUsers: number;
+  };
   modelDist: { label: string | null; count: number }[];
   errorDist: { label: string | null; count: number }[];
   ledger: { kind: string; count: number; delta: number }[];
@@ -135,10 +143,39 @@ export async function adminStats(billingOffset = 0, db: Db = core.db): Promise<A
     .from(jobs)
     .where(sql`${jobs.createdAt} >= ${since}`)
     .groupBy(jobDay);
+  const orderDay = sql<string>`date(${orders.createdAt} / 1000, 'unixepoch')`;
+  const checkoutDaily = await db
+    .select({
+      day: orderDay.mapWith(String),
+      total: count(),
+      paid: sql<number>`count(*) filter (where ${orders.status} = 'paid')`.mapWith(Number),
+    })
+    .from(orders)
+    .where(sql`${orders.createdAt} >= ${since}`)
+    .groupBy(orderDay);
   const signupMap = new Map(signupDaily.map((row) => [row.day, row.count]));
   const jobMap = new Map(jobDaily.map((row) => [row.day, row.count]));
-  const daily = [...new Map([...signupMap, ...jobMap]).keys()].sort().reverse();
+  const checkoutMap = new Map(checkoutDaily.map((row) => [row.day, row.total]));
+  const paidMap = new Map(checkoutDaily.map((row) => [row.day, row.paid]));
+  const daily = [...new Map([...signupMap, ...jobMap, ...checkoutMap]).keys()].sort().reverse();
   const byDay = (map: Map<string, number>, day: string) => map.get(day) ?? 0;
+
+  // 14-day funnel cohort: signups, how many of them generated, and how far the money path went.
+  const [funnelSignups] = await db.select({ total: count() }).from(user).where(sql`${user.createdAt} >= ${since}`);
+  const [funnelActivated] = await db
+    .select({ total: sql<number>`count(distinct ${jobs.userId})`.mapWith(Number) })
+    .from(jobs)
+    .innerJoin(user, eq(user.id, jobs.userId))
+    .where(and(sql`${jobs.createdAt} >= ${since}`, sql`${user.createdAt} >= ${since}`));
+  const [funnelOrders] = await db
+    .select({
+      total: count(),
+      paid: sql<number>`count(*) filter (where ${orders.status} = 'paid')`.mapWith(Number),
+      paidUsers: sql<number>`count(distinct case when ${orders.status} = 'paid' then ${orders.userId} end)`.mapWith(Number),
+    })
+    .from(orders)
+    .innerJoin(user, eq(user.id, orders.userId))
+    .where(sql`${orders.createdAt} >= ${since}`);
 
   const modelRows = await db
     .select({ label: jobs.modelId, count: count() })
@@ -283,7 +320,20 @@ export async function adminStats(billingOffset = 0, db: Db = core.db): Promise<A
       billingTotal: upstreamTotals?.billingTotal ?? 0,
       creditsOutstanding: creditTotals?.remaining ?? 0,
     },
-    daily: daily.map((day) => ({ day, signups: byDay(signupMap, day), jobs: byDay(jobMap, day) })),
+    daily: daily.map((day) => ({
+      day,
+      signups: byDay(signupMap, day),
+      jobs: byDay(jobMap, day),
+      checkouts: byDay(checkoutMap, day),
+      paid: byDay(paidMap, day),
+    })),
+    funnel: {
+      signups: funnelSignups?.total ?? 0,
+      activated: funnelActivated?.total ?? 0,
+      checkouts: funnelOrders?.total ?? 0,
+      paidOrders: funnelOrders?.paid ?? 0,
+      paidUsers: funnelOrders?.paidUsers ?? 0,
+    },
     modelDist: modelRows,
     errorDist: errorRows,
     ledger: ledgerRows,

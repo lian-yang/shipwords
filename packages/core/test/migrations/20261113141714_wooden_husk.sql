@@ -1,0 +1,1 @@
+ALTER TABLE `orders` ADD `reminder_sent_at` integer;

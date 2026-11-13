@@ -46,6 +46,7 @@ export const PAGES = [
   '/i-want-wings-ai',
   '/its-my-life-dog-ai',
   '/car-alarm-ai-dance',
+  '/earth-zoom-out-video-generator',
   '/privacy',
   '/terms',
   '/refunds',

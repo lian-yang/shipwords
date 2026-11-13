@@ -196,6 +196,7 @@ function Layout() {
             <Link to="/i-want-wings-ai">{m.common_footer_wantwings()}</Link>
             <Link to="/its-my-life-dog-ai">{m.common_footer_itslifedog()}</Link>
             <Link to="/car-alarm-ai-dance">{m.common_footer_caralarm()}</Link>
+            <Link to="/earth-zoom-out-video-generator">{m.common_footer_earthzoom()}</Link>
             <Link to="/privacy">{m.common_footer_privacy()}</Link>
             <Link to="/terms">{m.common_footer_terms()}</Link>
             <Link to="/refunds">{m.common_footer_refunds()}</Link>

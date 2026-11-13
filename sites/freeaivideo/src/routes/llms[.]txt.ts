@@ -270,6 +270,12 @@ export const Route = createFileRoute('/llms.txt')({
               path: '/car-alarm-ai-dance',
               description:
                 'A car-alarm pet dance guide with editable video prompts and optional single-photo input.',
+            },
+            {
+              title: 'Earth Zoom Out Video Generator',
+              path: '/earth-zoom-out-video-generator',
+              description:
+                'A photo-to-space-and-back Earth zoom out guide with editable prompts and optional single-photo input; name any target country.',
             }
           ],
         ),

@@ -13,7 +13,9 @@ import {
 } from './billing/handlers';
 import { PayPalProvider } from './billing/paypal';
 import type { PaymentProvider } from './billing/provider';
+import { remindPendingOrders } from './billing/recovery';
 import { StripeProvider } from './billing/stripe';
+import type { Mailer } from './email/send';
 import { getBalance } from './credits/ledger';
 import { createDb, type Db } from './db/client';
 import type { CoreEnv } from './env';
@@ -102,6 +104,11 @@ export function createCore(site: SiteConfig, options: { log?: Logger } = {}) {
       portal: (request: Request) => handlePortal(context().billing, request),
       receipt: (request: Request) => handleReceipt(context().billing, request),
       webhook: (request: Request) => handleWebhook(context().billing, request),
+      /** Cron: exactly-one reminder email per abandoned checkout; see billing/recovery.ts. */
+      remindPendingOrders: (mailer: Pick<Mailer, 'send'>) => {
+        const { db, site, provider, baseURL, log } = context().billing;
+        return remindPendingOrders({ db, site, provider, baseURL, mailer, log });
+      },
       /** GET: current user's balance, subscription and recent orders. */
       async me(request: Request) {
         const { db, billing } = context();
