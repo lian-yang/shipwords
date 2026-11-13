@@ -1096,5 +1096,7 @@
   "pages_earthzoom_question_free": "可以免费试吗？",
   "pages_earthzoom_answer_free": "设备每天一次免费试用（视共享额度情况而定）。试用设置与积分消耗取决于所选模型，均显示在生成器中。",
   "pages_earthzoom_ready": "准备好从轨道上看你的世界了吗？",
-  "pages_earthzoom_open_generator": "打开视频生成器"
+  "pages_earthzoom_open_generator": "打开视频生成器",
+  "pages_earthzoom_case_title": "真实示例：从天台到轨道再回到意大利",
+  "pages_earthzoom_case_caption": "由本站用上方提示词实际生成（MiniMax H3，2K，6 秒）。生成器会解释你的提示词，每次航线都是独立演绎。"
 }

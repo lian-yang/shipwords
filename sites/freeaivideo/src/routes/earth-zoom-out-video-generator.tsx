@@ -29,6 +29,15 @@ export const Route = createFileRoute('/earth-zoom-out-video-generator')({
   component: EarthZoomPage,
 });
 
+// Real clip rendered by this site (prod job, 2026-11-13): the video stands as proof,
+// the caption names the exact settings. No staged or third-party footage.
+const CASE = {
+  src: `${site.url}/files/jobs/job_62af0b11c61c46cf8f5e3b1466857077/0.mp4`,
+  poster: '/earth-zoom-poster.jpg',
+  title: m.pages_earthzoom_case_title,
+  caption: m.pages_earthzoom_case_caption,
+};
+
 function EarthZoomPage() {
   return (
     <section className="content">
@@ -39,6 +48,13 @@ function EarthZoomPage() {
           {m.pages_earthzoom_generate_link()}
         </a>
       </p>
+      <figure className="case">
+        <video src={CASE.src} poster={CASE.poster} controls muted loop playsInline preload="none" aria-label={CASE.title()} />
+        <figcaption>
+          <h2>{CASE.title()}</h2>
+          <p>{CASE.caption()}</p>
+        </figcaption>
+      </figure>
       <h2>{m.pages_earthzoom_format_heading()}</h2>
       <p>{m.pages_earthzoom_format_body()}</p>
       <h2>{m.pages_earthzoom_make_heading()}</h2>

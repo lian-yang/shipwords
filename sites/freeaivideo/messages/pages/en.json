@@ -1096,5 +1096,7 @@
   "pages_earthzoom_question_free": "Can I try it for free?",
   "pages_earthzoom_answer_free": "One daily free trial per device when available, subject to shared limits. Trial settings and credit costs depend on the selected model and are shown in the generator.",
   "pages_earthzoom_ready": "Ready to see your world from orbit?",
-  "pages_earthzoom_open_generator": "Open the video generator"
+  "pages_earthzoom_open_generator": "Open the video generator",
+  "pages_earthzoom_case_title": "Real example: rooftop to orbit and back to Italy",
+  "pages_earthzoom_case_caption": "Rendered by this site with the exact prompt above (MiniMax H3, 2K, 6 seconds). The generator interprets your prompt, so each flight path is its own take."
 }
