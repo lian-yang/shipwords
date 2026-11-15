@@ -1,3 +1,4 @@
+import { ArrowRight } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 
 // Internal stats panel for /admin; data comes from /api/admin/stats, which answers 404 to anyone
@@ -340,10 +341,13 @@ export function AdminPanel() {
       <section>
         <h2>近 14 天漏斗</h2>
         <p className="muted">
-          注册 {number(stats.funnel.signups)} → 首次生成 {number(stats.funnel.activated)}（
-          {pct(stats.funnel.activated, stats.funnel.signups)}）→ 发起结账 {number(stats.funnel.checkouts)}（
-          {pct(stats.funnel.checkouts, stats.funnel.signups)}）→ 付款 {number(stats.funnel.paidOrders)} 单 /{' '}
-          {number(stats.funnel.paidUsers)} 人（{pct(stats.funnel.paidUsers, stats.funnel.signups)}）
+          注册 {number(stats.funnel.signups)} <ArrowRight className="admin-funnel-arrow" aria-hidden="true" />{' '}
+          首次生成 {number(stats.funnel.activated)}（{pct(stats.funnel.activated, stats.funnel.signups)}）{' '}
+          <ArrowRight className="admin-funnel-arrow" aria-hidden="true" /> 发起结账{' '}
+          {number(stats.funnel.checkouts)}（{pct(stats.funnel.checkouts, stats.funnel.signups)}）{' '}
+          <ArrowRight className="admin-funnel-arrow" aria-hidden="true" /> 付款{' '}
+          {number(stats.funnel.paidOrders)} 单 / {number(stats.funnel.paidUsers)} 人（
+          {pct(stats.funnel.paidUsers, stats.funnel.signups)}）
         </p>
       </section>
 
@@ -371,7 +375,7 @@ export function AdminPanel() {
           rows={stats.users.map((row) => [
             row.id,
             row.email,
-            row.emailVerified ? '✓' : '—',
+            row.emailVerified ? '已验证' : '未验证',
             time(row.createdAt),
             number(row.credits),
             number(row.jobs),

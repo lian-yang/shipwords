@@ -1,6 +1,7 @@
 import { analyticsScripts } from '@shipwords/core/analytics';
 import { captureAttribution } from '@shipwords/core/react/attribution';
 import { createRootRoute, HeadContent, Link, Outlet, Scripts, useRouterState } from '@tanstack/react-router';
+import { ArrowUpRight } from 'lucide-react';
 import { type ReactNode, useEffect, useRef } from 'react';
 import { guardAnalyticsScripts } from '~/lib/analytics-head';
 import { authClient } from '~/lib/auth';
@@ -140,9 +141,7 @@ function Layout() {
                 }}
               >
                 {m.common_nav_sign_in()}
-                <span className="header-sign-in-arrow" aria-hidden="true">
-                  ↗
-                </span>
+                <ArrowUpRight className="header-sign-in-arrow" size={15} aria-hidden="true" />
               </a>
             )}
             <MobileNavigation key={pathname} />

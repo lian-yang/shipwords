@@ -3,7 +3,16 @@ import { pageHead } from '@shipwords/core/seo';
 import { creditsFor, sanitizeParameters } from '@shipwords/jobs/models';
 import { type PublicJob, UPLOAD_ACCEPT, uploadReference, useGeneration } from '@shipwords/jobs/react';
 import { createFileRoute, getRouteApi } from '@tanstack/react-router';
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUp,
+  ArrowUpRight,
+  ChevronDown,
+  LoaderCircle,
+  RotateCcw,
+} from 'lucide-react';
+import { type ComponentProps, type FormEvent, useEffect, useRef, useState } from 'react';
 import { authClient } from '~/lib/auth';
 import { track } from '~/lib/track';
 import { notifyTrialsChanged, signupTrialDescription, useTrials } from '~/lib/trials';
@@ -166,6 +175,15 @@ const IMAGE_CASES = [
       'Animate this rainy city cover art: raindrops move down the window, distant cyan and violet reflections gently shimmer on the wet street, and the camera slowly pushes forward. Preserve the composition and moody nighttime palette. No text, logos, people, or cuts.',
   },
 ];
+
+function Select(props: ComponentProps<'select'>) {
+  return (
+    <span className="select-control">
+      <select {...props} />
+      <ChevronDown className="select-icon" size={14} aria-hidden="true" />
+    </span>
+  );
+}
 
 function ToolPage() {
   const config = root.useLoaderData();
@@ -457,9 +475,10 @@ function ToolPage() {
                 </button>
               ))}
             </div>
-            <label className="generation-mode">
+            <label className="generation-mode" htmlFor="generation-mode">
               {m.home_tool_mode()}
-              <select
+              <Select
+                id="generation-mode"
                 value={mode}
                 disabled={submitting}
                 onChange={(event) => chooseMode(event.target.value as GenerationMode)}
@@ -467,12 +486,13 @@ function ToolPage() {
                 <option value="daily-trial">{m.home_tool_mode_daily()}</option>
                 <option value="signup-trial">{m.home_tool_mode_signup()}</option>
                 <option value="paid">{m.home_tool_mode_paid()}</option>
-              </select>
+              </Select>
             </label>
             <div className="tool-controls">
-              <label>
+              <label htmlFor="model">
                 {m.home_tool_model()}
-                <select
+                <Select
+                  id="model"
                   value={model.id}
                   onChange={(e) => {
                     const next = availableModels.find((item) => item.id === e.target.value)!;
@@ -487,11 +507,12 @@ function ToolPage() {
                       {item.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
-              <label>
+              <label htmlFor="aspect-ratio">
                 {m.home_tool_aspect_ratio()}
-                <select
+                <Select
+                  id="aspect-ratio"
                   value={imageAspectRatio ?? selectedAspectRatio}
                   disabled={Boolean(imageAspectRatio)}
                   onChange={(e) => setAspectRatio(e.target.value)}
@@ -500,11 +521,12 @@ function ToolPage() {
                   {videoOptions.aspectRatios.map((ratio) => (
                     <option key={ratio}>{ratio}</option>
                   ))}
-                </select>
+                </Select>
               </label>
-              <label>
+              <label htmlFor="resolution">
                 {m.home_tool_resolution()}
-                <select
+                <Select
+                  id="resolution"
                   value={selectedResolution}
                   disabled={freeMode}
                   onChange={(event) => setResolution(event.target.value)}
@@ -514,11 +536,12 @@ function ToolPage() {
                       {item.resolution}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
-              <label>
+              <label htmlFor="duration">
                 {m.home_tool_duration()}
-                <select
+                <Select
+                  id="duration"
                   value={selectedDuration}
                   disabled={freeMode}
                   onChange={(event) => setDuration(Number(event.target.value))}
@@ -528,7 +551,7 @@ function ToolPage() {
                       {m.home_horizon_seconds({ seconds })}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
             </div>
             {model.maxReferences > 0 && (
@@ -608,7 +631,11 @@ function ToolPage() {
                           : m.home_tool_submit_free()}
               </span>
               <span className="generate-icon" aria-hidden="true">
-                {submitting ? '◌' : '↗'}
+                {submitting ? (
+                  <LoaderCircle size={19} aria-hidden="true" />
+                ) : (
+                  <ArrowUpRight size={19} aria-hidden="true" />
+                )}
               </span>
             </button>
             <p className="muted small" id="free-note">
@@ -741,7 +768,7 @@ function ToolPage() {
             <p className="lead">{m.home_cases_body()}</p>
           </div>
           <a className="text-link" href="#tool">
-            {m.home_cases_create()} <span aria-hidden="true">↑</span>
+            {m.home_cases_create()} <ArrowUp size={16} aria-hidden="true" />
           </a>
         </div>
         <div className="cases">
@@ -766,7 +793,7 @@ function ToolPage() {
                     aria-label={m.home_case_use_prompt({ title: item.title() })}
                     title={m.home_case_use_prompt_title()}
                   >
-                    ↑
+                    <ArrowUp size={18} aria-hidden="true" />
                   </button>
                 </div>
                 <p>“{item.prompt}”</p>
@@ -806,7 +833,7 @@ function ToolPage() {
                     aria-label={m.home_case_use_prompt({ title: item.title() })}
                     title={m.home_case_use_prompt_title()}
                   >
-                    ↑
+                    <ArrowUp size={18} aria-hidden="true" />
                   </button>
                 </div>
                 <p>{item.settings()}</p>
@@ -838,7 +865,7 @@ function ToolPage() {
         <div>
           <h2>{m.home_limits_heading()}</h2>
           <a className="text-link" href="/no-watermark">
-            {m.home_limits_watermark_link()} <span aria-hidden="true">→</span>
+            {m.home_limits_watermark_link()} <ArrowRight size={16} aria-hidden="true" />
           </a>
         </div>
         <div>
@@ -846,7 +873,7 @@ function ToolPage() {
           <p>
             {m.home_limits_more_before()}{' '}
             <a className="link-accent" href="/seedance-2-5-free">
-              {m.home_limits_link_seedance()}
+              {m.home_limits_link_seedance()} <ArrowRight size={16} aria-hidden="true" />
             </a>{' '}
             {m.home_limits_more_after()}
           </p>
@@ -890,7 +917,7 @@ function ToolPage() {
                 <p>{faq.answer}</p>
                 {faq.link && (
                   <a href={faq.link.href}>
-                    {faq.link.label} <span aria-hidden="true">→</span>
+                    {faq.link.label} <ArrowRight size={16} aria-hidden="true" />
                   </a>
                 )}
               </div>
@@ -951,12 +978,10 @@ function SceneStage({ onApply }: { onApply: () => void }) {
             title={m.home_horizon_reset()}
             onClick={() => setResetKey((current) => current + 1)}
           >
-            <span aria-hidden="true" className="horizon-reset-icon">
-              ↺
-            </span>
+            <RotateCcw size={17} aria-hidden="true" />
           </button>
           <button type="button" className="horizon-apply" onClick={onApply}>
-            {m.home_horizon_use_prompt()} <span aria-hidden="true">↗</span>
+            {m.home_horizon_use_prompt()} <ArrowUpRight size={16} aria-hidden="true" />
           </button>
         </div>
       </figcaption>
@@ -982,7 +1007,8 @@ function ReturnNotice({ jobs }: { jobs: PublicJob[] }) {
       data-rybbit-event="return_notice_click"
       data-rybbit-prop-state={rendering ? 'generating' : 'ready'}
     >
-      {rendering ? m.home_return_generating() : m.home_return_ready()}
+      {rendering ? m.home_return_generating() : m.home_return_ready()}{' '}
+      <ArrowDown size={16} aria-hidden="true" />
     </a>
   );
 }

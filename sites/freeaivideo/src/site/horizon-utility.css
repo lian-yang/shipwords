@@ -4,6 +4,13 @@
   line-height: 1.65;
 }
 
+.admin-funnel-arrow {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+}
+
 .utility-frame {
   --utility-title-size: clamp(34px, 5vw, 58px);
   width: min(100%, 820px);

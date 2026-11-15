@@ -7,6 +7,7 @@ The first screen pairs a working video generator with an interactive black hole.
 - Near-black indigo surrounds the scene. Lavender-white carries text and violet denotes primary actions and focus. Hot highlights belong to the artwork.
 - Use Instrument Sans for labels and headings, italic Instrument Serif for expressive display type and a system monospace face for scene controls. Titles and buttons must wrap with longer translations and at 200% zoom.
 - The viewer has a thin perimeter and a separate control strip. Give the sculpture room to breathe. Separate the real sample gallery, pricing and answers with ruled lines and whitespace.
+- Use Lucide arrow icons for directional controls and links. Keep select chevrons inset from the right edge, and retain native select behavior and high-contrast support.
 - Use the same dark surfaces, typography, borders and focus color on every HTML route. Keep the admin dashboard compact, with table headers, clear row dividers and scrollable tables on narrow screens.
 
 ## Guide and utility layouts

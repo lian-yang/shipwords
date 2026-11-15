@@ -290,11 +290,6 @@ html[lang="zh"] .horizon-home .tool-heading h1 em {
   border-block: 5px solid transparent;
 }
 
-.horizon-reset-icon {
-  font-size: 23px;
-  line-height: 1;
-}
-
 .horizon-home .horizon-stage-controls .horizon-apply {
   gap: 10px;
   padding: 5px 11px;
@@ -406,22 +401,34 @@ html[lang="zh"] .horizon-home .tool-heading h1 em {
   text-overflow: ellipsis;
 }
 
+.horizon-home .select-control {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+
 .horizon-home .tool-form select {
   appearance: none;
-  padding-inline-end: 30px;
-  background-image:
-    linear-gradient(45deg, transparent 39%, var(--color-muted) 41% 59%, transparent 61%),
-    linear-gradient(135deg, transparent 39%, var(--color-muted) 41% 59%, transparent 61%);
-  background-position: right 17px center, right 12px center;
-  background-size: 5px 5px;
-  background-repeat: no-repeat;
+  padding-inline-end: 32px;
+}
+
+.horizon-home .select-icon {
+  position: absolute;
+  inset-inline-end: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted);
+  pointer-events: none;
 }
 
 @media (forced-colors: active) {
   .horizon-home .tool-form select {
     appearance: auto;
     padding-inline-end: 10px;
-    background-image: none;
+  }
+
+  .horizon-home .select-icon {
+    display: none;
   }
 }
 
@@ -751,4 +758,10 @@ html[lang="zh"] .horizon-home .tool-heading h1 em {
   .horizon-home .plans {
     gap: 11px;
   }
+}
+
+.horizon-home :is(.link-accent, .faq-answer a, .return-notice) svg {
+  display: inline-block;
+  vertical-align: -0.18em;
+  flex: none;
 }
