@@ -226,9 +226,10 @@ describe('verified signup trial entitlement', () => {
     expect(await quotaCount('signup-bonus:site', dayWindow())).toBe(1);
   });
 
-  it('caps daily issuance at two across accounts and preserves the budget consumed by old gifts', async () => {
-    await env.DB.prepare('INSERT INTO quota_counters (key,window,count) VALUES (?,?,1)')
-      .bind('signup-bonus:site', dayWindow())
+  it('caps daily issuance across accounts and preserves the budget consumed by old gifts', async () => {
+    const limit = site.signup.bonusSiteDaily;
+    await env.DB.prepare('INSERT INTO quota_counters (key,window,count) VALUES (?,?,?)')
+      .bind('signup-bonus:site', dayWindow(), limit - 1)
       .run();
     const first = await newUser({ signupIp: '192.0.2.1' });
     const second = await newUser({ signupIp: '198.51.100.1' });
@@ -239,7 +240,7 @@ describe('verified signup trial entitlement', () => {
     const states = await Promise.all(responses.map((response) => response.json() as Promise<TrialStatus>));
     expect(states.filter((value) => value.signup.status === 'available')).toHaveLength(1);
     expect(states.filter((value) => value.signup.status === 'daily_limit')).toHaveLength(1);
-    expect(await quotaCount('signup-bonus:site', dayWindow())).toBe(2);
+    expect(await quotaCount('signup-bonus:site', dayWindow())).toBe(limit);
     expect(
       (await quotaCount(`signup-trial:grant:${first.id}`)) +
         (await quotaCount(`signup-trial:grant:${second.id}`)),
@@ -258,14 +259,15 @@ describe('verified signup trial entitlement', () => {
 
   it('respects the registration IP issuance cap without consuming an unrelated site slot', async () => {
     const user = await newUser();
-    await env.DB.prepare('INSERT INTO quota_counters (key,window,count) VALUES (?,?,2)')
-      .bind(`signup-bonus:ip:${ipBucket(IP)}`, dayWindow())
+    const limit = site.signup.bonusPerIpDaily;
+    await env.DB.prepare('INSERT INTO quota_counters (key,window,count) VALUES (?,?,?)')
+      .bind(`signup-bonus:ip:${ipBucket(IP)}`, dayWindow(), limit)
       .run();
     const response = await claimSignupTrial(fakeCore(user).core, trialRequest());
     expect(await response.json()).toMatchObject({ signup: { status: 'daily_limit' } });
     expect(await quotaCount(`signup-trial:grant:${user.id}`)).toBe(0);
     expect(await quotaCount('signup-bonus:site', dayWindow())).toBe(0);
-    expect(await quotaCount(`signup-bonus:ip:${ipBucket(IP)}`, dayWindow())).toBe(2);
+    expect(await quotaCount(`signup-bonus:ip:${ipBucket(IP)}`, dayWindow())).toBe(limit);
   });
 
   it.each([
@@ -655,17 +657,24 @@ describe('device daily trial shared across sign-in', () => {
     expect(dispatch).toHaveBeenCalledTimes(1);
   });
 
-  it('caps distinct daily devices at four site-wide without spending paid balances', async () => {
-    const responses: Response[] = [];
-    for (let index = 0; index < 5; index++) {
-      responses.push(
-        await createSiteJob(fakeCore().core, generationRequest('daily-trial', { ip: `198.51.${index}.1` })),
-      );
-    }
-    expect(responses.filter((response) => response.status === 201)).toHaveLength(4);
-    expect(await responseCode(responses[4]!)).toBe('trial_quota_exhausted');
-    expect(await quotaCount('guest:site', dayWindow())).toBe(4);
-    expect(await totalJobs()).toBe(4);
+  it('caps daily trials across distinct devices without spending paid balances', async () => {
+    const limit = site.guest.dailySiteBudget;
+    await env.DB.prepare('INSERT INTO quota_counters (key,window,count) VALUES (?,?,?)')
+      .bind('guest:site', dayWindow(), limit - 1)
+      .run();
+
+    const accepted = await createSiteJob(
+      fakeCore().core,
+      generationRequest('daily-trial', { ip: '198.51.0.1' }),
+    );
+    const denied = await createSiteJob(
+      fakeCore().core,
+      generationRequest('daily-trial', { ip: '198.51.1.1' }),
+    );
+    expect((await storedJob(accepted)).costCredits).toBe(0);
+    expect(await responseCode(denied)).toBe('trial_quota_exhausted');
+    expect(await quotaCount('guest:site', dayWindow())).toBe(limit);
+    expect(await totalJobs()).toBe(1);
   });
 
   it('denies trials when verification is not configured instead of silently allowing quota-only use', async () => {
