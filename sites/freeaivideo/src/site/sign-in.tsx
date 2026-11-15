@@ -160,7 +160,7 @@ export function SignInPanel({ onDone }: { onDone: () => void }) {
           size: 'large',
           text: 'continue_with',
           shape: 'pill',
-          width: 300,
+          width: Math.min(300, container.clientWidth || 300),
           locale: locale === 'zh' ? 'zh_CN' : 'en',
         });
       })

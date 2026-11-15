@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./horizon-home.css";
+@import "./horizon-utility.css";
 
 /* Daylight studio: calm working surfaces, a lime action, and color in the films. */
 @theme {
@@ -366,12 +368,6 @@ select:focus-visible {
   background: #f4f6ef;
   border-color: transparent;
 }
-.model-choice-note {
-  margin: -6px 0 0;
-  color: var(--color-muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
 .credit-summary {
   display: grid;
   gap: 8px;
@@ -488,74 +484,6 @@ select:focus-visible {
   border-radius: 50%;
   width: 20px;
   height: 20px;
-}
-.inspiration {
-  position: relative;
-  min-width: 0;
-  min-height: 450px;
-  overflow: hidden;
-  border-radius: 20px;
-  background: #275c62;
-}
-.inspiration > img {
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 54% center;
-}
-.inspiration figcaption {
-  position: absolute;
-  inset: 0;
-  padding: 24px;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: linear-gradient(180deg, rgb(9 32 34 / 0.2), transparent 35%, rgb(20 25 20 / 0.74));
-}
-.inspiration-label {
-  align-self: flex-start;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 7px 11px;
-  border-radius: 6px;
-  background: rgb(16 39 40 / 0.72);
-}
-.inspiration-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 14px;
-}
-.inspiration-bottom p {
-  font-size: clamp(28px, 3vw, 41px);
-  line-height: 1.12;
-  letter-spacing: -1.4px;
-  font-weight: 500;
-}
-.inspiration-bottom button {
-  color: white;
-  background: rgb(16 28 25 / 0.66);
-  border-color: rgb(255 255 255 / 0.55);
-  font-size: 13px;
-  flex-shrink: 0;
-}
-.inspiration-bottom button:hover {
-  background: #fff;
-  color: var(--color-ink);
-}
-.workspace-footnote {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--color-muted);
-  padding: 16px 3px 0;
-  font-size: 13px;
-}
-.workspace-footnote span span {
-  margin: 0 8px;
 }
 .results:empty {
   display: none;
@@ -1011,35 +939,8 @@ a.link-accent {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
-.pay-return {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: var(--color-wash);
-}
-.pay-return-card {
-  max-width: 450px;
-  padding: 40px;
-  text-align: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  border-radius: 18px;
-}
-.pay-return-card h1 {
-  font-size: 32px;
-  letter-spacing: -1px;
-  margin: 0 0 18px;
-}
-.pay-return-card p {
-  line-height: 1.8;
-  margin: 14px 0;
-}
 .legal,
-main > .content:not(.examples-section, .how-section, .limits-section, .pricing-section, .faq-section),
-.login {
+main > .content:not(.examples-section, .how-section, .limits-section, .pricing-section, .faq-section) {
   max-width: 760px;
   margin: 65px auto;
 }
@@ -1066,9 +967,6 @@ main > .content:not(.examples-section, .how-section, .limits-section, .pricing-s
 main > .content:not(.examples-section, .how-section, .limits-section, .pricing-section, .faq-section) ul {
   padding-left: 22px;
   list-style: disc;
-}
-.login {
-  max-width: 420px;
 }
 @keyframes scene-in {
   from {
@@ -1119,13 +1017,6 @@ main > .content:not(.examples-section, .how-section, .limits-section, .pricing-s
   }
   .composer-heading > span {
     display: none;
-  }
-  .inspiration-bottom {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .inspiration-bottom p {
-    font-size: 34px;
   }
   .pricing-section,
   .faq-section {
@@ -1240,42 +1131,7 @@ main > .content:not(.examples-section, .how-section, .limits-section, .pricing-s
   .generate-button {
     font-size: 14px;
   }
-  .inspiration {
-    min-height: 315px;
-    border-radius: 16px;
-  }
-  .inspiration figcaption {
-    padding: 20px;
-  }
-  .inspiration > img {
-    object-position: center 65%;
-  }
-  .inspiration-bottom {
-    flex-direction: row;
-    align-items: flex-end;
-    gap: 10px;
-  }
-  .inspiration-bottom p {
-    font-size: 29px;
-  }
-  .inspiration-bottom button {
-    font-size: 13px;
-    padding: 9px 10px;
-    gap: 7px;
-  }
-  .workspace-footnote {
-    justify-content: center;
-    text-align: center;
-    line-height: 1.7;
-    padding-top: 15px;
-    font-size: 13px;
-  }
-  .workspace-footnote > span:first-child {
-    display: none;
-  }
-  .workspace-footnote span span {
-    margin: 0 5px;
-  }
+
   .content {
     margin-top: 62px;
   }
@@ -1402,8 +1258,7 @@ main > .content:not(.examples-section, .how-section, .limits-section, .pricing-s
     grid-template-columns: 1fr;
   }
   .legal,
-  main > .content:not(.examples-section, .how-section, .limits-section, .pricing-section, .faq-section),
-  .login {
+  main > .content:not(.examples-section, .how-section, .limits-section, .pricing-section, .faq-section) {
     margin: 35px auto;
   }
   .legal h1,
@@ -1436,9 +1291,6 @@ main > .content:not(.examples-section, .how-section, .limits-section, .pricing-s
   }
   .plans {
     grid-template-columns: 1fr;
-  }
-  .inspiration-bottom p {
-    font-size: 26px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1482,81 +1334,4 @@ html[lang="zh"] .lead {
 .plan > p.plan-videos {
   color: var(--color-ink);
   font-weight: 600;
-}
-/* Admin: an internal utility page, so plain tables and no marketing styling. */
-.admin {
-  padding: 2.5rem 0 4rem;
-}
-.admin h1 {
-  margin: 0 0 1.5rem;
-  font-size: clamp(2rem, 4vw, 2.6rem);
-  letter-spacing: -0.02em;
-}
-.admin h2 {
-  margin: 2rem 0 0.75rem;
-  font-size: 1.1rem;
-}
-.admin-overview {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.75rem;
-  margin: 0;
-}
-.admin-overview > div {
-  padding: 0.85rem 1rem;
-  border: 1px solid #dce1d6;
-  border-radius: 12px;
-  background: #fff;
-}
-.admin-overview dt {
-  font-size: 0.8rem;
-  color: #62685e;
-}
-.admin-overview dd {
-  margin: 0.15rem 0 0;
-  font-size: 1.35rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.9rem;
-}
-.admin-table th,
-.admin-table td {
-  padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid #dce1d6;
-  text-align: left;
-}
-.admin-table th {
-  font-size: 0.78rem;
-  color: #62685e;
-  font-weight: 600;
-}
-.admin h1 .button {
-  margin-left: 0.75rem;
-  vertical-align: middle;
-  font-size: 0.9rem;
-}
-.admin-dists {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  align-items: flex-start;
-}
-.admin-dist ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  min-width: 220px;
-}
-.admin-dist li {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 0.3rem 0;
-  border-bottom: 1px solid #dce1d6;
-  font-size: 0.9rem;
 }

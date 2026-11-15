@@ -1,6 +1,7 @@
 import { pageHead } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
 import { m } from '~/paraglide/messages.js';
+import { EditorialHeader } from '~/site/editorial-header';
 import site from '../../site.config';
 
 export const Route = createFileRoute('/pimpwalk-entrance-ai')({
@@ -31,14 +32,15 @@ export const Route = createFileRoute('/pimpwalk-entrance-ai')({
 
 function PimpwalkEntrancePage() {
   return (
-    <section className="content">
-      <h1>{m.pages_pimpwalk_title()}</h1>
-      <p className="lead">{m.pages_pimpwalk_intro()}</p>
-      <p>
-        <a className="button primary" href="/?preset=pimpwalk-entrance#tool">
-          {m.pages_pimpwalk_generate_link()}
-        </a>
-      </p>
+    <section className="content horizon-editorial trend-page">
+      <EditorialHeader title={m.pages_pimpwalk_title()}>
+        <p className="lead">{m.pages_pimpwalk_intro()}</p>
+        <p>
+          <a className="button primary" href="/?preset=pimpwalk-entrance#tool">
+            {m.pages_pimpwalk_generate_link()}
+          </a>
+        </p>
+      </EditorialHeader>
       <h2>{m.pages_pimpwalk_format_heading()}</h2>
       <p>{m.pages_pimpwalk_format_body()}</p>
       <h2>{m.pages_pimpwalk_make_heading()}</h2>

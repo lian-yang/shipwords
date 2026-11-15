@@ -1,6 +1,7 @@
 import { pageHead } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
 import { m } from '~/paraglide/messages.js';
+import { EditorialHeader } from '~/site/editorial-header';
 import site from '../../site.config';
 
 // Trend explainer page (contested trend, free-wedge angle): the format background is
@@ -35,14 +36,15 @@ export const Route = createFileRoute('/red-carpet-ai')({
 
 function RedCarpetPage() {
   return (
-    <section className="content">
-      <h1>{m.pages_redcarpet_title()}</h1>
-      <p className="lead">{m.pages_redcarpet_intro()}</p>
-      <p>
-        <a className="button primary" href="/?preset=red-carpet#tool">
-          {m.pages_redcarpet_generate_link()}
-        </a>
-      </p>
+    <section className="content horizon-editorial trend-page">
+      <EditorialHeader title={m.pages_redcarpet_title()}>
+        <p className="lead">{m.pages_redcarpet_intro()}</p>
+        <p>
+          <a className="button primary" href="/?preset=red-carpet#tool">
+            {m.pages_redcarpet_generate_link()}
+          </a>
+        </p>
+      </EditorialHeader>
       <h2>{m.pages_redcarpet_meaning_heading()}</h2>
       <p>{m.pages_redcarpet_meaning_body()}</p>
       <h2>{m.pages_redcarpet_spike_heading()}</h2>

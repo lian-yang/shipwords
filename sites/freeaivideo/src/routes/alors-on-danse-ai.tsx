@@ -1,6 +1,7 @@
 import { pageHead } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
 import { m } from '~/paraglide/messages.js';
+import { EditorialHeader } from '~/site/editorial-header';
 import site from '../../site.config';
 
 export const Route = createFileRoute('/alors-on-danse-ai')({
@@ -31,14 +32,15 @@ export const Route = createFileRoute('/alors-on-danse-ai')({
 
 function MemePage() {
   return (
-    <section className="content">
-      <h1>{m.pages_alors_title()}</h1>
-      <p className="lead">{m.pages_alors_intro()}</p>
-      <p>
-        <a className="button primary" href="/?preset=alors-on-danse#tool">
-          {m.pages_alors_generate_link()}
-        </a>
-      </p>
+    <section className="content horizon-editorial trend-page">
+      <EditorialHeader title={m.pages_alors_title()}>
+        <p className="lead">{m.pages_alors_intro()}</p>
+        <p>
+          <a className="button primary" href="/?preset=alors-on-danse#tool">
+            {m.pages_alors_generate_link()}
+          </a>
+        </p>
+      </EditorialHeader>
       <h2>{m.pages_alors_format_heading()}</h2>
       <p>{m.pages_alors_format_body()}</p>
       <h2>{m.pages_alors_make_heading()}</h2>

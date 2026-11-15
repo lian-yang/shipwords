@@ -1,0 +1,704 @@
+html:has(> body > .horizon-site) {
+  color-scheme: dark;
+}
+
+body:has(> .horizon-site) {
+  --horizon-chrome-bg: #090a13;
+  --horizon-chrome-ink: #f4f1ff;
+  color: var(--horizon-chrome-ink);
+  background: var(--horizon-chrome-bg);
+}
+
+.page.horizon-site {
+  --page-gutter: 42px;
+  width: min(var(--horizon-width, 1280px), calc(100% - var(--page-gutter) * 2));
+}
+
+/* Shared shell and controls for all page layouts. */
+.horizon-site :where(button, .button):not(:disabled):hover {
+  border-color: #645686;
+  background: #241d35;
+}
+
+.horizon-site :where(button, .button).primary:not(:disabled):hover {
+  border-color: transparent;
+  background: #e2d6ff;
+}
+
+.horizon-site button.primary:disabled {
+  background: #29243b;
+  color: #c9bbe6;
+}
+
+.horizon-site .notice {
+  border-color: var(--color-line);
+  background: #1c192d;
+}
+
+.horizon-site :is(.notice a, .link-button) {
+  color: var(--color-accent);
+}
+
+.horizon-header {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
+  align-items: center;
+  min-height: 79px;
+  gap: clamp(16px, 3vw, 42px);
+}
+
+.horizon-header .horizon-brand,
+.horizon-footer .horizon-brand {
+  justify-self: start;
+  gap: 11px;
+  color: var(--color-ink);
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.horizon-brand-mark {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 31px;
+  height: 31px;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 50%;
+  background: #17162b;
+  box-shadow: inset 0 0 0 1px rgb(206 192 255 / 0.22);
+}
+
+.horizon-brand-mark::before,
+.horizon-brand-mark::after {
+  content: "";
+  grid-area: 1 / 1;
+}
+
+.horizon-brand-mark::before {
+  width: 14px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 26% 26%, #f6eeff, #b399ff 26%, #4b39a0 61%, #201d3d 93%);
+  box-shadow: 0 0 11px rgb(173 133 253 / 0.43);
+}
+
+.horizon-brand-mark::after {
+  width: 24px;
+  height: 9px;
+  transform: rotate(-33deg);
+  border: 1px solid #d8c5ff;
+  border-top-color: rgb(216 197 255 / 0.36);
+  border-radius: 50%;
+}
+
+.horizon-header nav {
+  gap: clamp(20px, 3vw, 44px);
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.horizon-header nav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.horizon-header nav a:hover,
+.horizon-header nav a[aria-current="page"] {
+  color: var(--color-ink);
+}
+
+.horizon-header .header-desktop-nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 3px;
+  left: 0;
+  height: 1px;
+  background: var(--color-accent);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.horizon-header .sign-in-link {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-surface);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.horizon-header .sign-in-link:hover {
+  border-color: var(--color-accent);
+}
+
+.header-sign-in-arrow {
+  color: var(--color-accent);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.horizon-header .locale-toggle {
+  min-height: 38px;
+  border-radius: 7px;
+  font: 600 11px var(--horizon-mono, monospace);
+}
+
+.horizon-site .horizon-header .avatar {
+  background: #22203a;
+  color: #e5d9ff;
+}
+
+.horizon-header .header-credit-balance {
+  color: var(--color-muted);
+}
+
+.header-mobile-menu {
+  display: none;
+}
+
+.horizon-footer {
+  display: grid;
+  align-items: stretch;
+  gap: 0;
+  margin-top: clamp(56px, 8vw, 124px);
+  padding: 0 0 28px;
+}
+
+.footer-rail {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 26px 0;
+}
+
+.horizon-footer nav {
+  gap: 5px clamp(14px, 2.5vw, 27px);
+}
+
+.horizon-footer nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 33px;
+}
+
+.horizon-footer nav a:hover {
+  color: var(--color-ink);
+}
+
+.footer-guides {
+  border-block: 1px solid var(--color-line);
+}
+
+.footer-guides summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 48px;
+  gap: 16px;
+  color: var(--color-ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.footer-guides summary::-webkit-details-marker,
+.header-mobile-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.footer-guides-icon::before {
+  content: "+";
+  color: var(--color-muted);
+  font-size: 19px;
+}
+
+.footer-guides[open] .footer-guides-icon::before {
+  content: "−";
+}
+
+.horizon-footer .footer-guides nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  padding: 9px 0 21px;
+}
+
+.footer-copyright {
+  margin: 18px 0 0;
+  color: var(--color-muted);
+  font: 11px / 1.6 var(--horizon-mono, monospace);
+  letter-spacing: 0.025em;
+}
+
+/* Dialogs use the same surfaces as the rest of the studio. */
+.horizon-site .dialog {
+  border-color: var(--color-line);
+  border-radius: 13px;
+  background: radial-gradient(ellipse at 19% 0%, #211b35 0%, var(--color-surface) 58%);
+  box-shadow:
+    0 34px 100px #0008,
+    0 1px 0 rgb(223 216 255 / 0.09) inset;
+}
+
+.horizon-site .dialog {
+  max-height: calc(100dvh - 28px);
+  scrollbar-color: #4c416e var(--color-surface);
+}
+
+.horizon-site .dialog::backdrop {
+  background: rgb(5 4 12 / 0.8);
+  backdrop-filter: blur(9px);
+}
+
+.horizon-site .dialog:where(:not(.account-dialog)) > h2 {
+  color: var(--color-ink);
+  font-size: clamp(31px, 4vw, 43px);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.055em;
+}
+
+.horizon-site .dialog-close {
+  min-width: 42px;
+  min-height: 42px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  color: var(--color-muted);
+}
+
+.horizon-site .dialog-close:hover {
+  background: #262039;
+  color: var(--color-ink);
+}
+
+.horizon-site .sign-in form input {
+  min-height: 46px;
+  width: 100%;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #0c0c16;
+  color: var(--color-ink);
+  padding: 8px 12px;
+  font-size: 16px;
+}
+
+.horizon-site .sign-in .google-button {
+  max-width: 100%;
+  width: min(300px, 100%);
+  margin: 19px auto 0;
+}
+
+.horizon-site .sign-in .or {
+  margin-top: 10px;
+  color: var(--color-muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.horizon-site .pricing-dialog {
+  width: min(792px, calc(100vw - 28px));
+}
+
+.horizon-site .pricing-dialog .plans {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.horizon-site .pricing-dialog .plan {
+  min-width: 0;
+  border-color: var(--color-line);
+  border-radius: 9px;
+  background: #10101b;
+}
+
+.horizon-site .pricing-dialog .plan:nth-child(2) {
+  border-color: #7b64b3;
+  background: linear-gradient(147deg, #241d3d, #141122 76%);
+}
+
+.horizon-site .pricing-dialog .price {
+  color: var(--color-ink);
+  font-size: clamp(27px, 5vw, 37px);
+  font-weight: 600;
+  letter-spacing: -0.065em;
+}
+
+.horizon-site .pricing-dialog .pricing-shortfall {
+  background: #211835;
+  border: 1px solid #4c3c6b;
+}
+
+/* Guide, policy and documentation pages share a masthead and a reading column. */
+.horizon-inner main > .horizon-editorial {
+  --editorial-body: 700px;
+  width: min(100%, 1000px);
+  max-width: none;
+  margin: clamp(33px, 5vw, 72px) auto clamp(62px, 8vw, 112px);
+}
+
+.editorial-header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(23px, 5vw, 66px);
+  border: 1px solid var(--color-line);
+  border-radius: 14px;
+  background: linear-gradient(122deg, #151626, #10111c 58%, #1b1429);
+}
+
+.editorial-header::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -195px;
+  right: -160px;
+  width: min(700px, 83%);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 49% 55%, #36234c, #1d1931 42%, transparent 67%);
+  opacity: 0.66;
+  pointer-events: none;
+}
+
+.editorial-header::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -14%;
+  bottom: -12%;
+  width: min(570px, 76%);
+  aspect-ratio: 1.9;
+  border-radius: 50%;
+  transform: rotate(-29deg);
+  background: repeating-radial-gradient(
+    ellipse,
+    transparent 0 7px,
+    rgb(196 164 252 / 0.19) 8px,
+    transparent 9px 13px
+  );
+  mask-image: radial-gradient(ellipse at center, transparent 24%, #000 55%, transparent 73%);
+  pointer-events: none;
+}
+
+.horizon-inner main > .horizon-editorial .editorial-header h1 {
+  max-width: 790px;
+  margin: 0;
+  color: var(--color-ink);
+  font-size: clamp(34px, 5.6vw, 67px);
+  font-weight: 550;
+  line-height: 1.06;
+  letter-spacing: -0.056em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.horizon-inner main > .horizon-editorial .editorial-header .lead {
+  max-width: 54ch;
+  margin: clamp(13px, 2vw, 22px) 0 0;
+  color: var(--color-muted);
+  font-size: clamp(16px, 2vw, 21px);
+  line-height: 1.62;
+}
+
+.horizon-inner main > .horizon-editorial .editorial-header .editorial-date {
+  color: var(--color-accent);
+  margin: 15px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.horizon-inner main > .horizon-editorial .editorial-header :is(.editorial-actions, p:has(> .button)) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: clamp(19px, 3vw, 30px) 0 0;
+}
+
+.editorial-header .button {
+  padding-inline: 17px;
+  min-height: 46px;
+  text-align: center;
+}
+
+.editorial-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.editorial-header > .editorial-nav:first-child {
+  margin: 0 0 22px;
+}
+
+.editorial-header > .editorial-nav:last-child {
+  margin: 24px 0 0;
+}
+
+.horizon-inner main > .horizon-editorial > :is(h2, p, ul, ol, figure, section) {
+  width: min(100%, var(--editorial-body));
+  margin-inline: auto;
+}
+
+.horizon-inner main > .horizon-editorial > h2 {
+  margin-block: clamp(32px, 5vw, 57px) 13px;
+  padding-top: 23px;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-ink);
+  font-size: clamp(22px, 3vw, 31px);
+  font-weight: 550;
+  letter-spacing: -0.035em;
+  line-height: 1.21;
+  text-wrap: pretty;
+}
+
+.horizon-inner main > .horizon-editorial > :is(p, ul, ol) {
+  color: var(--color-muted);
+  font-size: 16px;
+  line-height: 1.74;
+  overflow-wrap: anywhere;
+}
+
+.horizon-inner main > .horizon-editorial > :is(ul, ol) {
+  padding-inline-start: 24px;
+}
+
+.horizon-inner main > .horizon-editorial li::marker {
+  color: var(--color-accent);
+}
+
+.horizon-inner main > .trend-page > ul {
+  padding: 5px clamp(15px, 3vw, 24px) 5px clamp(32px, 4vw, 47px);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+.horizon-inner main > .trend-page > ul > li {
+  margin-bottom: 0;
+  padding-block: 13px;
+  padding-inline-start: 3px;
+}
+
+.horizon-inner main > .trend-page > ul > li + li {
+  border-top: 1px solid var(--color-line);
+}
+
+.horizon-inner main > .horizon-editorial :is(p, li) strong {
+  color: var(--color-ink);
+}
+
+.horizon-inner main > .trend-page > p > strong:first-child {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.horizon-inner main > .horizon-editorial > .case {
+  overflow: hidden;
+  margin-top: clamp(24px, 4vw, 44px);
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.horizon-inner main > .horizon-editorial > .case video {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: min(550px, 75dvh);
+  aspect-ratio: auto;
+  border-radius: 0;
+  object-fit: contain;
+  background: #080910;
+}
+
+.horizon-inner main > .horizon-editorial > .case figcaption {
+  padding: clamp(16px, 3vw, 23px);
+}
+
+.horizon-inner main > .horizon-editorial > .case figcaption h2 {
+  margin: 0 0 7px;
+  font-size: 23px;
+}
+
+.horizon-inner main > .horizon-editorial > .case figcaption p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.horizon-inner .horizon-editorial a:not(.button),
+.horizon-site :is(.pricing-dialog, .sign-in) :is(a:not(.button, .primary), .link-button) {
+  color: var(--color-accent);
+  text-decoration-color: #8273b0;
+}
+
+.horizon-inner main > .api-docs {
+  --editorial-body: 790px;
+}
+
+.horizon-inner main > .horizon-not-found {
+  width: min(100%, 790px);
+}
+
+@media (max-width: 600px) {
+  .editorial-header::after {
+    opacity: 0.52;
+  }
+}
+
+@media (max-width: 760px) {
+  .page.horizon-site {
+    --page-gutter: 18px;
+  }
+
+  .horizon-header {
+    grid-template-columns: max-content minmax(0, 1fr);
+    min-height: 72px;
+    gap: 12px;
+  }
+
+  .horizon-header .header-desktop-nav {
+    display: none;
+  }
+
+  .header-actions .account-entry,
+  .header-actions .header-credit-balance {
+    min-width: 0;
+  }
+
+  .header-actions .header-credit-balance {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-actions > :not(.account-entry),
+  .header-actions .avatar {
+    flex: none;
+  }
+
+  .header-mobile-menu {
+    display: block;
+  }
+
+  .header-mobile-menu summary {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    color: var(--color-ink);
+    border: 1px solid var(--color-line);
+    border-radius: 8px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .header-mobile-menu summary span {
+    width: 17px;
+    height: 10px;
+    border-block: 1px solid;
+  }
+
+  .header-mobile-menu[open] summary {
+    border-color: var(--color-accent);
+  }
+
+  .horizon-header .header-mobile-menu nav {
+    position: absolute;
+    top: calc(100% + 7px);
+    right: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 186px;
+    padding: 8px 13px;
+    gap: 0;
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    background: var(--color-surface);
+    box-shadow: 0 15px 60px #0004;
+  }
+
+  .header-mobile-menu nav > a + a {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .footer-rail {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px 0;
+  }
+
+  .horizon-footer .footer-guides nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .horizon-site .pricing-dialog .plans {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 425px) {
+  .header-actions {
+    gap: 7px;
+  }
+
+  .horizon-header .horizon-brand {
+    gap: 7px;
+    font-size: 15px;
+  }
+
+  .horizon-brand-mark {
+    width: 27px;
+    height: 27px;
+  }
+
+  .horizon-header .sign-in-link {
+    gap: 5px;
+    padding: 0 9px;
+    min-height: 38px;
+  }
+
+  .horizon-header .locale-toggle {
+    min-height: 34px;
+    padding: 0 5px;
+  }
+
+  .horizon-header .header-credit-balance > span {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .page.horizon-site {
+    --page-gutter: 14px;
+  }
+
+  .header-actions .header-credit-balance {
+    display: none;
+  }
+}

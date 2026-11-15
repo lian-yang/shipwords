@@ -14,7 +14,7 @@ export const Route = createFileRoute('/account')({
       noindex: true,
     }),
   component: () => (
-    <section className="account">
+    <section className="account utility-frame" aria-labelledby="account-title">
       <AccountPanel />
     </section>
   ),

@@ -1,38 +1,51 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { SUPPORT_EMAIL } from '~/site/legal';
+import { creditPackPrice, creditPacks, registrationVoucherDays } from '~/site/public-offer';
 import site from '../../site.config';
 
-// Machine-readable pricing for AI agents comparing tools (see the ai-seo practice): a plain
-// markdown file needs no rendering or login. Generated from site.config so prices never fork.
+const providerNames = { stripe: 'Stripe Checkout', paypal: 'PayPal Checkout' };
+
 export const Route = createFileRoute('/pricing.md')({
   server: {
     handlers: {
       GET: () => {
-        const packs = site.products
-          .map((product) => {
-            const price = (product.price.amount / 100).toFixed(2);
-            const credits = 'credits' in product ? product.credits : product.creditsPerPeriod;
-            return [
-              `## ${product.name}`,
+        const packs = creditPacks
+          .map((pack) =>
+            [
+              `## ${pack.name}`,
               '',
-              `- Price: $${price} (one-time purchase, ${product.price.currency.toUpperCase()})`,
-              `- Credits: ${credits.toLocaleString('en-US')}`,
-              '- Expires: never',
-              '',
-            ].join('\n');
-          })
-          .join('');
+              `- Price: ${creditPackPrice(pack)} (one-time purchase, ${pack.price.currency.toUpperCase()})`,
+              `- Credits: ${pack.credits.toLocaleString('en-US')}`,
+              `- Expires: ${pack.expiresDays === null ? 'never' : `${pack.expiresDays} days`}`,
+            ].join('\n'),
+          )
+          .join('\n\n');
         const body = `# Pricing — ${site.name}
 
-One daily free trial per device when available (${site.guest.dailyPerDevice} per day, shared before and after sign-in, subject to shared limits). Paid videos use one-time credit packs; per-video credit costs depend on the model, resolution and duration and are shown before each generation.
+## Free access
+
+- The daily trial limit is ${site.guest.dailyPerDevice} per device, shared before and after sign-in. The limit resets at 00:00 UTC. Network and shared daily limits also affect availability.
+- Eligible new verified accounts may receive one voucher, valid for ${registrationVoucherDays} days from registration and subject to daily allocation. The voucher is separate from credits.
+
+Trials use fixed settings for the selected model. An accepted free request uses the trial or voucher even if the video later fails or the request is canceled.
+
+## Video credits
+
+Credit costs depend on the model, resolution and duration. The generator shows the cost before you submit a request. Free AI Video adds no watermark and charges no separate export fee.
 
 ${packs}
+
 ## Payment
 
-- Provider: Stripe checkout (cards, wallets)
-- No subscription: packs are one-time purchases
-- Support: support@freeaivideo.app
+- Provider: ${providerNames[site.billing.provider]}
+- Credit packs are one-time purchases.
+- Support: ${SUPPORT_EMAIL}
 
-Full details: ${site.url}/#pricing
+## Credit returns and purchase refunds
+
+A credit generation request qualifies for a credit return if the provider confirms a zero final charge or the request is rejected before submission. A request stays pending while billing is unconfirmed. If the provider charges, credits are not automatically returned. Purchase refunds follow the [refund policy](${site.url}/refunds).
+
+[View the credit packs](${site.url}/#pricing)
 `;
         return new Response(body, {
           headers: { 'content-type': 'text/markdown; charset=utf-8' },

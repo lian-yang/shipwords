@@ -34,52 +34,61 @@ function ReturnPage() {
 
   useEffect(() => {
     if (!order) return;
+    let active = true;
+    let timer: number | undefined;
+
     void waitForOrder(order)
       .catch(() => 'pending' as const)
       .then((status) => {
+        if (!active) return;
         setState(status);
         if (status !== 'paid') return;
         recordConfirmedPayment(order);
         notifyCreditsChanged();
-        setTimeout(() => window.location.assign(next), CONTINUE_DELAY_MS);
+        timer = window.setTimeout(() => window.location.assign(next), CONTINUE_DELAY_MS);
       });
+
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
   }, [order, next]);
 
+  const title = {
+    checking: m.common_billing_checking,
+    paid: m.common_billing_paid_title,
+    pending: m.common_billing_pending_title,
+  }[state];
+
   return (
-    <div className="pay-return" role="dialog" aria-modal="true" aria-labelledby="pay-return-title">
-      <div className="pay-return-card">
-        {state === 'checking' && (
-          <>
-            <h1 id="pay-return-title">{m.common_billing_checking()}</h1>
-            <p>{m.common_billing_checking_note()}</p>
-          </>
-        )}
-
-        {state === 'paid' && (
-          <>
-            <h1 id="pay-return-title">{m.common_billing_paid_title()}</h1>
-            <p>{m.common_billing_paid()}</p>
-            <a className="button primary" href={next}>
-              {m.common_billing_continue()}
-            </a>
-          </>
-        )}
-
+    <section
+      className="utility-frame utility-card billing-status"
+      data-status={state}
+      aria-labelledby="pay-return-title"
+    >
+      <span className="billing-mark" aria-hidden="true" />
+      <div aria-live="polite" aria-atomic="true">
+        <h1 id="pay-return-title">{title()}</h1>
+        {state === 'checking' && <p className="muted">{m.common_billing_checking_note()}</p>}
+        {state === 'paid' && <p className="muted">{m.common_billing_paid()}</p>}
         {state === 'pending' && (
-          <>
-            <h1 id="pay-return-title">{m.common_billing_pending_title()}</h1>
-            <p>
-              {m.common_billing_pending_before()} <a href="/account">{m.common_billing_pending_link()}</a>{' '}
-              {m.common_billing_pending_after()}
-            </p>
-            <a className="button primary" href={next}>
-              {m.common_billing_continue()}
-            </a>
-          </>
+          <p className="muted">
+            {m.common_billing_pending_before()} <a href="/account">{m.common_billing_pending_link()}</a>{' '}
+            {m.common_billing_pending_after()}
+          </p>
         )}
-
-        {order && <p className="muted">{order}</p>}
       </div>
-    </div>
+      {state !== 'checking' && (
+        <a className="button primary" href={next}>
+          {m.common_billing_continue()}
+        </a>
+      )}
+      {order && (
+        <dl className="billing-reference">
+          <dt>{m.common_billing_order_reference()}</dt>
+          <dd>{order}</dd>
+        </dl>
+      )}
+    </section>
   );
 }

@@ -1,6 +1,7 @@
 import { pageHead } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
 import { m } from '~/paraglide/messages.js';
+import { EditorialHeader } from '~/site/editorial-header';
 import site from '../../site.config';
 
 export const Route = createFileRoute('/buggin-dance-ai')({
@@ -31,14 +32,15 @@ export const Route = createFileRoute('/buggin-dance-ai')({
 
 function BugginDancePage() {
   return (
-    <section className="content">
-      <h1>{m.pages_buggindance_title()}</h1>
-      <p className="lead">{m.pages_buggindance_intro()}</p>
-      <p>
-        <a className="button primary" href="/?preset=buggin-dance#tool">
-          {m.pages_buggindance_generate_link()}
-        </a>
-      </p>
+    <section className="content horizon-editorial trend-page">
+      <EditorialHeader title={m.pages_buggindance_title()}>
+        <p className="lead">{m.pages_buggindance_intro()}</p>
+        <p>
+          <a className="button primary" href="/?preset=buggin-dance#tool">
+            {m.pages_buggindance_generate_link()}
+          </a>
+        </p>
+      </EditorialHeader>
       <h2>{m.pages_buggindance_format_heading()}</h2>
       <p>{m.pages_buggindance_format_body()}</p>
       <h2>{m.pages_buggindance_make_heading()}</h2>

@@ -21,6 +21,20 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('credit balance state', () => {
+  it('calls the default browser fetch without binding it to the controller', async () => {
+    vi.stubGlobal('fetch', function (this: unknown) {
+      if (this !== undefined && this !== globalThis) throw new TypeError('Illegal invocation');
+      return Promise.resolve(response('alice', 100));
+    });
+    const controller = new CreditBalanceController();
+    const listener = vi.fn();
+    controller.subscribe(listener);
+    controller.setUser('alice');
+    await tick();
+    expect(listener).toHaveBeenLastCalledWith({ userId: 'alice', status: 'ready', available: 100 });
+    controller.stop();
+  });
+
   it('preserves a negative balance and its change after credits are added', async () => {
     const fetcher = vi
       .fn()

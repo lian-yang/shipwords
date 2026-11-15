@@ -23,8 +23,8 @@ export const Route = createFileRoute('/login')({
 function LoginPage() {
   const next = safeNext(Route.useSearch().next);
   return (
-    <section className="login">
-      <h1>{m.common_sign_in_submit()}</h1>
+    <section className="login utility-frame utility-card" aria-labelledby="login-title">
+      <h1 id="login-title">{m.common_sign_in_submit()}</h1>
       <SignInPanel onDone={() => window.location.assign(next)} />
     </section>
   );

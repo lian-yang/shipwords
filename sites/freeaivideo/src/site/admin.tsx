@@ -40,7 +40,14 @@ interface AdminStats {
     jobs: number;
     source: string | null;
   }[];
-  orders: { id: string; productId: string; amount: number; status: string; createdAt: number; email: string | null }[];
+  orders: {
+    id: string;
+    productId: string;
+    amount: number;
+    status: string;
+    createdAt: number;
+    email: string | null;
+  }[];
   payments: {
     id: string;
     productId: string;
@@ -49,7 +56,14 @@ interface AdminStats {
     createdAt: number;
     email: string | null;
   }[];
-  stuck: { id: string; modelId: string; status: string; createdAt: number; minutesOld: number; upstreamCostUsd: number }[];
+  stuck: {
+    id: string;
+    modelId: string;
+    status: string;
+    createdAt: number;
+    minutesOld: number;
+    upstreamCostUsd: number;
+  }[];
   recentJobs: {
     id: string;
     modelId: string;
@@ -107,33 +121,46 @@ const duration = (sec: number | null) => {
   return `${Math.floor(sec / 60)} 分 ${sec % 60} 秒`;
 };
 
-function Table({ columns, rows }: { columns: string[]; rows: ReactNode[][] }) {
+type TableRow = [id: string, ...cells: ReactNode[]];
+
+function Table({ headingId, columns, rows }: { headingId: string; columns: string[]; rows: TableRow[] }) {
   return (
-    <table className="admin-table">
-      <thead>
-        <tr>
-          {columns.map((column) => (
-            <th key={column} scope="col">
-              {column}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, i) => (
-          <tr key={i}>
-            {row.map((cell, j) => (
-              <td key={j}>{cell}</td>
+    // biome-ignore lint/a11y/noNoninteractiveTabindex: users must be able to reach the scrollable table by keyboard.
+    <section className="admin-table-scroll" aria-labelledby={headingId} tabIndex={0}>
+      <table className="admin-table">
+        <thead>
+          <tr>
+            {columns.map((column) => (
+              <th key={column} scope="col">
+                {column}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map(([id, ...cells]) => (
+            <tr key={id}>
+              {columns.map((column, index) => (
+                <td key={column}>{cells[index]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
   );
 }
 
 /** Small distribution table used for models, errors, credit flow and signup sources. */
-function Dist({ title, rows, empty }: { title: string; rows: { label: string | null; count: number }[]; empty: string }) {
+function Dist({
+  title,
+  rows,
+  empty,
+}: {
+  title: string;
+  rows: { label: string | null; count: number }[];
+  empty: string;
+}) {
   const visible = rows.filter((row) => row.label);
   return (
     <section className="admin-dist">
@@ -174,8 +201,18 @@ export function AdminPanel() {
 
   useEffect(load, [load]);
 
-  if (denied) return <p>无权访问。</p>;
-  if (!stats) return <p className="muted">加载中…</p>;
+  if (!stats || denied) {
+    return (
+      <>
+        <header className="admin-heading">
+          <h1 id="admin-title">管理后台</h1>
+        </header>
+        <p className="muted" role="status">
+          {denied ? '无权访问。' : '加载中…'}
+        </p>
+      </>
+    );
+  }
   const { totals } = stats;
   const jobsTotal = Object.values(totals.jobs).reduce((sum, count) => sum + count, 0);
   const jobsLine = Object.entries(totals.jobs)
@@ -185,12 +222,12 @@ export function AdminPanel() {
 
   return (
     <>
-      <h1>
-        管理后台{' '}
-        <button className="button" onClick={load} disabled={loading}>
+      <header className="admin-heading">
+        <h1 id="admin-title">管理后台</h1>
+        <button type="button" className="button" onClick={load} disabled={loading}>
           {loading ? '统计中…' : '刷新'}
         </button>
-      </h1>
+      </header>
 
       <section>
         <h2>概览</h2>
@@ -210,7 +247,9 @@ export function AdminPanel() {
             <dt>订单</dt>
             <dd>
               {number(totals.orders)}
-              {totals.ordersPending > 0 && <span className="small muted"> 待支付 {totals.ordersPending}</span>}
+              {totals.ordersPending > 0 && (
+                <span className="small muted"> 待支付 {totals.ordersPending}</span>
+              )}
             </dd>
           </div>
           <div>
@@ -237,39 +276,84 @@ export function AdminPanel() {
       </section>
 
       <section>
-        <h2>上游账单核查（共 {number(totals.billingTotal)} 条，待核优先）</h2>
-        <p className="muted">待核账的实际费用未知。长时间未结算或记录已过保留期时，请在 Yir 控制台核对，或联系 Yir 支持并提供任务标识及幂等键；没有结算证据时不会自动退款。</p>
-        {stats.billingReview.length === 0 ? <p className="muted">没有需要展示的账单核查记录。</p> : <Table
-          columns={['时间', '本站任务', '模型', '积分', '核账状态', '上游成本', '退款', 'Yir 核查幂等键']}
-          rows={stats.billingReview.map((job) => [
-            time(job.createdAt), job.id, job.modelId, number(job.costCredits),
-            ({ billing_pending: '等待上游结算', billing_refunding: '零费用已确认，退款处理中', billing_refunded: '零费用已确认，积分已退', billing_charged: '上游已收费' } as Record<string, string>)[job.billingStatus] ?? job.billingStatus,
-            job.billingStatus === 'billing_pending' ? '未知' : job.upstreamCostUsd == null ? '未知' : `$${job.upstreamCostUsd}`,
-            job.refunded ? '已退积分' : '未退积分',
-            job.pendingKeys === null ? '无法读取幂等键，请联系技术支持。' : job.pendingKeys.length === 0 ? '—' : job.pendingKeys.map((slot) => <p key={slot.index}><code>{slot.key}</code></p>),
-          ])}
-        />}
-        <p>
-          <button type="button" disabled={billingOffset === 0 || loading} onClick={() => setBillingOffset(Math.max(0, billingOffset - 100))}>上一页</button>{' '}
-          <button type="button" disabled={billingOffset + 100 >= totals.billingTotal || loading} onClick={() => setBillingOffset(billingOffset + 100)}>下一页</button>
+        <h2 id="admin-billing">上游账单核查（共 {number(totals.billingTotal)} 条，待核优先）</h2>
+        <p className="muted">
+          待核账任务的实际费用还未确认。如果长时间未结算，或记录已超过保留期，请在 Yir
+          控制台核对，也可以把任务标识和幂等键提供给 Yir 支持。自动退款需要上游结算证据。
         </p>
+        {stats.billingReview.length === 0 ? (
+          <p className="muted">没有需要展示的账单核查记录。</p>
+        ) : (
+          <Table
+            headingId="admin-billing"
+            columns={['时间', '本站任务', '模型', '积分', '核账状态', '上游成本', '退款', 'Yir 核查幂等键']}
+            rows={stats.billingReview.map((job) => [
+              job.id,
+              time(job.createdAt),
+              job.id,
+              job.modelId,
+              number(job.costCredits),
+              (
+                {
+                  billing_pending: '等待上游结算',
+                  billing_refunding: '零费用已确认，退款处理中',
+                  billing_refunded: '零费用已确认，积分已退',
+                  billing_charged: '上游已收费',
+                } as Record<string, string>
+              )[job.billingStatus] ?? job.billingStatus,
+              job.billingStatus === 'billing_pending'
+                ? '未知'
+                : job.upstreamCostUsd == null
+                  ? '未知'
+                  : `$${job.upstreamCostUsd}`,
+              job.refunded ? '已退积分' : '未退积分',
+              job.pendingKeys === null
+                ? '无法读取幂等键，请联系技术支持。'
+                : job.pendingKeys.length === 0
+                  ? '—'
+                  : job.pendingKeys.map((slot) => (
+                      <p key={slot.index}>
+                        <code>{slot.key}</code>
+                      </p>
+                    )),
+            ])}
+          />
+        )}
+        <div className="admin-pagination">
+          <button
+            type="button"
+            disabled={billingOffset === 0 || loading}
+            onClick={() => setBillingOffset(Math.max(0, billingOffset - 100))}
+          >
+            上一页
+          </button>
+          <button
+            type="button"
+            disabled={billingOffset + 100 >= totals.billingTotal || loading}
+            onClick={() => setBillingOffset(billingOffset + 100)}
+          >
+            下一页
+          </button>
+        </div>
       </section>
 
       <section>
         <h2>近 14 天漏斗</h2>
         <p className="muted">
-          注册 {number(stats.funnel.signups)} → 首次生成 {number(stats.funnel.activated)}
-          （{pct(stats.funnel.activated, stats.funnel.signups)}）→ 开结账 {number(stats.funnel.checkouts)}
-          （{pct(stats.funnel.checkouts, stats.funnel.signups)}）→ 付款 {number(stats.funnel.paidOrders)} 单
-          / {number(stats.funnel.paidUsers)} 人（{pct(stats.funnel.paidUsers, stats.funnel.signups)}）
+          注册 {number(stats.funnel.signups)} → 首次生成 {number(stats.funnel.activated)}（
+          {pct(stats.funnel.activated, stats.funnel.signups)}）→ 发起结账 {number(stats.funnel.checkouts)}（
+          {pct(stats.funnel.checkouts, stats.funnel.signups)}）→ 付款 {number(stats.funnel.paidOrders)} 单 /{' '}
+          {number(stats.funnel.paidUsers)} 人（{pct(stats.funnel.paidUsers, stats.funnel.signups)}）
         </p>
       </section>
 
       <section>
-        <h2>近 14 天</h2>
+        <h2 id="admin-daily">近 14 天</h2>
         <Table
-          columns={['日期', '注册', '任务', '开结账', '付款']}
+          headingId="admin-daily"
+          columns={['日期', '注册', '任务', '发起结账', '付款']}
           rows={stats.daily.map((row) => [
+            row.day,
             row.day,
             number(row.signups),
             number(row.jobs),
@@ -280,10 +364,12 @@ export function AdminPanel() {
       </section>
 
       <section>
-        <h2>用户（最近 20）</h2>
+        <h2 id="admin-users">用户（最近 20）</h2>
         <Table
+          headingId="admin-users"
           columns={['邮箱', '邮箱验证', '注册时间', '积分', '任务', '来源']}
           rows={stats.users.map((row) => [
+            row.id,
             row.email,
             row.emailVerified ? '✓' : '—',
             time(row.createdAt),
@@ -295,10 +381,12 @@ export function AdminPanel() {
       </section>
 
       <section>
-        <h2>订单（最近 20）</h2>
+        <h2 id="admin-orders">订单（最近 20）</h2>
         <Table
+          headingId="admin-orders"
           columns={['时间', '商品', '金额', '状态', '用户']}
           rows={stats.orders.map((row) => [
+            row.id,
             time(row.createdAt),
             row.productId,
             cents(row.amount),
@@ -310,10 +398,12 @@ export function AdminPanel() {
 
       {stats.payments.length > 0 && (
         <section>
-          <h2>支付（最近 10）</h2>
+          <h2 id="admin-payments">支付（最近 10）</h2>
           <Table
+            headingId="admin-payments"
             columns={['时间', '商品', '金额', '已退款', '用户']}
             rows={stats.payments.map((row) => [
+              row.id,
               time(row.createdAt),
               row.productId,
               cents(row.amount),
@@ -325,16 +415,19 @@ export function AdminPanel() {
       )}
 
       <section>
-        <h2>卡住的任务</h2>
+        <h2 id="admin-stuck">卡住的任务</h2>
         {stats.stuck.length === 0 ? (
           <p className="muted">没有卡住的任务。</p>
         ) : (
           <Table
+            headingId="admin-stuck"
             columns={['任务', '模型', '状态', '已等待', '上游成本', '创建时间']}
             rows={stats.stuck.map((job) => [
+              job.id,
               shortId(job.id),
               job.modelId,
-              `${JOB_STATUS[job.status] ?? job.status}（${job.minutesOld} 分钟）`,
+              JOB_STATUS[job.status] ?? job.status,
+              `${job.minutesOld} 分钟`,
               job.upstreamCostUsd > 0 ? money(job.upstreamCostUsd) : '—',
               time(job.createdAt),
             ])}
@@ -343,16 +436,22 @@ export function AdminPanel() {
       </section>
 
       <section>
-        <h2>最近任务</h2>
+        <h2 id="admin-jobs">最近任务</h2>
         <Table
+          headingId="admin-jobs"
           columns={['时间', '任务', '模型', '状态', '积分', '上游成本', '耗时', '错误']}
           rows={stats.recentJobs.map((job) => [
+            job.id,
             time(job.createdAt),
             shortId(job.id),
             job.modelId,
             JOB_STATUS[job.status] ?? job.status,
             number(job.costCredits),
-            job.errorCode === 'billing_pending' ? '未知' : job.upstreamCostUsd > 0 ? `${money(job.upstreamCostUsd)}（已记录）` : '—',
+            job.errorCode === 'billing_pending'
+              ? '未知'
+              : job.upstreamCostUsd > 0
+                ? `${money(job.upstreamCostUsd)}（已记录）`
+                : '—',
             duration(job.durationSec),
             job.errorCode ?? '—',
           ])}
@@ -362,7 +461,11 @@ export function AdminPanel() {
       <section className="admin-dists">
         <Dist title="模型分布" rows={stats.modelDist} empty="还没有任务。" />
         <Dist title="失败原因" rows={stats.errorDist} empty="没有失败任务。" />
-        <Dist title="积分流水" rows={stats.ledger.map((row) => ({ label: LEDGER_KIND[row.kind] ?? row.kind, count: row.count }))} empty="没有积分流水。" />
+        <Dist
+          title="积分流水"
+          rows={stats.ledger.map((row) => ({ label: LEDGER_KIND[row.kind] ?? row.kind, count: row.count }))}
+          empty="没有积分流水。"
+        />
         <Dist title="注册来源（utm_source）" rows={stats.sources} empty="没有归因数据。" />
         <Dist title="来源站点（referrer）" rows={stats.referrers} empty="没有来源数据。" />
       </section>

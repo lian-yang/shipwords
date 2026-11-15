@@ -1,6 +1,33 @@
 import { llmsTxt } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
+import {
+  creditPackPrice,
+  creditPacks,
+  modelCount,
+  registrationVoucherDays,
+  trialModels,
+} from '~/site/public-offer';
+import { DEFAULT_TRIAL_MODEL_ID } from '~/video-options';
 import site from '../../site.config';
+
+const trialSettings = trialModels
+  .map(({ name, resolution, duration }) => `${name} at ${resolution} for ${duration} seconds`)
+  .join(', ');
+const defaultTrialModel = trialModels.find(({ id }) => id === DEFAULT_TRIAL_MODEL_ID);
+const packPrices = creditPacks
+  .map((pack) => `${creditPackPrice(pack)} for ${pack.credits.toLocaleString('en-US')} credits`)
+  .join(', ');
+const summary = [
+  `Free AI Video turns a prompt or reference photo into a short video. It offers ${modelCount} models for credit generation. ${trialModels.length} also support a free trial with fixed settings (${trialSettings}).`,
+  defaultTrialModel ? `${defaultTrialModel.name} is selected by default for trials.` : '',
+  `When daily trials are available, the device limit is ${site.guest.dailyPerDevice} per day, shared before and after sign-in. It resets at 00:00 UTC. Network and shared daily limits apply. Eligible new verified accounts may receive one separate registration trial voucher valid for ${registrationVoucherDays} days from registration, subject to daily allocation.`,
+  'An accepted free request counts toward the daily trial or uses the voucher, even if it later fails or is canceled. Some models require a reference photo.',
+  `The generator shows the credit cost before you submit a request. It depends on the model, resolution and duration. One-time packs cost ${packPrices}.`,
+  creditPacks.every((pack) => pack.expiresDays === null) ? 'Purchased credits never expire.' : '',
+  'Credits already issued keep their original terms. Free AI Video adds no watermark and charges no separate export fee. Credit returns for generation depend on confirmed provider billing. The refund policy covers credit pack purchases.',
+]
+  .filter(Boolean)
+  .join(' ');
 
 export const Route = createFileRoute('/llms.txt')({
   server: {
@@ -8,7 +35,8 @@ export const Route = createFileRoute('/llms.txt')({
       GET: () =>
         llmsTxt(
           site,
-          `An AI video generator with 30 models for credit generation and five eligible for free trials. The free trial settings are MiniMax H3 at 480p for 4 seconds, Seedance 2.0 Mini at 480p for 4 seconds, Kling 2.6 at 720p for 5 seconds, Grok Imagine Video at 480p for 6 seconds and Gemini Omni 1.2 Flash at 360p for 3 seconds. MiniMax H3 is the default trial model. Seedance 2.5 requires credits. Daily free allowance per device, shared before and after sign-in: ${site.guest.dailyPerDevice}, subject to shared limits and daily availability. Credit costs depend on the model, resolution and duration and are shown before generation; some models require a reference image. Eligible new verified accounts can receive one additional registration trial voucher, valid for 30 days from registration, subject to daily allocation. Daily trials and registration vouchers are separate from credits and are used when a generation request is accepted; failure or cancellation does not automatically restore them. For credit jobs, unsettled billing remains pending; a confirmed zero charge or pre-submission rejection is eligible for a credit return. Previously issued credits remain valid under their original terms. Credit packs are one-time purchases: $4.99 for 100 credits, $19.99 for 500 credits or $49.99 for 1,250 credits. Purchased credits never expire.`,
+          // Keep model eligibility, trial settings and pack prices tied to the public offer.
+          summary,
           [
             {
               title: 'AI Video Generator',
@@ -20,7 +48,7 @@ export const Route = createFileRoute('/llms.txt')({
               title: 'Frequently Asked Questions',
               path: '/#faq',
               description:
-                'Free access, watermarks, the model, reference photos, clip length, aspect ratios, and failed renders.',
+                'Free trials, registration vouchers, watermark-free downloads, models, settings, and credit returns.',
             },
             {
               title: 'Pricing',
@@ -30,7 +58,8 @@ export const Route = createFileRoute('/llms.txt')({
             {
               title: 'Seedance 2.5 Video Generation',
               path: '/seedance-2-5-free',
-              description: 'Seedance 2.5 credit video generation and available trial models.',
+              description:
+                'Seedance 2.5 requires credits. See its supported settings and the models available for a free trial.',
             },
             {
               title: 'AI Video Generator with No Watermark',
@@ -42,6 +71,28 @@ export const Route = createFileRoute('/llms.txt')({
               path: '/api-docs',
               description:
                 'Connect an application or AI agent with the agent API or MCP: models, balance, uploads, jobs and results.',
+            },
+            {
+              title: 'Generated Video Examples',
+              path: '/#cases',
+              description: 'See real clips and prompts from text-to-video and image-to-video requests.',
+            },
+            {
+              title: 'Credit Packs and Free Trials in Markdown',
+              path: '/pricing.md',
+              description: 'Read pack prices, credit amounts, expiry, trial rules, and credit returns.',
+            },
+            {
+              title: 'Agent API and MCP Guide in Markdown',
+              path: '/agent-api.md',
+              description:
+                'Read the paid API and MCP setup, model options, upload, job, and retry instructions.',
+            },
+            {
+              title: 'Refund Policy',
+              path: '/refunds',
+              description:
+                'Read the rules for credit pack purchase refunds and credit returns for generation.',
             },
             {
               title: 'Shoulder Carry AI',

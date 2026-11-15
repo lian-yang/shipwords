@@ -45,7 +45,7 @@ export class CreditBalanceController {
   private queued = false;
   private sequence = 0;
 
-  constructor(private readonly fetcher: Fetcher = fetch) {}
+  constructor(private readonly fetcher: Fetcher = (input, init) => fetch(input, init)) {}
 
   subscribe(listener: (state: Snapshot) => void): () => void {
     this.listeners.add(listener);

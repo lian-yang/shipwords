@@ -1,5 +1,6 @@
 import { pageHead } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
+import { EditorialHeader } from '~/site/editorial-header';
 import site from '../../site.config';
 import '~/site/api-docs.css';
 
@@ -20,7 +21,11 @@ const endpoints = [
   { method: 'POST', path: '/api/agent/uploads', detail: 'Upload a reference image.' },
   { method: 'POST', path: '/api/agent/jobs', detail: 'Create a paid video job.' },
   { method: 'GET', path: '/api/agent/jobs', detail: 'List up to 30 recent jobs for your account.' },
-  { method: 'GET', path: '/api/agent/jobs/{jobId}', detail: 'Check an owned job and its results.' },
+  {
+    method: 'GET',
+    path: '/api/agent/jobs/{jobId}',
+    detail: 'Check the status and results of a job in your account.',
+  },
 ] as const;
 
 const jobExample = `{
@@ -40,18 +45,16 @@ const curlExample = `curl https://www.freeaivideo.app/api/agent/jobs \\
 
 function ApiDocsPage() {
   return (
-    <article className="api-docs">
-      <header className="api-docs-intro">
-        <p className="api-docs-eyebrow">Developer documentation</p>
-        <h1>Free AI Video API &amp; MCP</h1>
-        <p>Generate videos with your account credits from an application or an AI agent.</p>
-        <nav className="api-docs-jump" aria-label="On this page">
+    <article className="api-docs horizon-editorial">
+      <EditorialHeader title="Free AI Video API & MCP">
+        <p className="lead">Use your Free AI Video credits to generate videos from your app or AI agent.</p>
+        <nav className="editorial-nav api-docs-jump" aria-label="On this page">
           <a href="#getting-started">Get started</a>
           <a href="#http-api">HTTP API</a>
           <a href="#create-a-job">Create a job</a>
           <a href="#mcp">MCP</a>
         </nav>
-      </header>
+      </EditorialHeader>
 
       <section id="getting-started" className="api-docs-section">
         <h2>Get started</h2>
@@ -60,28 +63,28 @@ function ApiDocsPage() {
             Sign in to Free AI Video and open <strong>Account</strong>.
           </li>
           <li>
-            Under <strong>AI agent access</strong>, create an API key and save it when it appears. You can
-            revoke it from the same screen.
+            Under <strong>AI agent access</strong>, create an API key and save it. The key appears only once.
+            You can revoke it from the same screen.
           </li>
           <li>
             Send the key with each request in the <code>Authorization: Bearer YOUR_API_KEY</code> header.
           </li>
         </ol>
+        <p>Keep your key private. Do not embed it in browser code or commit it to a public repository.</p>
         <p>
-          Keep your key private. Do not embed it in browser code or commit it to a public repository. Keys are
-          shown only once.
+          API jobs use paid account credits. Free trials are available on the website. Each account can make
+          3,000 agent API requests per UTC day across all its keys. Some MCP calls count as two requests. If
+          you reach the daily limit, requests return HTTP 429.
         </p>
         <p>
-          The API uses paid account credits; website free trials are not available through this interface.
-          Each account can make 3,000 agent API requests per UTC day across all its keys. Some MCP calls use
-          two requests. The limit returns HTTP 429.
+          <a href="/agent-api.md">Read this guide in Markdown</a>
         </p>
       </section>
 
       <section id="http-api" className="api-docs-section">
         <h2>HTTP API</h2>
         <p>
-          Base URL: <code>https://www.freeaivideo.app</code>
+          Send requests to <code>https://www.freeaivideo.app</code>.
         </p>
         <div className="api-docs-endpoints">
           {endpoints.map((endpoint) => (
@@ -112,8 +115,8 @@ function ApiDocsPage() {
       <section id="create-a-job" className="api-docs-section">
         <h2>Create a job</h2>
         <p>
-          Choose a model and supported settings from <code>GET /api/agent/models</code>. Send a model ID and a
-          nonempty prompt; settings and references are optional.
+          Check <code>GET /api/agent/models</code> for the available models and the settings each supports.
+          Every job needs a model ID and a nonempty prompt. You can also send settings and reference images.
         </p>
         <pre>
           <code>{jobExample}</code>
@@ -129,8 +132,8 @@ function ApiDocsPage() {
           Use a fresh idempotency key for each intended generation. It must contain 1–128 ASCII letters,
           digits, <code>.</code>, <code>_</code>, <code>~</code>, or <code>-</code>. If a response is lost,
           retry with the same key and the same JSON values. Object property order and whitespace do not
-          matter; changed values with the same key are rejected. A new key may create and charge for another
-          job.
+          matter. If you change the values and reuse the key, the API rejects the request. A new key can start
+          another job and spend additional credits.
         </p>
         <p>
           In the rare case that service is interrupted after a job and its credit reservation are created but

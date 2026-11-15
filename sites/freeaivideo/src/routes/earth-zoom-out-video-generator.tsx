@@ -1,6 +1,7 @@
 import { pageHead } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
 import { m } from '~/paraglide/messages.js';
+import { EditorialHeader } from '~/site/editorial-header';
 import site from '../../site.config';
 
 export const Route = createFileRoute('/earth-zoom-out-video-generator')({
@@ -40,16 +41,26 @@ const CASE = {
 
 function EarthZoomPage() {
   return (
-    <section className="content">
-      <h1>{m.pages_earthzoom_title()}</h1>
-      <p className="lead">{m.pages_earthzoom_intro()}</p>
-      <p>
-        <a className="button primary" href="/?preset=earth-zoom-out#tool">
-          {m.pages_earthzoom_generate_link()}
-        </a>
-      </p>
+    <section className="content horizon-editorial trend-page">
+      <EditorialHeader title={m.pages_earthzoom_title()}>
+        <p className="lead">{m.pages_earthzoom_intro()}</p>
+        <p className="editorial-actions">
+          <a className="button primary" href="/?preset=earth-zoom-out#tool">
+            {m.pages_earthzoom_generate_link()}
+          </a>
+        </p>
+      </EditorialHeader>
       <figure className="case">
-        <video src={CASE.src} poster={CASE.poster} controls muted loop playsInline preload="none" aria-label={CASE.title()} />
+        <video
+          src={CASE.src}
+          poster={CASE.poster}
+          controls
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-label={CASE.title()}
+        />
         <figcaption>
           <h2>{CASE.title()}</h2>
           <p>{CASE.caption()}</p>
@@ -69,11 +80,22 @@ function EarthZoomPage() {
       </ul>
       <p>{m.pages_earthzoom_prompt_note()}</p>
       <h2>{m.pages_earthzoom_questions_heading()}</h2>
-      <p><strong>{m.pages_earthzoom_question_what()}</strong> {m.pages_earthzoom_answer_what()}</p>
-      <p><strong>{m.pages_earthzoom_question_photo()}</strong> {m.pages_earthzoom_answer_photo()}</p>
-      <p><strong>{m.pages_earthzoom_question_exact()}</strong> {m.pages_earthzoom_answer_exact()}</p>
-      <p><strong>{m.pages_earthzoom_question_free()}</strong> {m.pages_earthzoom_answer_free()}</p>
-      <p>{m.pages_earthzoom_ready()} <a href="/?preset=earth-zoom-out#tool">{m.pages_earthzoom_open_generator()}</a></p>
+      <p>
+        <strong>{m.pages_earthzoom_question_what()}</strong> {m.pages_earthzoom_answer_what()}
+      </p>
+      <p>
+        <strong>{m.pages_earthzoom_question_photo()}</strong> {m.pages_earthzoom_answer_photo()}
+      </p>
+      <p>
+        <strong>{m.pages_earthzoom_question_exact()}</strong> {m.pages_earthzoom_answer_exact()}
+      </p>
+      <p>
+        <strong>{m.pages_earthzoom_question_free()}</strong> {m.pages_earthzoom_answer_free()}
+      </p>
+      <p>
+        {m.pages_earthzoom_ready()}{' '}
+        <a href="/?preset=earth-zoom-out#tool">{m.pages_earthzoom_open_generator()}</a>
+      </p>
     </section>
   );
 }

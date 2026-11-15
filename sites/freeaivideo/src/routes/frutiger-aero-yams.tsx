@@ -1,6 +1,7 @@
 import { pageHead } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
 import { m } from '~/paraglide/messages.js';
+import { EditorialHeader } from '~/site/editorial-header';
 import site from '../../site.config';
 
 // Trend explainer page: the catchphrase background is factual (Know Your Meme, Oct-Nov 2026);
@@ -34,14 +35,15 @@ export const Route = createFileRoute('/frutiger-aero-yams')({
 
 function FrutigerAeroYamsPage() {
   return (
-    <section className="content">
-      <h1>{m.pages_frutigerayams_title()}</h1>
-      <p className="lead">{m.pages_frutigerayams_intro()}</p>
-      <p>
-        <a className="button primary" href="/?preset=frutiger-aero-yams#tool">
-          {m.pages_frutigerayams_generate_link()}
-        </a>
-      </p>
+    <section className="content horizon-editorial trend-page">
+      <EditorialHeader title={m.pages_frutigerayams_title()}>
+        <p className="lead">{m.pages_frutigerayams_intro()}</p>
+        <p>
+          <a className="button primary" href="/?preset=frutiger-aero-yams#tool">
+            {m.pages_frutigerayams_generate_link()}
+          </a>
+        </p>
+      </EditorialHeader>
       <h2>{m.pages_frutigerayams_meaning_heading()}</h2>
       <p>{m.pages_frutigerayams_meaning_body()}</p>
       <h2>{m.pages_frutigerayams_origin_heading()}</h2>

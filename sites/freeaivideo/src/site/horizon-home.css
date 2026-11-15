@@ -1,0 +1,754 @@
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("/fonts/instrument-sans-latin.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("/fonts/instrument-serif-italic-latin.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.horizon-site {
+  --horizon-sans: "Instrument Sans", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+  --horizon-serif: "Instrument Serif", Georgia, serif;
+  --horizon-mono: ui-monospace, "SF Mono", Consolas, monospace;
+  --horizon-width: 1280px;
+  --color-ink: var(--horizon-chrome-ink, #f4f1ff);
+  --color-muted: #b4b1ca;
+  --color-line: #303044;
+  --color-accent: #b9a7ff;
+  --color-accent-ink: #1a1035;
+  --color-surface: #12131e;
+  --color-wash: var(--horizon-chrome-bg, #090a13);
+  --color-error: #ffa5ab;
+  color-scheme: dark;
+  background: var(--color-wash);
+  color: var(--color-ink);
+  font-family: var(--horizon-sans);
+  min-height: 100vh;
+}
+
+.horizon-site :focus-visible {
+  outline-color: var(--color-accent);
+}
+
+.horizon-site ::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+.horizon-home .tool {
+  padding-top: clamp(24px, 2.8vw, 46px);
+}
+
+.horizon-home .workspace {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.24fr);
+  grid-template-areas:
+    "title stage"
+    "composer stage";
+  grid-template-rows: auto 1fr;
+  column-gap: clamp(24px, 4.1vw, 62px);
+  row-gap: 24px;
+  align-items: start;
+  animation: none;
+}
+
+.horizon-home .tool-heading {
+  grid-area: title;
+  align-self: start;
+  margin: 0;
+}
+
+.horizon-signup-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 17px;
+  font: 500 11px / 1.2 var(--horizon-mono);
+  letter-spacing: 0.135em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.horizon-signup-label::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: currentColor;
+}
+
+.horizon-home .tool-heading h1 {
+  font-size: clamp(46px, 5.4vw, 84px);
+  font-weight: 550;
+  line-height: 0.92;
+  letter-spacing: -0.067em;
+  word-spacing: 0.025em;
+  text-wrap: initial;
+}
+
+.horizon-home .tool-heading h1 em {
+  display: block;
+  padding-inline-end: 0.12em;
+  margin-top: 4px;
+  width: fit-content;
+  color: var(--color-accent);
+  font: italic 400 1.09em / 0.93 var(--horizon-serif);
+  letter-spacing: -0.035em;
+}
+
+html[lang="zh"] .horizon-home .tool-heading h1 {
+  font-size: clamp(38px, 4.15vw, 68px);
+  letter-spacing: -0.055em;
+  line-height: 1.16;
+}
+
+html[lang="zh"] .horizon-home .tool-heading h1 em {
+  font-size: 0.98em;
+  line-height: 1.16;
+}
+
+.horizon-home .tool-heading .lead {
+  font-size: clamp(14px, 1.22vw, 17px);
+  line-height: 1.58;
+  max-width: 400px;
+  margin-top: 17px;
+}
+
+.horizon-stage {
+  grid-area: stage;
+  align-self: start;
+  border: 1px solid #33324a;
+  border-radius: 17px;
+  overflow: clip;
+  min-width: 0;
+  background: #0b0b16;
+  box-shadow: 0 36px 90px rgb(0 0 0 / 0.28);
+}
+
+.horizon-viewer {
+  position: relative;
+  isolation: isolate;
+  height: clamp(440px, 44vw, 644px);
+  overflow: clip;
+  background: #080912;
+}
+
+.horizon-canvas,
+.horizon-still,
+.horizon-viewer-marks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.horizon-still {
+  background: #0a0712 url("/images/event-horizon-still.webp") center / cover no-repeat;
+}
+
+.horizon-canvas {
+  display: block;
+  opacity: 0;
+  cursor: grab;
+  touch-action: pan-y;
+  transition: opacity 380ms ease-out;
+}
+
+.horizon-canvas[data-ready] {
+  opacity: 1;
+}
+
+.horizon-canvas[data-dragging] {
+  cursor: grabbing;
+}
+
+.horizon-canvas:focus-visible {
+  outline-offset: -5px;
+}
+
+.horizon-viewer-label {
+  position: absolute;
+  top: 18px;
+  left: 19px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgb(201 188 255 / 0.23);
+  border-radius: 5px;
+  background: rgb(10 9 22 / 0.8);
+  padding: 7px 9px;
+  color: #e4dafa;
+  font: 10px / 1.15 var(--horizon-mono);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.horizon-viewer-label > span:first-child {
+  flex: 0 0 5px;
+  height: 5px;
+  background: #c5aaff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #a987ff;
+}
+
+.horizon-viewer:not(:has(.horizon-canvas[data-ready])) .horizon-live-label,
+.horizon-viewer:has(.horizon-canvas[data-ready]) .horizon-static-label {
+  display: none;
+}
+
+.horizon-viewer-marks {
+  inset: 16px;
+  width: auto;
+  height: auto;
+  color: rgb(205 196 252 / 0.38);
+  background:
+    linear-gradient(currentColor, currentColor) top right / 14px 1px,
+    linear-gradient(currentColor, currentColor) top right / 1px 14px,
+    linear-gradient(currentColor, currentColor) bottom left / 14px 1px,
+    linear-gradient(currentColor, currentColor) bottom left / 1px 14px,
+    linear-gradient(currentColor, currentColor) bottom right / 14px 1px,
+    linear-gradient(currentColor, currentColor) bottom right / 1px 14px;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.horizon-stage-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 18px 19px;
+  border-top: 1px solid #2f2e44;
+  background: linear-gradient(110deg, #151322, #0e0e19 68%);
+}
+
+.horizon-scene-info {
+  min-width: 0;
+}
+
+.horizon-scene-title {
+  font: italic 400 clamp(29px, 3vw, 37px) / 1 var(--horizon-serif);
+  letter-spacing: -0.015em;
+}
+
+.horizon-interaction {
+  margin-top: 7px;
+  color: var(--color-muted);
+  font: 11px / 1.35 var(--horizon-mono);
+}
+
+.horizon-touch-help {
+  display: none;
+}
+
+.horizon-stage-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.horizon-stage:not(:has(.horizon-canvas[data-ready])) :is(.horizon-interaction, .horizon-icon-button) {
+  display: none;
+}
+
+.horizon-home .horizon-stage-controls button {
+  min-height: 40px;
+  border-radius: 5px;
+  background: #181625;
+  border-color: #37324f;
+  color: #e9e1ff;
+}
+
+.horizon-home .horizon-stage-controls button:hover {
+  background: #272039;
+  border-color: #77669e;
+}
+
+.horizon-icon-button {
+  width: 40px;
+  padding: 0;
+}
+
+.horizon-pause-icon {
+  width: 9px;
+  height: 11px;
+  border-inline: 2px solid currentColor;
+}
+
+.horizon-play-icon {
+  margin-inline-start: 2px;
+  border-inline-start: 8px solid currentColor;
+  border-block: 5px solid transparent;
+}
+
+.horizon-reset-icon {
+  font-size: 23px;
+  line-height: 1;
+}
+
+.horizon-home .horizon-stage-controls .horizon-apply {
+  gap: 10px;
+  padding: 5px 11px;
+  margin-inline-start: 3px;
+  border-color: #605184;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e5d9ff;
+}
+
+.horizon-home .tool-form {
+  grid-area: composer;
+  align-self: start;
+  gap: 11px;
+  padding: clamp(16px, 1.6vw, 24px);
+  border-radius: 13px;
+  background: linear-gradient(135deg, #151522 0, #10111b 65%);
+  box-shadow: 0 16px 38px rgb(0 0 0 / 0.16);
+  scroll-margin-top: 26px;
+}
+
+.horizon-home .composer-heading label {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.024em;
+}
+
+.horizon-home .composer-heading > span {
+  display: block;
+  font: 10px / 1.3 var(--horizon-mono);
+}
+
+.horizon-home .tool-form :is(textarea, select) {
+  background: #0d0e18;
+  border-color: #333246;
+  border-radius: 5px;
+}
+
+.horizon-home .tool-form :is(textarea, select):focus-visible {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgb(165 143 255 / 0.18);
+}
+
+.horizon-home .tool-form textarea {
+  display: block;
+  padding: 11px 12px;
+  min-height: 80px;
+  height: 80px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.horizon-home .tool-form textarea::placeholder {
+  color: #8f8ca7;
+}
+
+.horizon-home .prompt-ideas {
+  gap: 5px;
+}
+
+.horizon-home .prompt-ideas > span {
+  width: auto;
+  margin: 0 3px 0 0;
+  font-size: 11px;
+}
+
+.horizon-home .prompt-ideas button {
+  min-height: 30px;
+  padding: 4px 8px;
+  background: #1a1929;
+  border-color: #34314a;
+  font-size: 11px;
+}
+
+.horizon-home .prompt-ideas button:hover {
+  background: #26213a;
+  border-color: #6d5d9a;
+}
+
+.horizon-home .generation-mode {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin: 1px 0 0;
+  font-weight: 550;
+  color: var(--color-ink);
+}
+
+.horizon-home .generation-mode select {
+  padding: 7px 10px;
+}
+
+.horizon-home .tool-controls {
+  grid-template-columns: minmax(0, 1.65fr) repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin: 0;
+}
+
+.horizon-home .tool-controls label {
+  min-width: 0;
+  gap: 5px;
+  font-size: 11px;
+}
+
+.horizon-home .tool-controls select {
+  height: 38px;
+  padding: 6px 7px;
+  font-size: 13px;
+  text-overflow: ellipsis;
+}
+
+.horizon-home .tool-form select {
+  appearance: none;
+  padding-inline-end: 30px;
+  background-image:
+    linear-gradient(45deg, transparent 39%, var(--color-muted) 41% 59%, transparent 61%),
+    linear-gradient(135deg, transparent 39%, var(--color-muted) 41% 59%, transparent 61%);
+  background-position: right 17px center, right 12px center;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+@media (forced-colors: active) {
+  .horizon-home .tool-form select {
+    appearance: auto;
+    padding-inline-end: 10px;
+    background-image: none;
+  }
+}
+
+.horizon-home .tool-controls select:disabled {
+  color: #9e9bb4;
+  opacity: 1;
+}
+
+.horizon-home .upload-control {
+  min-height: 40px;
+  border-color: #443f5b;
+  border-radius: 5px;
+  padding: 5px 9px;
+}
+
+.horizon-home .upload-icon {
+  color: var(--color-accent);
+}
+
+.horizon-home .upload-control:hover {
+  background: #1b1829;
+  border-color: #7867a7;
+}
+
+.horizon-home .upload-control:focus-within {
+  outline-color: var(--color-accent);
+}
+
+.horizon-home .generate-button {
+  margin-top: 1px;
+  min-height: 47px;
+  border: 1px solid #d3c4ff;
+  border-radius: 6px;
+  background: linear-gradient(108deg, #d2c4ff 0, #b7a2f8 72%, #b293fb 100%);
+  color: #1a1035;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.horizon-home .generate-button:not(:disabled):hover {
+  background: #e2d6ff;
+}
+
+.horizon-home .generate-button:disabled {
+  background: #29243b;
+  border-color: #4b4062;
+  color: #c9bbe6;
+}
+
+.horizon-home .generate-button > .generate-icon {
+  font-size: 19px;
+}
+
+.horizon-home .notice,
+.horizon-home .credit-summary {
+  border: 1px solid #49405f;
+  background: #1d192c;
+  color: var(--color-ink);
+  border-radius: 6px;
+}
+
+.horizon-home .tool-form > .small,
+.horizon-home .tool-form .notice {
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.horizon-home .tool-form > .small {
+  max-width: none;
+}
+
+.horizon-home #free-note strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--color-ink);
+}
+
+.horizon-home .tool-form a,
+.horizon-home .link-accent,
+.horizon-home .text-link,
+.horizon-home .faq-answer a,
+.horizon-home .tool-form .link-button {
+  color: var(--color-accent);
+}
+
+.horizon-home .job {
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.horizon-home .job-pending::before {
+  background: var(--color-accent);
+  box-shadow: 0 0 11px var(--color-accent);
+}
+
+.horizon-home .content {
+  margin-top: clamp(56px, 7vw, 108px);
+  padding-top: clamp(26px, 3.5vw, 52px);
+  border-top: 1px solid var(--color-line);
+}
+
+.horizon-home h2 {
+  font-size: clamp(32px, 4vw, 57px);
+  font-weight: 550;
+  letter-spacing: -0.06em;
+  line-height: 1.03;
+}
+
+.horizon-home .section-heading {
+  align-items: flex-end;
+}
+
+.horizon-home .section-heading .lead {
+  margin-top: 14px;
+  max-width: 60ch;
+}
+
+.horizon-home .cases {
+  gap: clamp(12px, 1.6vw, 23px);
+  margin-top: 26px;
+}
+
+.horizon-home .case {
+  min-width: 0;
+}
+
+.horizon-home .case video,
+.horizon-home .image-case .image-case-media img,
+.horizon-home .image-case .image-case-media video {
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  object-fit: contain;
+  background: #10111b;
+}
+
+.horizon-home .image-case .image-case-media :is(img, video) {
+  max-height: 310px;
+}
+
+.horizon-home .image-case {
+  padding: clamp(12px, 1.8vw, 23px);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  background: var(--color-surface);
+}
+
+.horizon-home .case-heading button:hover {
+  color: var(--color-accent-ink);
+  background: var(--color-accent);
+}
+
+.horizon-home .image-cases-heading {
+  margin-top: 39px;
+  font-size: 23px;
+  font-weight: 550;
+}
+
+.horizon-home .steps {
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.horizon-home .steps li {
+  padding: 23px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.horizon-home .step-number {
+  margin-bottom: 14px;
+  padding-bottom: 7px;
+  color: var(--color-accent);
+  border-color: #66578f;
+  font-family: var(--horizon-mono);
+}
+
+.horizon-home .limits-section {
+  border: 1px solid var(--color-line);
+  border-radius: 11px;
+  background: radial-gradient(ellipse at top left, #20182f, #11121d 62%);
+}
+
+.horizon-home .pricing-section,
+.horizon-home .faq-section {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.4fr);
+  gap: clamp(25px, 5vw, 72px);
+}
+
+.horizon-home .plan,
+.horizon-home .plan:last-child {
+  background: var(--color-surface);
+  border-color: var(--color-line);
+  border-radius: 9px;
+}
+
+.horizon-home .plan h3 {
+  color: var(--color-accent);
+}
+
+.horizon-home .plan .price {
+  font-size: clamp(29px, 3.3vw, 47px);
+  font-weight: 550;
+  letter-spacing: -0.065em;
+}
+
+.horizon-home .faq-list summary > span {
+  color: var(--color-accent);
+}
+
+@media (pointer: coarse) {
+  .horizon-pointer-help {
+    display: none;
+  }
+
+  .horizon-touch-help {
+    display: inline;
+  }
+
+  .horizon-home .prompt-ideas button,
+  .horizon-home .horizon-stage-controls button {
+    min-height: 44px;
+  }
+
+  .horizon-icon-button {
+    width: 44px;
+  }
+}
+
+@media (max-width: 1050px) {
+  .horizon-home .workspace {
+    grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.02fr);
+    column-gap: 22px;
+  }
+
+  .horizon-home .tool-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .horizon-viewer {
+    height: clamp(370px, 48vw, 505px);
+  }
+}
+
+@media (max-width: 760px) {
+  .horizon-home .tool {
+    padding-top: 20px;
+  }
+
+  .horizon-home .workspace {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "title" "stage" "composer";
+    grid-template-rows: auto auto auto;
+    row-gap: 18px;
+  }
+
+  .horizon-signup-label {
+    margin-top: 13px;
+  }
+
+  .horizon-home .tool-heading h1 {
+    font-size: clamp(43px, 11.5vw, 79px);
+  }
+
+  .horizon-home .tool-heading .lead {
+    margin-top: 13px;
+  }
+
+  .horizon-stage {
+    border-radius: 11px;
+  }
+
+  .horizon-viewer {
+    height: auto;
+    min-height: 236px;
+    aspect-ratio: 1.44;
+  }
+
+  .horizon-viewer-marks {
+    inset: 11px;
+  }
+
+  .horizon-viewer-label {
+    top: 11px;
+    left: 11px;
+    padding: 5px 7px;
+    font-size: 9px;
+  }
+
+  .horizon-stage-caption {
+    padding: 10px 11px;
+    gap: 11px 10px;
+  }
+
+  .horizon-stage-controls {
+    gap: 4px;
+  }
+
+  .horizon-home .horizon-stage-controls .horizon-apply {
+    margin-inline-start: 0;
+    font-size: 12px;
+  }
+
+  .horizon-home .tool-form :is(textarea, select) {
+    font-size: 16px;
+  }
+
+  .horizon-home .tool-form textarea {
+    min-height: 96px;
+  }
+
+  .horizon-home .content {
+    padding-top: 28px;
+  }
+
+  .horizon-home .cases,
+  .horizon-home .image-cases,
+  .horizon-home .steps,
+  .horizon-home .pricing-section,
+  .horizon-home .faq-section {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .horizon-home .limits-section {
+    padding: 24px;
+    gap: 17px;
+  }
+
+  .horizon-home .plans {
+    gap: 11px;
+  }
+}

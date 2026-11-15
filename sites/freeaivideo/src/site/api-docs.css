@@ -1,32 +1,4 @@
 /* API reference: one reading column, with compact endpoint rows. */
-.api-docs {
-  width: min(920px, 100%);
-  margin: 72px auto 100px;
-  color: var(--color-ink);
-}
-.api-docs-intro {
-  padding-bottom: 36px;
-  border-bottom: 1px solid var(--color-line);
-}
-.api-docs .api-docs-eyebrow {
-  margin: 0 0 12px;
-  color: #4e6735;
-  font-size: 14px;
-  font-weight: 650;
-}
-.api-docs h1 {
-  margin: 0;
-  font-size: clamp(36px, 5.2vw, 56px);
-  line-height: 1.08;
-  letter-spacing: -0.045em;
-}
-.api-docs-intro > p:not(.api-docs-eyebrow) {
-  max-width: 660px;
-  margin: 17px 0 0;
-  color: var(--color-muted);
-  font-size: 17px;
-  line-height: 1.6;
-}
 .api-docs-jump {
   display: flex;
   flex-wrap: wrap;
@@ -40,8 +12,10 @@
   text-underline-offset: 3px;
 }
 .api-docs-section {
-  max-width: 790px;
+  min-width: 0;
   margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-line);
   scroll-margin-top: 20px;
 }
 .api-docs-section h2 {
@@ -58,8 +32,9 @@
 .api-docs-section p,
 .api-docs-section li {
   margin: 0 0 14px;
-  font-size: 15px;
-  line-height: 1.7;
+  color: var(--color-muted);
+  font-size: 16px;
+  line-height: 1.72;
 }
 .api-docs-section ol {
   list-style: decimal outside;
@@ -74,10 +49,11 @@
   max-width: 100%;
   margin: 20px 0;
   padding: 21px 23px;
-  border: 1px solid #dce1d6;
-  border-radius: 12px;
-  background: #f1f4ec;
-  color: #20251f;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: #10111c;
+  color: var(--color-ink);
+  scrollbar-color: #52436f #10111c;
   font-size: 14px;
   line-height: 1.65;
   tab-size: 2;
@@ -101,15 +77,17 @@
   justify-self: start;
   padding: 4px 7px;
   border-radius: 5px;
-  background: #eef2e9;
-  color: #405b2c;
+  border: 1px solid #313a64;
+  background: #141b38;
+  color: #c2d1ff;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.4;
 }
 .api-docs-method-post {
-  background: #e1efc6;
-  color: #38551f;
+  border-color: #55407c;
+  background: #25183e;
+  color: #ddc6ff;
 }
 .api-docs-endpoint > div {
   min-width: 0;
@@ -144,15 +122,6 @@
   margin: 0;
 }
 @media (max-width: 600px) {
-  .api-docs {
-    margin: 42px auto 64px;
-  }
-  .api-docs-intro {
-    padding-bottom: 26px;
-  }
-  .api-docs-intro > p:not(.api-docs-eyebrow) {
-    font-size: 16px;
-  }
   .api-docs-section {
     margin-top: 36px;
   }

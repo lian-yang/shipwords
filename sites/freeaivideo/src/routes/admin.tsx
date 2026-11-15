@@ -14,7 +14,7 @@ export const Route = createFileRoute('/admin')({
       noindex: true,
     }),
   component: () => (
-    <section className="admin page">
+    <section className="admin" lang="zh-CN" aria-labelledby="admin-title">
       <AdminPanel />
     </section>
   ),

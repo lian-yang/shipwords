@@ -2,6 +2,7 @@ import { pageHead } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
 import { m } from '~/paraglide/messages.js';
 import { getLocale } from '~/paraglide/runtime.js';
+import { EditorialHeader } from '~/site/editorial-header';
 import site from '../../site.config';
 
 // Keep this search landing page at its existing URL; copy is resolved per request.
@@ -26,16 +27,17 @@ function WatermarkPage() {
     : null;
 
   return (
-    <section className="content">
-      <h1>{m.pages_watermark_title()}</h1>
-      <p className="lead">
-        {m.pages_watermark_intro()} <strong>{m.pages_watermark_clean()}</strong>
-      </p>
-      <p>
-        <a className="button primary" href="/#tool">
-          {m.pages_watermark_cta()}
-        </a>
-      </p>
+    <section className="content horizon-editorial">
+      <EditorialHeader title={m.pages_watermark_title()}>
+        <p className="lead">
+          {m.pages_watermark_intro()} <strong>{m.pages_watermark_clean()}</strong>
+        </p>
+        <p className="editorial-actions">
+          <a className="button primary" href="/#tool">
+            {m.pages_watermark_cta()}
+          </a>
+        </p>
+      </EditorialHeader>
       <h2>{m.pages_watermark_free_heading()}</h2>
       <ul>
         <li>{m.pages_watermark_free_daily({ daily: site.guest.dailyPerDevice })}</li>

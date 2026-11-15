@@ -1,6 +1,7 @@
 import { pageHead } from '@shipwords/core/seo';
 import { createFileRoute } from '@tanstack/react-router';
 import { m } from '~/paraglide/messages.js';
+import { EditorialHeader } from '~/site/editorial-header';
 import site from '../../site.config';
 
 // Trend explainer page: the slang pair is factual background (Know Your Meme, Oct 2026);
@@ -33,14 +34,15 @@ export const Route = createFileRoute('/w-chews-l-nibbles')({
 
 function WChewsPage() {
   return (
-    <section className="content">
-      <h1>{m.pages_wchews_title()}</h1>
-      <p className="lead">{m.pages_wchews_intro()}</p>
-      <p>
-        <a className="button primary" href="/?preset=w-chews-l-nibbles#tool">
-          {m.pages_wchews_generate_link()}
-        </a>
-      </p>
+    <section className="content horizon-editorial trend-page">
+      <EditorialHeader title={m.pages_wchews_title()}>
+        <p className="lead">{m.pages_wchews_intro()}</p>
+        <p>
+          <a className="button primary" href="/?preset=w-chews-l-nibbles#tool">
+            {m.pages_wchews_generate_link()}
+          </a>
+        </p>
+      </EditorialHeader>
       <h2>{m.pages_wchews_meaning_w_heading()}</h2>
       <p>{m.pages_wchews_meaning_w_body()}</p>
       <h2>{m.pages_wchews_meaning_l_heading()}</h2>

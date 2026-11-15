@@ -1,7 +1,7 @@
-/* A compact account workspace, using the site's existing daylight palette. */
+/* Account cards also appear inside the shared modal shell. */
 .account-dialog {
   scrollbar-width: thin;
-  scrollbar-color: #a5b499 #f6f8f2;
+  scrollbar-color: color-mix(in srgb, var(--color-accent) 47%, var(--color-line)) var(--color-surface);
 }
 .account-dialog .dialog-close {
   min-width: 44px;
@@ -37,7 +37,7 @@
   min-width: 0;
   margin: 0;
   padding: 20px;
-  border-radius: 14px;
+  border-radius: 10px;
 }
 .account-panel .account-card h3 {
   margin: 0 0 10px;
@@ -57,24 +57,32 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  background: #eff3e8;
-  border-color: #e2e9d8;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--color-accent) 14%, var(--color-surface)),
+    var(--color-surface) 82%
+  );
+  border-color: color-mix(in srgb, var(--color-accent) 33%, var(--color-line));
 }
 .account-panel .account-credit-card .balance {
   margin: 4px 0 16px;
-  font-size: 44px;
+  font-size: clamp(29px, 5.4vw, 44px);
   line-height: 1;
+  overflow-wrap: anywhere;
   font-weight: 600;
   letter-spacing: -0.055em;
 }
 .account-panel .account-credit-card .primary {
   margin-top: 10px;
 }
+.account-panel .account-trial-card {
+  background: var(--color-surface);
+}
 .account-panel .account-trial-card .small {
   font-size: 13px;
 }
 .account-panel .account-trial-card strong {
-  color: #4b6b30;
+  color: var(--color-accent);
   font-weight: 600;
 }
 .account-trial-details {
@@ -83,7 +91,7 @@
 .account-trial-details summary {
   min-height: 36px;
   padding: 7px 0;
-  color: #4b6b30;
+  color: var(--color-accent);
   cursor: pointer;
   font-size: 13px;
   text-decoration: underline;
@@ -116,11 +124,11 @@
 }
 .account-panel .account-history-card .orders li + li,
 .account-panel .account-agent-card .orders li + li {
-  border-top: 1px solid #edf0e9;
+  border-top: 1px solid var(--color-line);
 }
 .account-panel .account-agent-card {
   margin-top: 15px;
-  background: #fafbf8;
+  background: var(--color-surface);
 }
 .account-agent-heading {
   display: flex;
@@ -176,7 +184,7 @@
   margin: 14px 0 0;
   padding: 12px;
   border-radius: 9px;
-  background: #eff3e8;
+  background: var(--color-wash);
 }
 .account-key-secret code {
   display: inline-block;
@@ -200,7 +208,7 @@
 }
 .account-panel .account-key-error {
   margin-top: 12px;
-  color: #9b342f;
+  color: var(--color-error);
 }
 .account-panel .account-agent-card .orders {
   margin-top: 12px;
@@ -253,13 +261,13 @@
 .account-agent-copy [role="status"] {
   font-size: 13px;
   line-height: 1.5;
-  color: #4b6b30;
+  color: var(--color-accent);
 }
 .account-agent-copy .account-copy-fallback {
   flex-basis: 100%;
   padding: 10px;
   border-radius: 8px;
-  background: #eff3e8;
+  background: var(--color-wash);
   overflow-wrap: anywhere;
   font-size: 13px;
 }

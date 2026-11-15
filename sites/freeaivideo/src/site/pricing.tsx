@@ -57,11 +57,13 @@ export function PricingLink({
   className,
   source,
   requiredCredits,
+  beforeOpen,
   children,
 }: {
   className?: string;
   source: string;
   requiredCredits?: number;
+  beforeOpen?: () => void;
   children: ReactNode;
 }) {
   return (
@@ -71,6 +73,7 @@ export function PricingLink({
       className={className}
       onClick={(e: MouseEvent) => {
         e.preventDefault();
+        beforeOpen?.();
         openPricing(source, requiredCredits);
       }}
     >

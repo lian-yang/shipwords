@@ -129,22 +129,38 @@ export function AccountPanel({
   const balance = useSharedCreditBalance();
   const trials = useTrials(data?.user.id, loading);
 
-  if (loading) return <p className="muted">{m.common_account_loading()}</p>;
-  if (!data) {
+  const title = (
+    <Heading id={Heading === 'h2' ? 'account-dialog-title' : 'account-title'}>
+      {m.common_account_heading()}
+    </Heading>
+  );
+
+  if (loading || !data) {
     return (
-      <p>
-        <Link to="/login" search={{ next: '/account' }}>
-          {m.common_account_sign_in()}
-        </Link>{' '}
-        {m.common_account_sign_in_after()}
-      </p>
+      <div className="account-panel">
+        <header className="account-heading">{title}</header>
+        <div className="account-empty">
+          {loading ? (
+            <p className="muted" role="status">
+              {m.common_account_loading()}
+            </p>
+          ) : (
+            <p>
+              <Link to="/login" search={{ next: '/account' }}>
+                {m.common_account_sign_in()}
+              </Link>{' '}
+              {m.common_account_sign_in_after()}
+            </p>
+          )}
+        </div>
+      </div>
     );
   }
   const subscription = data.subscription;
   return (
     <div className="account-panel">
       <header className="account-heading">
-        <Heading id="account-title">{m.common_account_heading()}</Heading>
+        {title}
         <p className="muted">{m.common_account_signed_in_as({ email: data.user.email })}</p>
       </header>
 
@@ -305,7 +321,7 @@ export function AccountDialog() {
     <dialog
       ref={dialog}
       className="dialog account-dialog"
-      aria-labelledby="account-title"
+      aria-labelledby="account-dialog-title"
       onClose={() => setOpen(false)}
       onClick={(e) => {
         if (e.target === e.currentTarget) close();

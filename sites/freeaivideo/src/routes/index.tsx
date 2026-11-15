@@ -10,10 +10,11 @@ import { notifyTrialsChanged, signupTrialDescription, useTrials } from '~/lib/tr
 import { notifyCreditsChanged } from '~/lib/use-credit-balance';
 import { m } from '~/paraglide/messages.js';
 import { getLocale } from '~/paraglide/runtime.js';
-import { SUPPORT_EMAIL } from '~/site/legal';
 import { useSharedCreditBalance } from '~/site/credit-balance';
 import { CreditSummary, creditShortfall } from '~/site/credit-summary';
 import { getFaqs } from '~/site/faq';
+import { HorizonScene } from '~/site/horizon-scene';
+import { SUPPORT_EMAIL } from '~/site/legal';
 import { Plans, PricingLink } from '~/site/pricing';
 import { getPromptPreset } from '~/site/prompt-presets';
 import { openSignIn } from '~/site/sign-in';
@@ -191,7 +192,9 @@ function ToolPage() {
   const requestedPrompt = useRef<string | null>(null);
   const freeMode = mode !== 'paid';
   const availableModels = freeMode ? models.filter((item) => item.guest) : models;
-  const model = availableModels.find((item) => item.id === modelId) ?? (freeMode ? defaultTrialModel : availableModels[0]!);
+  const model =
+    availableModels.find((item) => item.id === modelId) ??
+    (freeMode ? defaultTrialModel : availableModels[0]!);
   const videoOptions = VIDEO_OPTIONS[model.id]!;
   const selectedAspectRatio = videoOptions.aspectRatios.includes(aspectRatio)
     ? aspectRatio
@@ -256,7 +259,8 @@ function ToolPage() {
     const url = new URL(window.location.href);
     // An explicit registration trial takes priority over a saved paid mode. Keep
     // the request across repeated development effects after the URL is cleaned.
-    const signupRequested = url.searchParams.get('trial') === 'signup' || requestedTrial.current === 'signup-trial';
+    const signupRequested =
+      url.searchParams.get('trial') === 'signup' || requestedTrial.current === 'signup-trial';
     if (saved) {
       setModelId(restoredModelId(saved.modelId, saved.mode, models, signupRequested));
       setPrompt(saved.prompt);
@@ -398,8 +402,9 @@ function ToolPage() {
 
   function applyPrompt(value: string) {
     setPrompt(value);
-    document.getElementById('prompt')?.focus();
-    document.getElementById('tool')?.scrollIntoView({ block: 'start', behavior: 'instant' });
+    const field = document.getElementById('prompt');
+    field?.focus({ preventScroll: true });
+    field?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
   }
 
   function chooseMode(nextMode: GenerationMode) {
@@ -416,19 +421,23 @@ function ToolPage() {
   }
 
   return (
-    <>
+    <div className="horizon-home">
       <ReturnNotice jobs={jobs} />
       <section className="tool" id="tool">
-        <div className="tool-heading">
-          <h1>{m.home_title()}</h1>
-          <p className="lead">{m.home_lead()}</p>
-        </div>
-
         <div className="workspace">
-          <form onSubmit={onSubmit} className="tool-form" aria-busy={!restored || submitting}>
+          <div className="tool-heading">
+            <h1>
+              {m.home_horizon_title()}
+              <em>{m.home_horizon_title_accent()}</em>
+              <span className="horizon-signup-label">{m.home_horizon_signup()}</span>
+            </h1>
+            <p className="lead">{m.home_lead()}</p>
+          </div>
+          <SceneStage onApply={() => applyPrompt(m.home_horizon_prompt())} />
+          <form id="composer" onSubmit={onSubmit} className="tool-form" aria-busy={!restored || submitting}>
             <div className="composer-heading">
               <label htmlFor="prompt">{m.home_composer_label()}</label>
-              <span>{m.home_composer_format()}</span>
+              <span aria-hidden="true">{prompt.length.toLocaleString(getLocale())} / 4,000</span>
             </div>
             <textarea
               id="prompt"
@@ -448,6 +457,18 @@ function ToolPage() {
                 </button>
               ))}
             </div>
+            <label className="generation-mode">
+              {m.home_tool_mode()}
+              <select
+                value={mode}
+                disabled={submitting}
+                onChange={(event) => chooseMode(event.target.value as GenerationMode)}
+              >
+                <option value="daily-trial">{m.home_tool_mode_daily()}</option>
+                <option value="signup-trial">{m.home_tool_mode_signup()}</option>
+                <option value="paid">{m.home_tool_mode_paid()}</option>
+              </select>
+            </label>
             <div className="tool-controls">
               <label>
                 {m.home_tool_model()}
@@ -481,9 +502,6 @@ function ToolPage() {
                   ))}
                 </select>
               </label>
-            </div>
-            {freeMode && <p className="model-choice-note">{m.home_models_paid_hint()}</p>}
-            <div className="tool-controls">
               <label>
                 {m.home_tool_resolution()}
                 <select
@@ -507,24 +525,12 @@ function ToolPage() {
                 >
                   {(freeMode ? [selectedDuration] : durations).map((seconds) => (
                     <option key={seconds} value={seconds}>
-                      {m.home_tool_seconds({ seconds })}
+                      {m.home_horizon_seconds({ seconds })}
                     </option>
                   ))}
                 </select>
               </label>
             </div>
-            <label className="generation-mode">
-              {m.home_tool_mode()}
-              <select
-                value={mode}
-                disabled={submitting}
-                onChange={(event) => chooseMode(event.target.value as GenerationMode)}
-              >
-                <option value="daily-trial">{m.home_tool_mode_daily()}</option>
-                <option value="signup-trial">{m.home_tool_mode_signup()}</option>
-                <option value="paid">{m.home_tool_mode_paid()}</option>
-              </select>
-            </label>
             {model.maxReferences > 0 && (
               <label className="upload-control">
                 <span className="upload-icon" aria-hidden="true">
@@ -565,9 +571,6 @@ function ToolPage() {
               </div>
             )}
             {freeMode && config.turnstileSiteKey && <div id="turnstile-slot" />}
-            <p className="small">
-              <strong>{m.common_no_watermark()}</strong>
-            </p>
             {mode === 'paid' && (
               <CreditSummary
                 status={balance.status}
@@ -604,9 +607,12 @@ function ToolPage() {
                           ? m.home_tool_submit_signup()
                           : m.home_tool_submit_free()}
               </span>
-              <span aria-hidden="true">{submitting ? '◌' : '→'}</span>
+              <span className="generate-icon" aria-hidden="true">
+                {submitting ? '◌' : '↗'}
+              </span>
             </button>
             <p className="muted small" id="free-note">
+              <strong>{m.common_no_watermark()}</strong>
               {mode === 'paid'
                 ? m.home_tool_credit_note({ cost })
                 : mode === 'signup-trial'
@@ -715,30 +721,6 @@ function ToolPage() {
               <GenerationError code={error.code} cost={cost} />
             )}
           </form>
-          <figure className="inspiration">
-            <img
-              src="/images/planet-walk.webp"
-              srcSet="/images/planet-walk-small.webp 720w, /images/planet-walk.webp 1440w"
-              sizes="(max-width: 760px) 100vw, 50vw"
-              width={1440}
-              height={960}
-              alt={m.home_inspiration_alt()}
-              fetchPriority="high"
-            />
-            <figcaption>
-              <span className="inspiration-label">{m.home_inspiration_label()}</span>
-              <div className="inspiration-bottom">
-                <p>
-                  {m.home_inspiration_title_first()}
-                  <br />
-                  {m.home_inspiration_title_second()}
-                </p>
-                <button type="button" onClick={() => applyPrompt(m.home_idea_world_prompt())}>
-                  {m.home_inspiration_apply()} <span aria-hidden="true">→</span>
-                </button>
-              </div>
-            </figcaption>
-          </figure>
         </div>
         <div className="results" id="results">
           {jobs.map((job) => (
@@ -761,6 +743,36 @@ function ToolPage() {
           <a className="text-link" href="#tool">
             {m.home_cases_create()} <span aria-hidden="true">↑</span>
           </a>
+        </div>
+        <div className="cases">
+          {CASES.map((item) => (
+            <figure className="case" key={item.src}>
+              <video
+                src={item.src}
+                poster={item.poster}
+                controls
+                muted
+                loop
+                playsInline
+                preload="none"
+                aria-label={item.title()}
+              />
+              <figcaption>
+                <div className="case-heading">
+                  <h3>{item.title()}</h3>
+                  <button
+                    type="button"
+                    onClick={() => applyPrompt(item.prompt)}
+                    aria-label={m.home_case_use_prompt({ title: item.title() })}
+                    title={m.home_case_use_prompt_title()}
+                  >
+                    ↑
+                  </button>
+                </div>
+                <p>“{item.prompt}”</p>
+              </figcaption>
+            </figure>
+          ))}
         </div>
         <h3 className="image-cases-heading">{m.home_image_case_title()}</h3>
         <div className="image-cases">
@@ -801,36 +813,6 @@ function ToolPage() {
                 <p>“{item.prompt}”</p>
                 <p>{item.limit()}</p>
                 <p>{m.home_image_case_prompt_note()}</p>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-        <div className="cases">
-          {CASES.map((item) => (
-            <figure className="case" key={item.src}>
-              <video
-                src={item.src}
-                poster={item.poster}
-                controls
-                muted
-                loop
-                playsInline
-                preload="none"
-                aria-label={item.title()}
-              />
-              <figcaption>
-                <div className="case-heading">
-                  <h3>{item.title()}</h3>
-                  <button
-                    type="button"
-                    onClick={() => applyPrompt(item.prompt)}
-                    aria-label={m.home_case_use_prompt({ title: item.title() })}
-                    title={m.home_case_use_prompt_title()}
-                  >
-                    ↑
-                  </button>
-                </div>
-                <p>“{item.prompt}”</p>
               </figcaption>
             </figure>
           ))}
@@ -884,6 +866,9 @@ function ToolPage() {
             <br />
             {m.home_pricing_no_subscription()}
           </p>
+          <a className="text-link" href="/pricing.md">
+            {m.home_pricing_markdown()}
+          </a>
         </div>
         <div className="pricing-content">
           <Plans selectedCost={mode === 'paid' ? cost : null} />
@@ -913,7 +898,69 @@ function ToolPage() {
           ))}
         </div>
       </section>
-    </>
+    </div>
+  );
+}
+
+function SceneStage({ onApply }: { onApply: () => void }) {
+  const [motion, setMotion] = useState(true);
+  const [resetKey, setResetKey] = useState(0);
+
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const syncMotion = () => setMotion(!preference.matches);
+    syncMotion();
+    preference.addEventListener('change', syncMotion);
+    return () => preference.removeEventListener('change', syncMotion);
+  }, []);
+
+  return (
+    <figure className="horizon-stage">
+      <div className="horizon-viewer">
+        <div className="horizon-still" aria-hidden="true" />
+        <HorizonScene label={m.home_horizon_scene_access()} motion={motion} resetKey={resetKey} />
+        <div className="horizon-viewer-label" aria-hidden="true">
+          <span />
+          <span className="horizon-live-label">{m.home_horizon_scene_type()}</span>
+          <span className="horizon-static-label">{m.home_horizon_scene_still()}</span>
+        </div>
+        <div className="horizon-viewer-marks" aria-hidden="true" />
+      </div>
+      <figcaption className="horizon-stage-caption">
+        <div className="horizon-scene-info">
+          <p className="horizon-scene-title">{m.home_horizon_scene_name()}</p>
+          <p className="horizon-interaction">
+            <span className="horizon-pointer-help">{m.home_horizon_pointer_help()}</span>
+            <span className="horizon-touch-help">{m.home_horizon_touch_help()}</span>
+          </p>
+        </div>
+        <div className="horizon-stage-controls">
+          <button
+            type="button"
+            className="horizon-icon-button"
+            aria-label={motion ? m.home_horizon_pause() : m.home_horizon_play()}
+            title={motion ? m.home_horizon_pause() : m.home_horizon_play()}
+            onClick={() => setMotion((current) => !current)}
+          >
+            <span aria-hidden="true" className={motion ? 'horizon-pause-icon' : 'horizon-play-icon'} />
+          </button>
+          <button
+            type="button"
+            className="horizon-icon-button"
+            aria-label={m.home_horizon_reset()}
+            title={m.home_horizon_reset()}
+            onClick={() => setResetKey((current) => current + 1)}
+          >
+            <span aria-hidden="true" className="horizon-reset-icon">
+              ↺
+            </span>
+          </button>
+          <button type="button" className="horizon-apply" onClick={onApply}>
+            {m.home_horizon_use_prompt()} <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </figcaption>
+    </figure>
   );
 }
 

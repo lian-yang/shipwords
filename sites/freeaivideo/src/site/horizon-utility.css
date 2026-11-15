@@ -1,0 +1,338 @@
+.admin section > p {
+  max-width: 74ch;
+  margin: 0 0 13px;
+  line-height: 1.65;
+}
+
+.utility-frame {
+  --utility-title-size: clamp(34px, 5vw, 58px);
+  width: min(100%, 820px);
+  min-width: 0;
+  margin: clamp(40px, 6.1vw, 88px) auto clamp(60px, 7vw, 104px);
+}
+
+.utility-frame.utility-card {
+  --utility-title-size: clamp(32px, 4.4vw, 45px);
+  width: min(100%, 470px);
+  padding: clamp(24px, 4.5vw, 40px);
+  border: 1px solid var(--color-line);
+  border-radius: 13px;
+  background:
+    radial-gradient(
+      ellipse at 12% 0%,
+      color-mix(in srgb, var(--color-accent) 11%, transparent),
+      transparent 60%
+    ),
+    var(--color-surface);
+  box-shadow: 0 22px 70px rgb(0 0 0 / 0.24);
+}
+
+.utility-frame:where(.utility-card) h1 {
+  margin-bottom: 16px;
+}
+
+.admin-heading h1 {
+  margin: 0;
+  font-size: clamp(27px, 4.4vw, 49px);
+  line-height: 1.12;
+  font-weight: 500;
+}
+
+.utility-frame h1,
+.account.utility-frame .account-heading h1 {
+  color: var(--color-ink);
+  font-size: var(--utility-title-size);
+  font-weight: 500;
+  line-height: 1.04;
+  letter-spacing: -0.052em;
+  overflow-wrap: anywhere;
+}
+
+.utility-frame.utility-card p {
+  line-height: 1.65;
+}
+
+.utility-frame a:not(.button),
+.sign-in .link-button {
+  color: var(--color-accent);
+  text-decoration-color: color-mix(in srgb, var(--color-accent) 62%, transparent);
+}
+
+.sign-in form input {
+  min-height: 46px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-wash);
+  color: var(--color-ink);
+  font-size: 16px;
+}
+
+.sign-in .google-button {
+  width: min(300px, 100%);
+  margin: 18px auto 0;
+}
+
+.sign-in .or {
+  margin-top: 10px;
+  color: var(--color-muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.account.utility-frame :is(.account-heading, .account-empty) {
+  margin-bottom: 28px;
+}
+
+.account.utility-frame .account-heading p {
+  margin-top: 9px;
+}
+
+.account.utility-frame .account-empty {
+  min-height: 124px;
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid var(--color-line);
+  border-radius: 11px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+
+.account-empty a {
+  color: var(--color-accent);
+}
+
+/* Leave the order URL through the return page's full-document links, so analytics
+   can initialize on a clean URL before flushing the deferred confirmation. */
+.horizon-site:has(> main > .billing-status) > :is(.horizon-header, .horizon-footer) {
+  display: none;
+}
+
+.horizon-site > main:has(> .billing-status) {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+}
+
+.billing-mark {
+  position: relative;
+  display: inline-grid;
+  width: 49px;
+  aspect-ratio: 1;
+  place-items: center;
+  margin-bottom: 24px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 44%, var(--color-line));
+  background: color-mix(in srgb, var(--color-accent) 13%, var(--color-surface));
+  color: var(--color-accent);
+}
+
+.billing-mark::before {
+  content: "";
+}
+
+.billing-status[data-status="checking"] .billing-mark::before {
+  width: 20px;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 38%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: billing-spin 1s linear infinite;
+}
+
+.billing-status[data-status="paid"] .billing-mark::before {
+  width: 16px;
+  height: 9px;
+  transform: translateY(-2px) rotate(-45deg);
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+}
+
+.billing-status[data-status="pending"] .billing-mark::before {
+  width: 14px;
+  height: 2px;
+  background: currentColor;
+}
+
+.billing-status .button {
+  margin-top: 22px;
+}
+
+.billing-reference {
+  display: grid;
+  gap: 6px;
+  margin: 23px 0 0;
+  padding-top: 17px;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.billing-reference dd {
+  margin: 0;
+  color: var(--color-ink);
+  font-family: var(--horizon-mono);
+  overflow-wrap: anywhere;
+}
+
+@keyframes billing-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.horizon-site .admin {
+  width: 100%;
+  padding: clamp(38px, 5.8vw, 78px) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: clamp(21px, 3.3vw, 34px);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.admin-heading button {
+  flex: 0 0 auto;
+}
+
+.admin > :is(section, p) {
+  margin-top: 26px;
+}
+
+.admin section > h2 {
+  margin: 0 0 12px;
+  font-size: clamp(17px, 2.25vw, 23px);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.admin .admin-overview {
+  display: grid;
+  margin: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  gap: 10px;
+}
+
+.admin .admin-overview > div,
+.admin-dist {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  background: var(--color-surface);
+}
+
+.admin .admin-overview dt {
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.admin .admin-overview dd {
+  margin: 5px 0 0;
+  font-size: clamp(20px, 3vw, 29px);
+  font-weight: 550;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.admin .admin-overview dd > span {
+  display: block;
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+.admin-table-scroll {
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  background: var(--color-surface);
+  scrollbar-width: thin;
+  overscroll-behavior-inline: contain;
+}
+
+.admin .admin-table {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin .admin-table:has(th:nth-child(8)) {
+  min-width: 56rem;
+}
+
+.admin .admin-table :is(th, td) {
+  max-width: 24ch;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: top;
+  text-align: left;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.admin .admin-table th {
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
+  color: var(--color-muted);
+}
+
+.admin .admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin .admin-table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-accent) 3.5%, var(--color-surface));
+}
+
+.horizon-site :is(.admin, .account-panel) button:disabled:not(.primary) {
+  border-color: var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+
+.admin-table code {
+  font-family: var(--horizon-mono);
+  font-size: 12px;
+}
+
+.admin .admin-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.admin .admin-dists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(196px, 100%), 1fr));
+  gap: 10px;
+}
+
+.admin-dist ul {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-dist li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 7px 0;
+  border-top: 1px solid var(--color-line);
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .billing-status[data-status="checking"] .billing-mark::before {
+    animation: none;
+  }
+}
