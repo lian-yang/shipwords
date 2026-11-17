@@ -573,6 +573,29 @@ describe('Yir errors', () => {
       retryable: false,
     });
   });
+
+  it('a numeric error code (DOMException timeout abort is 23) never reaches the stored error code', async () => {
+    const timeout = Object.assign(new Error('The operation was aborted due to timeout'), { code: 23 });
+    await expect(rejecting(timeout).adapter.submit(input, 'k3')).rejects.toMatchObject({
+      code: 'yir_error',
+      message: 'The operation was aborted due to timeout',
+    });
+    const client = {
+      getJobStatus: async () => ({ status: 'failed', error: { code: 23, message: 'timed out' } }),
+    };
+    await expect(
+      new YirAdapter({ apiKey: 'k' }, client as never).poll('j', 0),
+    ).resolves.toMatchObject({ state: 'failed', code: 'upstream_failed', message: 'timed out' });
+  });
+
+  it('an upstream code colliding with a billing sentinel falls back, settlement stays package-owned', async () => {
+    await expect(
+      rejecting({ status: 500, code: 'billing_pending', message: 'odd upstream' }).adapter.submit(
+        input,
+        'k4',
+      ),
+    ).rejects.toMatchObject({ code: 'yir_error' });
+  });
 });
 
 describe('Yir request', () => {

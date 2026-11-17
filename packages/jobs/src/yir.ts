@@ -19,10 +19,21 @@ type YirClient = ReturnType<typeof createNodeYirClient>;
  * The SDK already retries network errors and 502/503/504 on submits and status reads, and Yir retries the task across providers,
  * so an error that reaches us is final: retrying in the Workflow would only keep the user waiting. A rate limit (429) is the exception.
  */
+/** DOMExceptions carry numeric codes (a timeout abort is 23), and a code colliding with the package's
+    billing_* sentinels would hijack settlement; only other real strings may become the stored error code. */
+function upstreamCode(code: unknown, fallback: string): string {
+  return typeof code === 'string' && code && !code.startsWith('billing_') ? code : fallback;
+}
+
 function toUpstreamError(error: unknown): UpstreamError {
   const e = error as { code?: string; message?: string; status?: number };
   const rejected = e?.status !== undefined && [400, 401, 403, 404, 422, 429].includes(e.status);
-  return new UpstreamError(e?.code ?? 'yir_error', e?.message ?? String(error), e?.status === 429, rejected);
+  return new UpstreamError(
+    upstreamCode(e?.code, 'yir_error'),
+    e?.message ?? String(error),
+    e?.status === 429,
+    rejected,
+  );
 }
 
 type YirRequest =
@@ -118,10 +129,10 @@ export class YirAdapter implements UpstreamAdapter {
       throw error instanceof UpstreamError ? error : toUpstreamError(error);
     }
     if (status.status === 'failed' || status.status === 'cancelled') {
+      const fallback = status.status === 'cancelled' ? 'upstream_cancelled' : 'upstream_failed';
       return {
         state: 'failed',
-        code:
-          status.error?.code ?? (status.status === 'cancelled' ? 'upstream_cancelled' : 'upstream_failed'),
+        code: upstreamCode(status.error?.code, fallback),
         message: status.error?.message ?? status.status,
       };
     }
