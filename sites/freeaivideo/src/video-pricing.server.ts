@@ -8,6 +8,7 @@ export const VIDEO_UPSTREAMS: Readonly<
     string,
     {
       upstreamModel: string;
+      upstream?: 'yir' | 'zhipu';
       generateAudio?: boolean;
       referenceRole?: 'reference_image' | 'first_frame';
       requiresReference?: boolean;
@@ -15,6 +16,7 @@ export const VIDEO_UPSTREAMS: Readonly<
   >
 > = {
   [SHARED_VIDEO_IDS.gemini11]: { upstreamModel: 'google/gemini-omni-1.1-flash' },
+  'cogvideox-flash-v2': { upstreamModel: 'cogvideox-flash', upstream: 'zhipu' },
   'seedance-2-5-v2': { upstreamModel: 'bytedance/seedance-2.5', generateAudio: false },
   'seedance-2-0-mini-v2': { upstreamModel: 'bytedance/seedance-2.0-mini', generateAudio: false },
   'minimax-h3-v2': { upstreamModel: 'minimax/minimax-h3', generateAudio: true },
@@ -63,6 +65,8 @@ export const VIDEO_UPSTREAMS: Readonly<
   'heygen-video-1-v2': { upstreamModel: 'heygen/heygen-video-1', generateAudio: true },
 };
 const COST_SHARE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  // Zhipu's cogvideox-flash is free upstream: no cost share, the job ceiling stays at zero.
+  'cogvideox-flash-v2': { '1080p': '0' },
   [SHARED_VIDEO_IDS.gemini11]: { '720p': '0.7', '1080p': '0.7', '4K': '0.65' },
   'seedance-2-5-v2': { '480p': '0.65', '720p': '0.6', '1080p': '0.5' },
   'seedance-2-0-mini-v2': { '480p': '0.7', '720p': '0.7' },
@@ -95,6 +99,7 @@ const COST_SHARE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   'heygen-video-1-v2': { '768P': '0.7', '2K': '0.65' },
 };
 const TRIAL_CAP: Readonly<Record<string, string>> = {
+  'cogvideox-flash-v2': '0.00',
   'seedance-2-5-v2': '0.50',
   'seedance-2-0-mini-v2': '0.12',
   'minimax-h3-v2': '0.32',

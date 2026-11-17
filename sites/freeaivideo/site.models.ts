@@ -2,6 +2,10 @@ import { definePublicModels } from '@shipwords/jobs/models';
 
 // Retail credits only. Server-side source prices, upstream identifiers and ceilings never ship to the browser.
 const PRICES: Readonly<Record<string, Readonly<Record<string, Readonly<Record<string, number>>>>>> = {
+  // Free upstream, priced as the site's cheapest paid tier.
+  'cogvideox-flash-v2': {
+    '1080p': { '5': 6 },
+  },
   'gemini-omni-1-1-flash-v2': {
     '720p': { '4': 11, '6': 13, '8': 16, '10': 19 },
     '1080p': { '4': 11, '6': 13, '8': 16, '10': 19 },
@@ -971,6 +975,16 @@ export default definePublicModels([
     guest: true,
     allowedParameters: ['aspect_ratio', 'duration', 'resolution'],
     defaults: { aspect_ratio: '16:9', duration: 3, resolution: '360p' },
+    maxReferences: 1,
+  },
+  {
+    id: 'cogvideox-flash-v2',
+    name: 'CogVideoX Flash',
+    kind: 'video',
+    credits: (parameters: Record<string, unknown>) => priceCredits('cogvideox-flash-v2', parameters),
+    guest: true,
+    allowedParameters: ['aspect_ratio', 'duration', 'resolution'],
+    defaults: { aspect_ratio: '16:9', duration: 5, resolution: '1080p' },
     maxReferences: 1,
   },
   {

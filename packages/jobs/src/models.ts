@@ -8,7 +8,7 @@ export interface ModelDefinition {
   name: string;
   /** music: style prompt plus optional lyrics in, songs out; no references and no effect. */
   kind: 'image' | 'video' | 'music';
-  upstream: 'yir';
+  upstream: 'yir' | 'zhipu';
   upstreamModel: string;
   /** Opt new jobs into provider-billing-confirmed failure settlement. Server-side only. */
   verifiedBilling?: boolean;

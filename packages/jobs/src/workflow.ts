@@ -10,6 +10,7 @@ import { emailOnFinish } from './notify';
 import { runGeneration } from './runner';
 import type { UpstreamAdapter } from './upstream';
 import { YirAdapter } from './yir';
+import { ZhipuAdapter } from './zhipu';
 
 export interface JobsEnv {
   DB: D1Database;
@@ -19,6 +20,8 @@ export interface JobsEnv {
   YIR_BASE_URL?: string;
   /** Yir referral code included for people deploying this starter; optional for your own sites. */
   YIR_REFERRAL_CODE?: string;
+  /** Zhipu BigModel key for `upstream: 'zhipu'` models (the free cogvideox-flash trial). */
+  ZHIPU_API_KEY?: string;
   /** Effect compose container (Durable Object binding of the Container class); sites without effect compose don't need it. */
   COMPOSE?: DurableObjectNamespace;
   /** For job-finished emails; shares the sender address with sign-in codes. Resend first, CF binding fallback. */
@@ -40,13 +43,19 @@ export function createAdapters(env: JobsEnv): Record<string, UpstreamAdapter> {
     throw new Error(
       'UPSTREAM_MOCK is set but the mock is inactive (live payment key or non-local APP_URL); refusing to call the upstream',
     );
-  if (mock) return { yir: new MockAdapter(mock, undefined, env.APP_URL!.replace(/\/$/, '')) };
+  if (mock)
+    return {
+      yir: new MockAdapter(mock, undefined, env.APP_URL!.replace(/\/$/, '')),
+      zhipu: new MockAdapter(mock, undefined, env.APP_URL!.replace(/\/$/, '')),
+    };
   return {
     yir: new YirAdapter({
       apiKey: env.YIR_API_KEY,
       ...(env.YIR_BASE_URL ? { baseURL: env.YIR_BASE_URL } : {}),
       ...(env.YIR_REFERRAL_CODE ? { referralCode: env.YIR_REFERRAL_CODE } : {}),
     }),
+    // Like Yir, the adapter is constructed even without a key: jobs on it fail inside a step and refund.
+    zhipu: new ZhipuAdapter({ apiKey: env.ZHIPU_API_KEY ?? '' }),
   };
 }
 

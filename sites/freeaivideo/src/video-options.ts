@@ -24,6 +24,13 @@ export function restoredModelId(
 }
 
 export const VIDEO_OPTIONS: Readonly<Record<string, VideoOptions>> = {
+  // cogvideox-flash renders ~5 s at a fixed length; its smallest 16:9 size is 1080p.
+  'cogvideox-flash-v2': {
+    options: [{ resolution: '1080p', durations: [5] }],
+    trial: { resolution: '1080p', duration: 5 },
+    default: { resolution: '1080p', duration: 5 },
+    aspectRatios: ['16:9', '9:16', '1:1'],
+  },
   'gemini-omni-1-1-flash-v2': {
     options: [
       { resolution: '720p', durations: [4, 6, 8, 10] },

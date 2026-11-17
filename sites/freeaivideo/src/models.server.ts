@@ -11,7 +11,7 @@ const server = Object.fromEntries(
     return [
       model.id,
       {
-        upstream: 'yir',
+        upstream: spec.upstream ?? 'yir',
         upstreamModel: spec.upstreamModel,
         verifiedBilling: true,
         timeoutMinutes: 20,
