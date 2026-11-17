@@ -48,6 +48,12 @@ export class UpstreamError extends Error {
 
 export interface UpstreamAdapter {
   readonly name: string;
+  /**
+   * True when the upstream can never bill (free models). A submit that exhausted its retries without returning
+   * a task ID normally freezes a verified job until a human rules out a hidden charge; on a free upstream no
+   * charge is possible, so reconciliation may settle such jobs at zero immediately. Absent = the upstream bills.
+   */
+  readonly freeUpstream?: boolean;
   /** Validate local configuration and serialization without making a network request. */
   prepare?(input: SubmitInput): void;
   /** Repeated submits with the same idempotencyKey must return the same upstream task. */

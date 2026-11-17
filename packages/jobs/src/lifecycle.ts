@@ -100,10 +100,17 @@ export async function appendUpstreamJob(
   if (ids.length !== index && !ids[index]?.startsWith(PENDING_UPSTREAM)) return false;
   const next = [...ids];
   next[index] = upstreamJobId;
+  // errorCode joins the guard: settlement may flip a failed row between this read and write (a free
+  // upstream can zero-settle a lost task ID while a very late submit lands); then the append must lose.
   const result = await db
     .update(jobs)
     .set({ upstreamJobId: next.join(',') })
-    .where(and(eq(jobs.id, jobId), eq(jobs.status, job.status), eq(jobs.upstreamJobId, job.upstreamJobId!)))
+    .where(and(
+      eq(jobs.id, jobId),
+      eq(jobs.status, job.status),
+      job.errorCode ? eq(jobs.errorCode, job.errorCode) : isNull(jobs.errorCode),
+      eq(jobs.upstreamJobId, job.upstreamJobId!),
+    ))
     .run();
   if (result.meta.changes > 0) return true;
   const latest = await loadJob(db, jobId);
@@ -214,8 +221,12 @@ export async function reconcileFailure(db: Db, jobId: string, adapters: Record<s
   if (job.errorCode === BILLING_PENDING) {
     const adapter = adapters[job.upstream];
     const ids = upstreamIds(job);
-    if (!adapter?.cost || ids.some((id) => id.startsWith(PENDING_UPSTREAM)) || !ids.length) return job;
-    const real = ids.filter((id) => !id.startsWith(SKIPPED_UPSTREAM));
+    if (!adapter?.cost || !ids.length) return job;
+    // A submit that never returned a task ID may still have created a charged task, so a billing upstream
+    // freezes the job until human-reviewed evidence resolves it. On a free upstream no charge is possible.
+    const lost = ids.some((id) => id.startsWith(PENDING_UPSTREAM));
+    if (lost && adapter.freeUpstream !== true) return job;
+    const real = ids.filter((id) => !id.startsWith(SKIPPED_UPSTREAM) && !(lost && id.startsWith(PENDING_UPSTREAM)));
     try {
       const statuses = await Promise.all(real.map((id) => adapter.poll(id, 0)));
       if (statuses.some((status) => status.state === 'running')) return job;

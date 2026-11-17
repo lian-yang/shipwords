@@ -11,6 +11,7 @@ Status: in progress (2026-11-17). Motivation and channel survey: [free-trial-cha
 - Idempotency: the job's idempotency key is sent as `request_id`. BigModel does not document replay semantics for it, so a step retry after an ambiguous failure may create a second free task — acceptable because the upstream bills nothing; `cost()` always returns `$0, settled`.
 - No cancel endpoint: `cancel()` is a no-op; an abandoned task keeps rendering on Zhipu's free quota. No long-poll parameter: `poll()` returns immediately; the runner's poll cadence governs.
 - Rate limits are concurrency-based (≈3 in-flight tasks on free accounts): HTTP 429/5xx and network errors map to retryable `UpstreamError`s, 400/401/403/404/422 to rejected-and-final, matching the runner's submit/poll error paths.
+- `freeUpstream = true`: cogvideox-flash never bills, so `reconcileFailure` settles a submit that exhausted its retries without a task ID at zero instead of freezing the job in `billing_pending`. Probed live 2026-11-17: an evening-peak 1305 overload outlasted all five step retries and froze a trial job exactly this way, which motivated the flag.
 - `watermark_enabled` is left at its default (on): Zhipu only allows disabling watermarks after signing a disclaimer in their console. Trial output is watermarked until that decision is made deliberately.
 
 ## Live probe (2026-11-17 ~18:00 CST, real key)

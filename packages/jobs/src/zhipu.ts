@@ -35,10 +35,16 @@ function toUpstreamError(error: unknown): UpstreamError {
   return new UpstreamError(e?.code ?? 'zhipu_error', e?.message ?? String(error), retryable, rejected);
 }
 
+/** Models this adapter may serve: the BigModel catalog has paid video models on the same endpoint, and the
+ *  adapter's free settlement contract (`freeUpstream`) only holds for this list. */
+const FREE_MODELS = new Set(['cogvideox-flash']);
+
 /** The task body for one video: text and/or a single reference image; `request_id` carries the idempotency key. */
 export function buildZhipuVideoRequest(input: SubmitInput, idempotencyKey: string): Record<string, unknown> {
   if (input.kind !== 'video')
     throw new UpstreamError('invalid_input', `zhipu takes video jobs, got ${input.kind}`, false, true);
+  if (!FREE_MODELS.has(input.upstreamModel))
+    throw new UpstreamError('invalid_input', `${input.upstreamModel} is not on the zhipu free-model allowlist`, false, true);
   if (input.references.length > 1)
     throw new UpstreamError('invalid_input', 'zhipu takes at most one reference image', false, true);
   // The model fixes the length (~5 s), so duration/resolution parameters are dropped; the aspect ratio
@@ -62,6 +68,8 @@ interface ZhipuTask {
 
 export class ZhipuAdapter implements UpstreamAdapter {
   readonly name = 'zhipu';
+  /** cogvideox-flash is free: a submit that never returned a task ID cannot hide a charge (see reconcileFailure). */
+  readonly freeUpstream = true;
 
   constructor(private readonly options: { apiKey: string; baseURL?: string }) {}
 

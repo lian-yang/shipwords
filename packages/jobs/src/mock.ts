@@ -57,6 +57,8 @@ const PREFIX = 'mock_';
  */
 export class MockAdapter implements UpstreamAdapter {
   readonly name = 'mock';
+  /** Serves both the yir and zhipu keys in mock mode, and never bills anyone. */
+  readonly freeUpstream = true;
 
   constructor(
     private readonly mode: MockMode,

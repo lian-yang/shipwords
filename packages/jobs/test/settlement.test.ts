@@ -8,18 +8,19 @@ import type { PollResult, UpstreamAdapter, UpstreamCost } from '../src/upstream'
 
 const db = createDb(env.DB);
 const input = { upstreamModel: 'vendor/model', kind: 'video' as const, prompt: '测试', references: [], parameters: { duration: 4 }, maxCost: '0.12' };
-async function job() {
+async function job(upstream = 'yir') {
   const id = `j_${crypto.randomUUID()}`;
   const userId = `u_${crypto.randomUUID()}`;
   await grantCredits(db, { userId, amount: 20, idemKey: `g:${id}`, source: 'test' });
   await spendCredits(db, { userId, amount: 10, idemKey: spendKey(id) }, [db.insert(jobs).values({
-    id, userId, modelId: 'x', kind: 'video', upstream: 'yir', prompt: 'x', inputJson: '{"_verifiedBilling":true}', costCredits: 10,
+    id, userId, modelId: 'x', kind: 'video', upstream, prompt: 'x', inputJson: '{"_verifiedBilling":true}', costCredits: 10,
   })]);
   return { id, userId };
 }
-function adapter(status: PollResult, cost: UpstreamCost | Error, calls: string[] = []): UpstreamAdapter {
-  return { name: 'yir', submit: async () => { calls.push('submit'); return { upstreamJobId: 'unexpected' }; },
-    poll: async () => status, cancel: async () => {}, cost: async () => { if (cost instanceof Error) throw cost; return cost; } };
+function adapter(status: PollResult, cost: UpstreamCost | Error, calls: string[] = [], free = false): UpstreamAdapter {
+  return { name: 'yir', ...(free ? { freeUpstream: true } : {}), submit: async () => { calls.push('submit'); return { upstreamJobId: 'unexpected' }; },
+    poll: async (id: string) => { calls.push(`poll:${id}`); return status; }, cancel: async () => {},
+    cost: async (id: string) => { calls.push(`cost:${id}`); if (cost instanceof Error) throw cost; return cost; } };
 }
 async function submitted(id: string) {
   const pending = pendingSubmit(input, id);
@@ -81,6 +82,33 @@ describe('billing-aware settlement', () => {
     expect(await loadJob(db, id)).toMatchObject({ errorCode: BILLING_PENDING });
     expect((await getBalance(db, userId)).available).toBe(10);
   });
+  it('a free upstream settles a lost task ID at zero; a billing one still freezes', async () => {
+    // Lost task ID: the pending submission stays recorded, the free adapter settles it without asking the upstream.
+    const lost = await job('zhipu');
+    await claimUpstreamJob(db, lost.id, 0, pendingSubmit(input, lost.id));
+    await markFailed(db, lost.id, 'failed', 'upstream_failed', 'overloaded');
+    const calls: string[] = [];
+    await reconcileFailure(db, lost.id, { zhipu: adapter(terminal, { usd: '0', settled: true }, calls, true) });
+    expect(await loadJob(db, lost.id)).toMatchObject({ errorCode: BILLING_REFUNDED, upstreamCostUsd: '0.000000' });
+    expect((await getBalance(db, lost.userId)).available).toBe(20);
+    expect(calls).toEqual([]);
+    // Same shape on a billing upstream keeps the freeze.
+    const frozen = await job();
+    await claimUpstreamJob(db, frozen.id, 0, pendingSubmit(input, frozen.id));
+    await markFailed(db, frozen.id, 'failed', 'upstream_failed', 'overloaded');
+    await reconcileFailure(db, frozen.id, { yir: adapter(terminal, { usd: '0', settled: true }, calls) });
+    expect(await loadJob(db, frozen.id)).toMatchObject({ errorCode: BILLING_PENDING });
+    expect((await getBalance(db, frozen.userId)).available).toBe(10);
+  });
+  it('a free upstream still waits for real tasks and still charges when one bills', async () => {
+    const { id, userId } = await job('zhipu'); await submitted(id); await markFailed(db, id, 'failed', 'x', 'x');
+    await reconcileFailure(db, id, { zhipu: adapter({ state: 'running' }, { usd: '0', settled: true }, [], true) });
+    expect(await loadJob(db, id)).toMatchObject({ errorCode: BILLING_PENDING });
+    expect((await getBalance(db, userId)).available).toBe(10);
+    await reconcileFailure(db, id, { zhipu: adapter(terminal, { usd: '0.5', settled: true }, [], true) });
+    expect(await loadJob(db, id)).toMatchObject({ errorCode: 'billing_charged', upstreamCostUsd: '0.500000' });
+    expect((await getBalance(db, userId)).available).toBe(10);
+  });
   it('records a late verified pending submission after failure so its cost can be settled', async () => {
     const { id, userId } = await job(); await submitted(id);
     expect(await claimUpstreamJob(db, id, 1, pendingSubmit(input, `${id}:second`))).toBe(true);
@@ -112,5 +140,29 @@ describe('billing-aware settlement', () => {
     await reconcileFailure(db, id, { yir: upstream });
     expect(await loadJob(db, id)).toMatchObject({ errorCode: 'billing_charged', upstreamCostUsd: '0.00000001' });
     expect((await getBalance(db, userId)).available).toBe(10);
+  });
+  it('a free upstream polls and bills only the real tasks among lost ones', async () => {
+    const { id } = await job('zhipu'); await submitted(id);
+    const pending = pendingSubmit(input, `${id}:second`);
+    expect(await claimUpstreamJob(db, id, 1, pending)).toBe(true);
+    await markFailed(db, id, 'failed', 'x', 'x');
+    const calls: string[] = [];
+    await reconcileFailure(db, id, { zhipu: adapter(terminal, { usd: '0', settled: true }, calls, true) });
+    expect(calls).toEqual(['poll:up_1', 'cost:up_1']);
+    expect(await loadJob(db, id)).toMatchObject({ errorCode: BILLING_REFUNDED, upstreamCostUsd: '0.000000' });
+  });
+  it('settlement and a very late submit race to a safe state', async () => {
+    const { id, userId } = await job('zhipu');
+    await claimUpstreamJob(db, id, 0, pendingSubmit(input, id));
+    await markFailed(db, id, 'failed', 'upstream_failed', 'overloaded');
+    await Promise.all([
+      reconcileFailure(db, id, { zhipu: adapter(terminal, { usd: '0', settled: true }, [], true) }),
+      appendUpstreamJob(db, id, 0, 'up_late'),
+    ]);
+    const row = await loadJob(db, id);
+    expect([BILLING_PENDING, BILLING_REFUNDING, BILLING_REFUNDED]).toContain(row!.errorCode);
+    // Whichever way the writes interleave, a free job never ends charged, and credits always return.
+    expect(row!.upstreamCostUsd === null || /^0(\.|$)/.test(row!.upstreamCostUsd)).toBe(true);
+    expect((await getBalance(db, userId)).available).toBe(20);
   });
 });
