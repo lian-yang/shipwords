@@ -52,11 +52,25 @@ function FrutigerAeroYamsPage() {
       <p>{m.pages_frutigerayams_format_body()}</p>
       <h2>{m.pages_frutigerayams_make_heading()}</h2>
       <p>{m.pages_frutigerayams_make_body()}</p>
+      <p>
+        <a className="button primary" href="/?preset=frutiger-aero-yams#tool">
+          {m.pages_frutigerayams_generate_link()}
+        </a>
+      </p>
       <h2>{m.pages_frutigerayams_prompt_heading()}</h2>
       <ul>
-        <li>{m.pages_frutigerayams_prompt_1()}</li>
-        <li>{m.pages_frutigerayams_prompt_2()}</li>
-        <li>{m.pages_frutigerayams_prompt_3()}</li>
+        <li>
+          {m.pages_frutigerayams_prompt_1()}{' '}
+          <a href="/?preset=frutiger-aero-yams#tool">{m.pages_frutigerayams_prompt_use()}</a>
+        </li>
+        <li>
+          {m.pages_frutigerayams_prompt_2()}{' '}
+          <a href="/?preset=frutiger-aero-yams-bubbles#tool">{m.pages_frutigerayams_prompt_use()}</a>
+        </li>
+        <li>
+          {m.pages_frutigerayams_prompt_3()}{' '}
+          <a href="/?preset=frutiger-aero-yams-terrarium#tool">{m.pages_frutigerayams_prompt_use()}</a>
+        </li>
       </ul>
       <p>{m.pages_frutigerayams_prompt_note()}</p>
       <h2>{m.pages_frutigerayams_questions_heading()}</h2>
@@ -74,6 +88,12 @@ function FrutigerAeroYamsPage() {
       </p>
       <p>
         {m.pages_frutigerayams_ready()} <a href="/?preset=frutiger-aero-yams#tool">{m.pages_frutigerayams_generate_link()}</a>
+      </p>
+      <h2>{m.pages_frutigerayams_more_heading()}</h2>
+      <p>
+        {m.pages_frutigerayams_more_livery_prefix()}
+        <a href="https://ai-livery-generator.vercel.app/">{m.pages_frutigerayams_more_livery_link()}</a>
+        {m.pages_frutigerayams_more_livery_suffix()}
       </p>
     </section>
   );

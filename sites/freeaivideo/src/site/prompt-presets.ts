@@ -12,6 +12,8 @@ const presets: Record<string, () => string> = {
   'nice-date': m.pages_nicedate_prompt_a,
   'w-chews-l-nibbles': m.pages_wchews_prompt_w,
   'frutiger-aero-yams': m.pages_frutigerayams_prompt_1,
+  'frutiger-aero-yams-bubbles': m.pages_frutigerayams_prompt_2,
+  'frutiger-aero-yams-terrarium': m.pages_frutigerayams_prompt_3,
   'fancy-cafe': m.pages_fancycafe_prompt_1,
   'red-carpet': m.pages_redcarpet_prompt_1,
   'mulmannan-floor': m.pages_mulmannan_prompt_solo,
