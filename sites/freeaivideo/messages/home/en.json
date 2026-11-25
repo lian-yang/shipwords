@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "home_meta_title": "{name} — Free AI Video Generator, No Sign-Up",
-  "home_meta_description": "Turn a text prompt or photo into a short AI video. Choose from five trial models when daily allowance is available, or use credits for more options.",
+  "home_meta_description": "Turn a text prompt or photo into a short AI video. Choose from {count} trial models when daily allowance is available, or use credits for more options.",
   "home_title": "Free AI Video Generator (No Sign-Up)",
-  "home_lead": "Turn a prompt or photo into a short video. Try one of five models free while daily trial slots are available.",
+  "home_lead": "Turn a prompt or photo into a short video. Try one of {count} models free while daily trial slots are available.",
   "home_horizon_title": "Free AI Video",
   "home_horizon_title_accent": " Generator",
   "home_horizon_signup": " (No Sign-Up)",

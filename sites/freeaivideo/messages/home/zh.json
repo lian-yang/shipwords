@@ -1,9 +1,9 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "home_meta_title": "{name} — 免费 AI 视频生成器，无需注册",
-  "home_meta_description": "用文字提示或照片生成 AI 短视频。每日额度可用时，可免费选择五个试用模型，或使用积分解锁更多选项。",
+  "home_meta_description": "用文字提示或照片生成 AI 短视频。每日额度可用时，可免费选择 {count} 个试用模型，或使用积分解锁更多选项。",
   "home_title": "免费 AI 视频生成器（无需注册）",
-  "home_lead": "用提示词或照片生成短视频。每日还有试用名额时，可以从五种模型里选一种免费试用。",
+  "home_lead": "用提示词或照片生成短视频。每日还有试用名额时，可以从 {count} 种模型里选一种免费试用。",
   "home_horizon_title": "免费 AI 视频",
   "home_horizon_title_accent": "生成器",
   "home_horizon_signup": "（无需注册）",

@@ -25,22 +25,45 @@ const pages = [
 
 describe('meme page prompt presets', () => {
   for (const locale of ['en', 'zh'] as const) {
-    it.each(pages)(`carries the first ${locale} example from both %s links`, (preset, route) => {
+    it.each(pages)(`carries the ${locale} example behind every %s preset link`, (preset, route) => {
       const originalGetLocale = getLocale;
       overwriteGetLocale(() => locale);
       try {
         const Component = route.options.component;
         if (!Component) throw new Error(`Missing page component for ${preset}`);
         const html = renderToStaticMarkup(createElement(Component));
+        const presetId = (href: string) => /^\/\?preset=([^&#]+)#tool$/.exec(href)?.[1];
         const links = [...html.matchAll(/<a\b[^>]*href="([^"]*)"[^>]*>/g)]
           .map((match) => match[1])
           .filter((href) => href?.startsWith('/?preset='));
-        expect(links).toEqual([`/?preset=${preset}#tool`, `/?preset=${preset}#tool`]);
+        // The first two preset links are calls to action for the page's own prompt; a longer page
+        // may add one "use this prompt" link per example, each pointing at the example it shows.
+        expect(links.slice(0, 2)).toEqual([`/?preset=${preset}#tool`, `/?preset=${preset}#tool`]);
+        for (const href of links) expect(getPromptPreset(presetId(href ?? '') ?? ''), href).toBeTruthy();
 
-        const prompt = getPromptPreset(preset);
-        expect(prompt).toBeTruthy();
-        const firstExample = html.match(/<li>.*?<\/li>/)?.[0];
-        expect(firstExample).toBe(renderToStaticMarkup(createElement('li', null, prompt)));
+        // An example shows exactly one prompt, optionally followed by the link that loads it.
+        const useLink = /<a\b[^>]*href="(\/\?preset=[^"]*)"[^>]*>([^<]*)<\/a>/;
+        const check = (item: string, prompt: string | undefined, label: string) => {
+          expect(prompt, label).toBeTruthy();
+          const link = useLink.exec(item);
+          expect(`<li>${item}</li>`, label).toBe(
+            renderToStaticMarkup(
+              createElement(
+                'li',
+                null,
+                prompt,
+                ...(link ? [' ', createElement('a', { href: link[1] }, link[2])] : []),
+              ),
+            ),
+          );
+        };
+        const examples = [...html.matchAll(/<li>([\s\S]*?)<\/li>/g)].map((match) => match[1] ?? '');
+        check(examples[0]!, getPromptPreset(preset), `${preset}: first example`);
+        for (const [index, item] of examples.entries()) {
+          const link = useLink.exec(item);
+          if (index > 0 && link)
+            check(item, getPromptPreset(presetId(link[1]!)!), `${preset}: example ${index + 1}`);
+        }
       } finally {
         overwriteGetLocale(originalGetLocale);
       }

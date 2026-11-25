@@ -2,7 +2,7 @@
 
 - Site: https://www.freeaivideo.app
 - Target: free AI video generator, no sign-up; Seedance 2.5 video generation.
-- Models: 30 for credit videos, including five trial-eligible models; text-to-video and reference-photo support depend on the selected model. Seedance 2.5 requires credits.
+- Models: 31 for credit videos, including six trial-eligible models; text-to-video and reference-photo support depend on the selected model. Seedance 2.5 requires credits.
 - Contact: support@freeaivideo.app
 - Language: English in production; English and Chinese in local preview.
 - Analytics: GA4 `G-YJ3Q2BRW3C`.

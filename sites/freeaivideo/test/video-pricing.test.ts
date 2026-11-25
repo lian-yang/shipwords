@@ -1,10 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import { creditsFor } from '@shipwords/jobs/models';
 import { YirAdapter } from '@shipwords/jobs/yir';
+import { buildZhipuVideoRequest, ZhipuAdapter } from '@shipwords/jobs/zhipu';
 import catalog from '../site.models';
 import { paidParameters } from '../src/create-job.server';
 import { DEFAULT_TRIAL_MODEL_ID, restoredModelId, VIDEO_OPTIONS } from '../src/video-options';
 import { paidMaxCost, trialMaxCost, VIDEO_UPSTREAMS } from '../src/video-pricing.server';
+
+// Models on the free Zhipu upstream never reach Yir and carry a zero ceiling; every other model is billed through Yir.
+const isFreeUpstream = (model: (typeof catalog)[number]) => VIDEO_UPSTREAMS[model.id]!.upstream === 'zhipu';
+const yirModels = catalog.filter((model) => !isFreeUpstream(model));
+const freeModels = catalog.filter(isFreeUpstream);
 
 describe('published video specifications', () => {
   it('restores free drafts to an eligible model but preserves paid and eligible free selections', () => {
@@ -30,7 +36,7 @@ describe('published video specifications', () => {
     expect(paidParameters(id, { resolution: '720p', duration: 5, aspect_ratio: '21:9' })).toBe(true);
     expect(paidParameters(id, { resolution: '720p', duration: 5, aspect_ratio: 'auto' }, true)).toBe(true);
   });
-  it('passes all five trial caps through the real Yir submit validator without network access', async () => {
+  it('passes all five Yir trial caps through the real Yir submit validator without network access', async () => {
     const requests: { max_cost: string }[] = [];
     const fetcher = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
       requests.push(JSON.parse(String(init?.body)) as { max_cost: string });
@@ -39,7 +45,7 @@ describe('published video specifications', () => {
     vi.stubGlobal('fetch', fetcher);
     try {
       const adapter = new YirAdapter({ apiKey: 'test-only', baseURL: 'https://test.invalid' });
-      const trials = catalog.filter((model) => model.guest);
+      const trials = yirModels.filter((model) => model.guest);
       expect(trials).toHaveLength(5);
       expect(trials.some((model) => model.id === DEFAULT_TRIAL_MODEL_ID)).toBe(true);
       expect(catalog.find((model) => model.id === 'seedance-2-5-v2')?.guest).toBe(false);
@@ -64,7 +70,7 @@ describe('published video specifications', () => {
       vi.unstubAllGlobals();
     }
   });
-  it('passes every paid default through the real Yir submit validator without network access', async () => {
+  it('passes every Yir paid default through the real Yir submit validator without network access', async () => {
     const requests: { max_cost: string }[] = [];
     const fetcher = vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
       requests.push(JSON.parse(String(init?.body)) as { max_cost: string });
@@ -73,8 +79,8 @@ describe('published video specifications', () => {
     vi.stubGlobal('fetch', fetcher);
     try {
       const adapter = new YirAdapter({ apiKey: 'test-only', baseURL: 'https://test.invalid' });
-      expect(catalog).toHaveLength(30);
-      for (const model of catalog) {
+      expect(yirModels).toHaveLength(30);
+      for (const model of yirModels) {
         const spec = VIDEO_UPSTREAMS[model.id]!;
         const choice = VIDEO_OPTIONS[model.id]!;
         const parameters = {
@@ -99,9 +105,39 @@ describe('published video specifications', () => {
       vi.unstubAllGlobals();
     }
   });
+  it('keeps the free-upstream model on a zero ceiling that only the free adapter may settle', () => {
+    expect(freeModels.map((model) => model.id)).toEqual(['cogvideox-flash-v2']);
+    // A zero ceiling is safe only where a submit that never returned a task ID cannot hide a charge.
+    expect(new ZhipuAdapter({ apiKey: 'test-only' }).freeUpstream).toBe(true);
+    const model = freeModels[0]!;
+    const definition = VIDEO_OPTIONS[model.id]!;
+    const spec = VIDEO_UPSTREAMS[model.id]!;
+    expect(model.guest).toBe(true);
+    expect(trialMaxCost(model.id)).toBe('0.00');
+    for (const option of definition.options) {
+      for (const duration of option.durations)
+        expect(paidMaxCost(model.id, { resolution: option.resolution, duration })).toBe('0.000000');
+    }
+    // An accepted free request keeps its allowance even when it fails, so every offered ratio must be accepted.
+    for (const aspect_ratio of definition.aspectRatios) {
+      expect(() =>
+        buildZhipuVideoRequest(
+          {
+            upstreamModel: spec.upstreamModel,
+            kind: 'video',
+            prompt: 'Test prompt',
+            references: [],
+            parameters: { aspect_ratio },
+          },
+          `test-${model.id}`,
+        ),
+      ).not.toThrow();
+    }
+  });
   it('has a positive credit price and a bounded upstream cap for every selectable paid specification', () => {
     let count = 0;
     for (const model of catalog) {
+      const free = isFreeUpstream(model);
       const definition = VIDEO_OPTIONS[model.id];
       expect(definition, `${model.id}: missing choices`).toBeDefined();
       expect(VIDEO_UPSTREAMS[model.id], `${model.id}: missing upstream`).toBeDefined();
@@ -119,13 +155,18 @@ describe('published video specifications', () => {
           const cap = paidMaxCost(model.id, params);
           expect(Number.isSafeInteger(credits) && credits > 0, label).toBe(true);
           expect(cap, label).not.toBeNull();
-          expect(Number(cap), label).toBeGreaterThan(0);
+          if (free) expect(Number(cap), label).toBe(0);
+          else expect(Number(cap), label).toBeGreaterThan(0);
           // Smallest pack revenue per credit is $0.03998; caps retain at least 30% of it.
           expect(Number(cap), label).toBeLessThanOrEqual(credits * 0.03998 * 0.7 + 0.000001);
           count++;
         }
       }
-      if (model.guest) expect(Number(trialMaxCost(model.id)), model.id).toBeGreaterThan(0);
+      if (model.guest) {
+        const trialCap = Number(trialMaxCost(model.id));
+        if (free) expect(trialCap, model.id).toBe(0);
+        else expect(trialCap, model.id).toBeGreaterThan(0);
+      }
     }
     expect(count).toBeGreaterThan(0);
   });

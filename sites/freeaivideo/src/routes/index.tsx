@@ -26,6 +26,7 @@ import { HorizonScene } from '~/site/horizon-scene';
 import { SUPPORT_EMAIL } from '~/site/legal';
 import { Plans, PricingLink } from '~/site/pricing';
 import { getPromptPreset } from '~/site/prompt-presets';
+import { trialModels } from '~/site/public-offer';
 import { openSignIn } from '~/site/sign-in';
 import type { GenerationMode } from '~/trial-types';
 import { DEFAULT_TRIAL_MODEL_ID, restoredModelId, VIDEO_OPTIONS } from '~/video-options';
@@ -39,7 +40,7 @@ export const Route = createFileRoute('/')({
   head: () =>
     pageHead(site, {
       title: m.home_meta_title({ name: site.name }),
-      description: m.home_meta_description(),
+      description: m.home_meta_description({ count: trialModels.length }),
       path: '/',
       image: `${site.url}/og.jpg`,
       jsonLd: [
@@ -449,7 +450,7 @@ function ToolPage() {
               <em>{m.home_horizon_title_accent()}</em>
               <span className="horizon-signup-label">{m.home_horizon_signup()}</span>
             </h1>
-            <p className="lead">{m.home_lead()}</p>
+            <p className="lead">{m.home_lead({ count: trialModels.length })}</p>
           </div>
           <SceneStage onApply={() => applyPrompt(m.home_horizon_prompt())} />
           <form id="composer" onSubmit={onSubmit} className="tool-form" aria-busy={!restored || submitting}>
