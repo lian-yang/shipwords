@@ -679,6 +679,9 @@ function ToolPage() {
                 <button type="button" className="link-button" onClick={() => chooseMode('paid')}>
                   {m.home_use_credits()}
                 </button>
+                <PricingLink className="link-button" source="trial_quota">
+                  {m.home_buy_credit_pack()}
+                </PricingLink>
                 <p>{m.home_use_credits_note()}</p>
               </div>
             )}

@@ -25,6 +25,13 @@ describe('funnel analytics privacy and payment confirmation', () => {
     ).toEqual({ site_key: 'freeaivideo', mode: 'daily-trial', entry_point: 'nav', product: 'pack_100' });
   });
 
+  it('records the pricing entry point shown when the daily free allowance is used up', () => {
+    expect(analyticsProperties({ source: 'trial_quota' })).toEqual({
+      site_key: 'freeaivideo',
+      entry_point: 'trial_quota',
+    });
+  });
+
   it('queues only a confirmed payment, on a clean page, once per browser order', () => {
     const gtag = vi.fn();
     const currentWindow = { location: { pathname: '/billing/return' }, gtag };

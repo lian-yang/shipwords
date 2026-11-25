@@ -37,6 +37,7 @@ const ALLOWED_VALUES: Record<string, ReadonlySet<string>> = {
     'checkout',
     'generation_mode',
     'signup_trial',
+    'trial_quota',
   ]),
   mode: new Set(['daily-trial', 'signup-trial', 'paid']),
   blocked: new Set(['login_required', 'trial_unavailable', 'confirm_another', 'none']),

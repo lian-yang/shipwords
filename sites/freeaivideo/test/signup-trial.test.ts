@@ -677,6 +677,51 @@ describe('device daily trial shared across sign-in', () => {
     expect(await totalJobs()).toBe(1);
   });
 
+  it('spends the site-wide budget across distinct devices, then tells new devices it is used up', async () => {
+    const limit = site.guest.dailySiteBudget;
+    const newcomer = fakeCore();
+    for (let index = 0; index < limit - 1; index++) {
+      const response = await createSiteJob(
+        fakeCore().core,
+        generationRequest('daily-trial', { ip: `198.51.0.${index + 1}` }),
+      );
+      expect(response.status).toBe(201);
+    }
+    // A device with no trial of its own still has the shared budget as its remaining allowance.
+    const before = (await (await getTrialStatus(newcomer.core, trialRequest('GET', { ip: '192.0.2.1' }))).json()) as TrialStatus;
+    expect(before.daily).toMatchObject({ available: true, remaining: 1, reason: null });
+    expect(
+      (
+        await createSiteJob(fakeCore().core, generationRequest('daily-trial', { ip: `198.51.0.${limit}` }))
+      ).status,
+    ).toBe(201);
+
+    const after = (await (await getTrialStatus(newcomer.core, trialRequest('GET', { ip: '192.0.2.1' }))).json()) as TrialStatus;
+    expect(after.daily).toMatchObject({ available: false, remaining: 0, reason: 'quota' });
+    const denied = await createSiteJob(newcomer.core, generationRequest('daily-trial', { ip: '192.0.2.1' }));
+    expect(await responseCode(denied)).toBe('trial_quota_exhausted');
+    expect(await quotaCount('guest:site', dayWindow())).toBe(limit);
+    expect(await totalJobs()).toBe(limit);
+    expect(newcomer.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('keeps registration vouchers and credit videos available once the daily budget is spent', async () => {
+    await env.DB.prepare('INSERT INTO quota_counters (key,window,count) VALUES (?,?,?)')
+      .bind('guest:site', dayWindow(), site.guest.dailySiteBudget)
+      .run();
+    const user = await newUser({ credits: 1000 });
+    const { core, dispatch } = fakeCore(user);
+    await claimSignupTrial(core, trialRequest());
+
+    const voucher = await storedJob(await createSiteJob(core, generationRequest('signup-trial')));
+    expect(voucher).toMatchObject({ userId: user.id, costCredits: 0 });
+    await storedJob(
+      await createSiteJob(core, generationRequest('paid', { parameters: { duration: 4, resolution: '480p' } })),
+    );
+    expect(await quotaCount('guest:site', dayWindow())).toBe(site.guest.dailySiteBudget);
+    expect(dispatch).toHaveBeenCalledTimes(2);
+  });
+
   it('denies trials when verification is not configured instead of silently allowing quota-only use', async () => {
     const { core, dispatch } = fakeCore();
     core.env.TURNSTILE_SECRET_KEY = undefined;
