@@ -2,7 +2,7 @@ import { creditsFor } from '@shipwords/jobs/models';
 import catalog from '../site.models';
 import { SHARED_VIDEO_IDS, VIDEO_OPTIONS } from './video-options';
 
-/** Source catalog snapshot 2026-11-06. Yir quotes and channels may change. */
+/** Source catalog snapshot 2026-11-06; Magi 2, released 2026-11-24, was quoted 2026-11-26. Yir quotes and channels may change. */
 export const VIDEO_UPSTREAMS: Readonly<
   Record<
     string,
@@ -63,6 +63,7 @@ export const VIDEO_UPSTREAMS: Readonly<
     generateAudio: true,
   },
   'heygen-video-1-v2': { upstreamModel: 'heygen/heygen-video-1', generateAudio: true },
+  'magi-2-v2': { upstreamModel: 'sand-ai/magi-2', generateAudio: true },
 };
 const COST_SHARE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   // Zhipu's cogvideox-flash is free upstream: no cost share, the job ceiling stays at zero.
@@ -97,6 +98,7 @@ const COST_SHARE: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   [SHARED_VIDEO_IDS.grok15]: { '480p': '0.7', '720p': '0.7' },
   [SHARED_VIDEO_IDS.grok15lite]: { '480p': '0.7', '720p': '0.7' },
   'heygen-video-1-v2': { '768P': '0.7', '2K': '0.65' },
+  'magi-2-v2': { '1080p': '0.7' },
 };
 const TRIAL_CAP: Readonly<Record<string, string>> = {
   'cogvideox-flash-v2': '0.00',

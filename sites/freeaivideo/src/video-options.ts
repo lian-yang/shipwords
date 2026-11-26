@@ -380,6 +380,20 @@ export const VIDEO_OPTIONS: Readonly<Record<string, VideoOptions>> = {
     aspectRatios: ['16:9', '9:16'],
     imageAspectRatio: 'adaptive',
   },
+  'magi-2-v2': {
+    options: [
+      {
+        resolution: '1080p',
+        durations: [
+          4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
+          30,
+        ],
+      },
+    ],
+    trial: { resolution: '1080p', duration: 4 },
+    default: { resolution: '1080p', duration: 5 },
+    aspectRatios: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'],
+  },
 };
 
 // Public identifiers shared with the server's private routing table.

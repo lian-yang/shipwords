@@ -79,7 +79,7 @@ describe('published video specifications', () => {
     vi.stubGlobal('fetch', fetcher);
     try {
       const adapter = new YirAdapter({ apiKey: 'test-only', baseURL: 'https://test.invalid' });
-      expect(yirModels).toHaveLength(30);
+      expect(yirModels).toHaveLength(31);
       for (const model of yirModels) {
         const spec = VIDEO_UPSTREAMS[model.id]!;
         const choice = VIDEO_OPTIONS[model.id]!;
@@ -100,7 +100,7 @@ describe('published video specifications', () => {
         }, `test-${model.id}`), model.id).resolves.toEqual({ upstreamJobId: 'test-upstream-job' });
         expect(requests.at(-1)?.max_cost, model.id).toBe(cap);
       }
-      expect(fetcher).toHaveBeenCalledTimes(30);
+      expect(fetcher).toHaveBeenCalledTimes(31);
     } finally {
       vi.unstubAllGlobals();
     }
